@@ -111,7 +111,7 @@
         "conn_buffer_limit_bytes": 32768,
         "hosts": [
           {
-            "address": "127.0.0.1:8086"
+            "address": "127.0.0.1:9999"
           }
         ]
       }
@@ -130,7 +130,7 @@
       {
         "enable": true,
         "type": "go-plugin",
-        "path": "codec-xr.so",
+        "path": "/Users/yiji/go/src/github.com/mosn/wasm-sdk/go-plugin/build/codecs/xr/codec-xr.so",
         "loader_func_name": "LoadCodec"
       }
     ]

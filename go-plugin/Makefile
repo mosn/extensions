@@ -12,7 +12,7 @@ clean:
 
 codec:
 	@rm -rf build/codecs/${TARGET}
-	go build -o ${CODEC_OUTPUT} -mod=mod --buildmode=plugin -gcflags "all=-N -l" ${PROJECT_NAME}/plugins/codecs/${TARGET}/main
+	go build -o ${CODEC_OUTPUT} -mod=mod --buildmode=plugin -gcflags "all=-N -l" -ldflags "-compressdwarf=false" ${PROJECT_NAME}/plugins/codecs/${TARGET}/main
 	mkdir -p build/codecs/${TARGET}
 	mv ${CODEC_OUTPUT} build/codecs/${TARGET}
 	@cd build/codecs/${TARGET} && $(shell which md5sum) -b ${CODEC_OUTPUT} | cut -d' ' -f1  > ${CODEC_PREFIX}-${TARGET}.md5
