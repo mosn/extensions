@@ -2,11 +2,11 @@
   "close_graceful": true,
   "servers": [
     {
-      "default_log_path": "debug",
+      "default_log_path": "/home/admin/logs/mosn/default.log",
       "listeners": [
         {
           "name": "egress_xr",
-          "address": "127.0.0.1:2045",
+          "address": "0.0.0.0:2045",
           "bind_port": true,
           "filter_chains": [
             {
@@ -28,7 +28,7 @@
         },
         {
           "name": "ingress_xr",
-          "address": "127.0.0.1:2046",
+          "address": "0.0.0.0:2046",
           "bind_port": true,
           "filter_chains": [
             {
@@ -130,7 +130,7 @@
       {
         "enable": true,
         "type": "go-plugin",
-        "path": "/Users/yiji/go/src/github.com/mosn/wasm-sdk/go-plugin/build/codecs/xr/codec-xr.so",
+        "path": "/go/src/github.com/mosn/wasm-sdk/go-plugin/build/codecs/xr/codec-xr.so",
         "loader_func_name": "LoadCodec"
       }
     ]
