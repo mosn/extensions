@@ -11,7 +11,7 @@ if [[ -n "$sidecar" ]]; then
   echo "stop existed sidecar success."
 fi
 
-EXPORT_PORTS="-p 2345:2345 -p 2045:2045 -p 2046:2046"
+EXPORT_PORTS="-p 2345:2345 -p 2045:2045 -p 2046:2046 -p 34801:34801" 
 
 docker run -u admin \
   -e PLUGIN_PROJECT_NAME="${PROJECT_NAME}" \
