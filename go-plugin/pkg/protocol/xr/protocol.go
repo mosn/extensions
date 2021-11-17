@@ -18,12 +18,14 @@
 package xr
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/mosn/wasm-sdk/go-plugin/pkg/common"
 	"github.com/mosn/wasm-sdk/go-plugin/pkg/common/safe"
 	"mosn.io/api"
+	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
 	"strconv"
 	"strings"
@@ -140,9 +142,12 @@ func (proto *Proto) Reply(context context.Context, request api.XFrame) api.XResp
 	return nil
 }
 
-// Hijack
+// Hijack hijack request, maybe timeout
 func (proto *Proto) Hijack(context context.Context, request api.XFrame, statusCode uint32) api.XRespFrame {
-	return nil
+	resp := proto.hijackResponse(request, statusCode)
+
+	return resp
+
 }
 
 func (proto *Proto) Mapping(httpStatusCode uint32) uint32 {
@@ -160,4 +165,38 @@ func (proto *Proto) EnableWorkerPool() bool {
 
 func (proto *Proto) GenerateRequestID(streamID *uint64) uint64 {
 	return atomic.AddUint64(streamID, 1)
+}
+
+// hijackResponse build hijack response
+func (proto *Proto) hijackResponse(request api.XFrame, statusCode uint32) *Response {
+	req := request.(*Request)
+	body := req.Payload.String()
+
+	var bodyBuf bytes.Buffer
+	headerIndex := strings.Index(body, startHeader)
+	if headerIndex >= 0 {
+		bodyBuf.WriteString(body[:headerIndex+len(startHeader)])
+		bodyBuf.WriteString("<Response>")
+		bodyBuf.WriteString("<ReturnCode>")
+		bodyBuf.WriteString(strconv.Itoa(int(statusCode)))
+		bodyBuf.WriteString("</ReturnCode>")
+		bodyBuf.WriteString("<ReturnMessage>此请求被劫持</ReturnMessage>")
+		bodyBuf.WriteString("</Response>")
+		bodyBuf.WriteString(body[headerIndex+len(startHeader):])
+	}
+	body = bodyBuf.String()
+	// replace request type -> response
+	body = strings.ReplaceAll(body, "<RequestType>0</RequestType>", "<RequestType>1</RequestType>")
+
+	// 8 byte length + string body
+	buf := buffer.GetIoBuffer(8 + len(body))
+	proto.prefixOfZero(buf, len(body))
+	buf.WriteString(body)
+
+	// response header
+	rpcHeader := common.Header{}
+	injectHeaders(buf.Bytes()[8:8+len(body)], &rpcHeader)
+
+	resp := NewRpcResponse(&rpcHeader, buf)
+	return resp
 }

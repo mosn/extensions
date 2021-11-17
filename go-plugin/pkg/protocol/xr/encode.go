@@ -79,6 +79,12 @@ func (proto *Proto) encodeResponse(ctx context.Context, response *Response) (api
 		buf.Write(response.Payload.Bytes())
 	}
 
+	// remove associate the ID with the business ID if exists.
+	if _, found := proto.StreamId(ctx, response.RequestId); found {
+		// remove stream id, help gc
+		proto.RemoveStreamId(ctx, response.RequestId)
+	}
+
 	return buf, nil
 }
 
