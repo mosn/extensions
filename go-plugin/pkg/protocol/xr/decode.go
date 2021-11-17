@@ -72,7 +72,7 @@ func (proto *Proto) decodeRequest(ctx context.Context, buf api.IoBuffer, header 
 	payload := request.Data.Bytes()[8:totalLen]
 	request.Payload = buffer.NewIoBufferBytes(payload)
 
-	return &request, nil
+	return request, nil
 }
 
 func (proto *Proto) decodeResponse(ctx context.Context, buf api.IoBuffer, header *common.Header) (interface{}, error) {
@@ -122,5 +122,5 @@ func (proto *Proto) decodeResponse(ctx context.Context, buf api.IoBuffer, header
 	payload := response.Data.Bytes()[8:totalLen]
 	response.Payload = buffer.NewIoBufferBytes(payload)
 
-	return &response, nil
+	return response, nil
 }

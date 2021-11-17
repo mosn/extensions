@@ -6,7 +6,8 @@ ENV GOPROXY=https://goproxy.cn,direct
 RUN go get github.com/go-delve/delve/cmd/dlv@v1.6.1
 
 # install tools.
-RUN apt update && apt install net-tools && apt install sudo
+RUN apt update && apt install net-tools && apt install sudo && \
+    apt install openbsd-inetd && apt install telnetd
 
 # change container root pwd
 RUN  useradd -ms /bin/bash admin && \

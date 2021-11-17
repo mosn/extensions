@@ -116,8 +116,6 @@ func (proto *Proto) Decode(ctx context.Context, buf api.IoBuffer) (interface{}, 
 	}
 
 	totalLen := 8 /** fixed 8 byte len */ + packetLen
-	// Read the complete packet data from the connection
-	buf.Drain(totalLen)
 
 	rpcHeader := common.Header{}
 	injectHeaders(data[8:totalLen], &rpcHeader)
