@@ -9,7 +9,7 @@
     {
       "log_path": "./logs/mosn/access_ingress.log"
     }
-  ],
+  ]
   "filter_chains": [
     {
       "filters": [

@@ -22,9 +22,10 @@ import (
 	"context"
 	"encoding/xml"
 	"github.com/mosn/wasm-sdk/go-plugin/pkg/common"
+	"io"
 	"mosn.io/api"
 	"mosn.io/pkg/buffer"
-	"mosn.io/pkg/header"
+	"mosn.io/pkg/log"
 	"strconv"
 	"strings"
 )
@@ -52,6 +53,10 @@ func (proto *Proto) encodeRequest(ctx context.Context, request *Request) (api.Io
 	// When the response is received, streamId is restored correctly.
 	if request.SteamId != nil {
 		proto.PutStreamId(ctx, request.RequestId, request.SteamId.(uint64))
+		// record debug mapping stream info.
+		if log.DefaultLogger.GetLogLevel() >= log.DEBUG {
+			log.DefaultLogger.Debugf("xr proto mapping streamId: %d -> %d", request.RequestId, request.SteamId.(uint64))
+		}
 	}
 
 	return buf, nil
@@ -74,10 +79,10 @@ func (proto *Proto) encodeResponse(ctx context.Context, response *Response) (api
 		buf.Write(response.Payload.Bytes())
 	}
 
-	// If sidecar replaces the ID, we associate the ID with the business ID
-	// When the response is received, streamId is restored correctly.
-	if response.SteamId != nil {
-		proto.PutStreamId(ctx, response.RequestId, response.SteamId.(uint64))
+	// remove associate the ID with the business ID if exists.
+	if _, found := proto.StreamId(ctx, response.RequestId); found {
+		// remove stream id, help gc
+		proto.RemoveStreamId(ctx, response.RequestId)
 	}
 
 	return buf, nil
@@ -107,24 +112,15 @@ func injectHeaders(data []byte, h *common.Header) error {
 		return nil
 	}
 
-	xmlBody := string(data)
-	index := strings.Index(xmlBody, startHeader)
-	header := header.CommonHeader{}
-	// parse header key value
-	if index >= 0 {
-		headerEndIndex := strings.Index(xmlBody, endHeader)
-		xmlHeader := xmlBody[index : headerEndIndex+len(endHeader)]
-		if xmlHeader != "" {
-			xmlDecoder := xml.NewDecoder(bytes.NewBufferString(xmlHeader))
-			if err := xmlDecoder.Decode(&header); err != nil {
-				return err
-			}
-		}
+	header, err := parseXmlHeader(data)
+	if err != nil {
+		return err
 	}
 
 	channelId := header[channelIdKey]
 	extRef := header[externalReferenceKey]
 	code := header[serviceCodeKey]
+	flag := header[requestTypeKey]
 
 	// inject request id: channelId + extRef
 	h.Set(requestIdKey, channelId+extRef)
@@ -133,9 +129,73 @@ func injectHeaders(data []byte, h *common.Header) error {
 	h.Set(serviceCodeKey, code)
 
 	// inject other head if required.
+	h.Set(requestTypeKey, flag)
 
 	// update header unchanged, avoid encode again.
 	h.Changed = false
+
+	return nil
+}
+
+// parseXmlHeader decode xml header
+func parseXmlHeader(data []byte) (XmlHeader, error) {
+	xmlBody := string(data)
+	index := strings.Index(xmlBody, startHeader)
+	header := XmlHeader{}
+	// parse header key value
+	if index >= 0 {
+		headerEndIndex := strings.Index(xmlBody, endHeader)
+		xmlHeader := xmlBody[index : headerEndIndex+len(endHeader)]
+		if xmlHeader != "" {
+			xmlDecoder := xml.NewDecoder(bytes.NewBufferString(xmlHeader))
+			if err := xmlDecoder.Decode(&header); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return header, nil
+}
+
+// XmlHeader xml key value pair.
+// Protocol-specific, depending on
+// traditional protocol data structures
+type XmlHeader map[string]string
+
+type KeyValueEntry struct {
+	XMLName xml.Name
+	Value   string `xml:",chardata"`
+}
+
+func (m XmlHeader) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	if len(m) == 0 {
+		return nil
+	}
+
+	if err := e.EncodeToken(start); err != nil {
+		return err
+	}
+
+	for k, v := range m {
+		e.Encode(KeyValueEntry{XMLName: xml.Name{Local: k}, Value: v})
+	}
+
+	return e.EncodeToken(start.End())
+}
+
+func (m *XmlHeader) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	*m = XmlHeader{}
+	for {
+		var e KeyValueEntry
+
+		err := d.Decode(&e)
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return err
+		}
+
+		(*m)[e.XMLName.Local] = e.Value
+	}
 
 	return nil
 }

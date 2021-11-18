@@ -22,7 +22,7 @@ import (
 	"mosn.io/api"
 )
 
-const defaultTimeout = 3000 // default request timeout(3 seconds).
+const defaultTimeout = 10000 // default request timeout(10 seconds).
 
 type Request struct {
 	common.Header              // request key value pair
