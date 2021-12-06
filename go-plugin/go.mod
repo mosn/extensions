@@ -1,4 +1,4 @@
-module github.com/mosn/wasm-sdk/go-plugin
+module github.com/mosn/extensions/go-plugin
 
 go 1.14
 

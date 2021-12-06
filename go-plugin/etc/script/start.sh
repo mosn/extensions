@@ -1,7 +1,7 @@
 #! /bin/bash
 
 BASE_IMAGE=zonghaishang/delve:1.6.1
-PROJECT_NAME=github.com/mosn/wasm-sdk/go-plugin
+PROJECT_NAME=github.com/mosn/extensions/go-plugin
 TARGET=${plugin}
 
 sidecar=$(docker ps -a -q -f name=mosn-container)

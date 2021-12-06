@@ -6,7 +6,7 @@ CODEC_PREFIX	= codec
 CODEC_OUTPUT	= ${CODEC_PREFIX}-${OUTPUT}
 
 SIDECAR_PROJECT_NAME 	= mosn.io/mosn
-PROJECT_NAME			= github.com/mosn/wasm-sdk/go-plugin
+PROJECT_NAME			= github.com/mosn/extensions/go-plugin
 
 SIDECAR_BUILD_IMAGE     = mosn-builder
 BUILD_IMAGE				= golang:1.14.13
