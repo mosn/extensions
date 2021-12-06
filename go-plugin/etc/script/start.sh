@@ -19,7 +19,7 @@ docker run -u admin \
   -v $(go env GOPATH)/src/${PROJECT_NAME}:/go/src/${PROJECT_NAME} \
   -itd --name mosn-container --env-file env_conf ${EXPORT_PORTS} \
   -w /go/src/${PROJECT_NAME} \
-  ${BASE_IMAGE} /go/src/${PROJECT_NAME}/etc/script/run.sh
+  ${BASE_IMAGE} /go/src/${PROJECT_NAME}/etc/script/run.sh ${type} ${TARGET}
 
 echo "start mosn-container container."
 echo "run 'docker exec -it mosn-container /bin/bash' command enter mosn container."
