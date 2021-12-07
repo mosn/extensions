@@ -1,4 +1,4 @@
-# wasm-sdk
+# extensions
 
 Supports the mosn extension capability:
 
