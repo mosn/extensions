@@ -1,0 +1,30 @@
+# github.com/andybalholm/brotli v1.0.2
+github.com/andybalholm/brotli
+# github.com/hashicorp/go-syslog v1.0.0
+github.com/hashicorp/go-syslog
+# github.com/klauspost/compress v1.13.4
+github.com/klauspost/compress/flate
+github.com/klauspost/compress/gzip
+github.com/klauspost/compress/zlib
+# github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0
+github.com/rcrowley/go-metrics
+# github.com/valyala/bytebufferpool v1.0.0
+github.com/valyala/bytebufferpool
+# github.com/valyala/fasthttp v1.31.0
+## explicit
+github.com/valyala/fasthttp
+github.com/valyala/fasthttp/fasthttputil
+github.com/valyala/fasthttp/stackless
+# gopkg.in/natefinch/lumberjack.v2 v2.0.0
+gopkg.in/natefinch/lumberjack.v2
+# mosn.io/api v0.0.0-20211118092229-0f48ccc614b6
+## explicit
+mosn.io/api
+mosn.io/api/extensions/transcoder
+# mosn.io/pkg v0.0.0-20211019125153-96b01e984d62 => github.com/Tanc010/pkg v0.0.0-20211207033231-f2e906300a49
+## explicit
+mosn.io/pkg/buffer
+mosn.io/pkg/header
+mosn.io/pkg/log
+mosn.io/pkg/protocol/http
+mosn.io/pkg/utils

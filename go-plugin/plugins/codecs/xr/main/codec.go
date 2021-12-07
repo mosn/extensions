@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mosn/wasm-sdk/go-plugin/pkg/protocol/xr"
+	"github.com/mosn/extensions/go-plugin/pkg/protocol/xr"
 	"mosn.io/api"
 )
 

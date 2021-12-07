@@ -1,0 +1,149 @@
+{
+  "close_graceful": true,
+  "servers": [
+    {
+      "default_log_path": "./logs/mosn/default.log",
+      "default_log_level": "DEBUG",
+      "routers": [
+        {
+          "router_config_name": "egress_xr_router",
+          "virtual_hosts": [
+            {
+              "name": "clientHost",
+              "domains": [
+                "*"
+              ],
+              "routers": [
+                {
+                  "match": {
+                    "headers": [
+                      {
+                        "name": "ServiceCode",
+                        "value": ".*",
+                        "regex": true
+                      }
+                    ]
+                  },
+                  "route": {
+                    "cluster_name": "clientCluster"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "listeners": [
+        {
+          "name": "egress_xr",
+          "type": "egress",
+          "address": "0.0.0.0:2045",
+          "log_path": "./logs/mosn/default.log",
+          "bind_port": true,
+          "access_logs": [
+            {
+              "log_path": "./logs/mosn/egress.log"
+            }
+          ],
+          "filter_chains": [
+            {
+              "tls_context_set": [
+                {}
+              ],
+              "filters": [
+                {
+                  "type": "proxy",
+                  "config": {
+                    "downstream_protocol": "X",
+                    "extend_config": {
+                      "sub_protocol": "xr"
+                    },
+                    "name": "proxy_config",
+                    "router_config_name": "egress_xr_router",
+                    "upstream_protocol": "X"
+                  }
+                },
+                {
+                  "type": "connection_manager",
+                  "config": {
+                    "router_config_name": "egress_xr_router"
+                  }
+                }
+              ]
+            }
+          ],
+          "stream_filters": [
+            {
+              "type": "transcoder",
+              "config": {
+                "type": "http2bolt_simple",
+                "rules": [
+                  {
+                    "macther_config":{
+                      "matcher_type": "simpleMatcher",
+                      "config": {
+                        "name":"ServiceCode",
+                        "value":"CIMT000070"
+                      }
+                    },
+                    "rule_info":{
+                      "upstream_sub_protocol":"Http1",
+                      "upstream_protocol":"Http1",
+                      "config":{},
+                      "description":""
+                    }
+                  }
+                ]
+              }
+            }
+
+          ]
+        }
+      ]
+    }
+  ],
+  "cluster_manager": {
+    "clusters": [
+      {
+        "Name": "clientCluster",
+        "type": "SIMPLE",
+        "lb_type": "LB_RANDOM",
+        "max_request_per_conn": 1024,
+        "conn_buffer_limit_bytes": 32768,
+        "hosts": [
+          {
+            "address": "127.0.0.1:8999"
+          }
+        ]
+      }
+    ]
+  },
+  "tracing": {
+    "enable": true,
+    "driver": "SOFATracer"
+  },
+  "third_part_codec": {
+    "codecs": [
+      {
+        "enable": true,
+        "type": "go-plugin",
+        "path": "./codec-xr.so",
+        "loader_func_name": "LoadCodec"
+      }
+    ]
+  },
+  "extends": [
+    {
+      "type":"transcoder_plugin",
+      "config": {
+        "transcoders":[
+          {
+            "so_path":"./xr2http.so",
+            "src_protocol":"xr",
+            "dst_protocol":"Http1"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -21,7 +21,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/xml"
-	"github.com/mosn/wasm-sdk/go-plugin/pkg/common"
+	"github.com/mosn/extensions/go-plugin/pkg/common"
 	"io"
 	"mosn.io/api"
 	"mosn.io/pkg/buffer"

@@ -130,7 +130,7 @@
       {
         "enable": true,
         "type": "go-plugin",
-        "path": "/go/src/github.com/mosn/wasm-sdk/go-plugin/build/codecs/xr/codec-xr.so",
+        "path": "/go/src/github.com/mosn/extensions/go-plugin/build/codecs/xr/codec-xr.so",
         "loader_func_name": "LoadCodec"
       }
     ]

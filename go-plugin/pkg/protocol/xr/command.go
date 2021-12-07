@@ -18,7 +18,7 @@
 package xr
 
 import (
-	"github.com/mosn/wasm-sdk/go-plugin/pkg/common"
+	"github.com/mosn/extensions/go-plugin/pkg/common"
 	"mosn.io/api"
 )
 
