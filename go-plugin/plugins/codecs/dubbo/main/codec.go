@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mosn/wasm-sdk/go-plugin/pkg/protocol/dubbo"
+	"github.com/mosn/extensions/go-plugin/pkg/protocol/dubbo"
 	"mosn.io/api"
 )
 
