@@ -30,38 +30,10 @@ import (
 )
 
 // ContextKey type
-type ContextKey int
 
 // Context key types(built-in), only used in mosn context package
 const (
-	ContextKeyStreamID ContextKey = iota
-	ContextKeyConnection
-	ContextKeyConnectionID
-	ContextKeyConnectionPoolIndex
-	ContextKeyListenerPort
-	ContextKeyListenerName
-	ContextKeyListenerType
-	ContextKeyListenerStatsNameSpace
-	ContextKeyNetworkFilterChainFactories
-	ContextKeyStreamFilterChainFactories
-	ContextKeyBufferPoolCtx
-	ContextKeyAccessLogs
-	ContextOriRemoteAddr
-	ContextKeyAcceptChan
-	ContextKeyAcceptBuffer
-	ContextKeyConnectionFd
-	ContextSubProtocol
-	ContextKeyTraceSpanKey
-	ContextKeyActiveSpan
-	ContextKeyTraceId
-	ContextKeyVariables
-	ContextKeyProxyGeneralConfig
-	ContextKeyDownStreamProtocol
-	ContextKeyConfigDownStreamProtocol
-	ContextKeyConfigUpStreamProtocol
-	ContextKeyDownStreamHeaders
-	ContextKeyDownStreamRespHeaders
-	ContextKeyEnd
+	ContextKeyListenerName = 5
 )
 
 // Decoder is heavy and caches to improve performance.
