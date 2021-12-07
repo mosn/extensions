@@ -27,7 +27,7 @@ import (
 func TestDecodeFramePanic(t *testing.T) {
 	data := buffer.NewIoBufferBytes(complexData)
 	// decode attachement
-	ctx := context.WithValue(context.TODO(), ContextKeyListenerName, IngressDubbo)
+	ctx := context.WithValue(context.TODO(), 1, IngressDubbo)
 
 	_, err := decodeFrame(ctx, data)
 	if err != nil {
@@ -39,7 +39,7 @@ func TestDecodeFramePanic(t *testing.T) {
 func TestDecodeSkipCheap(t *testing.T) {
 	data := buffer.NewIoBufferBytes(benchmarkData)
 	// decode attachement
-	ctx := context.WithValue(context.TODO(), ContextKeyListenerName, "Cheap")
+	ctx := context.WithValue(context.TODO(), 1, "Cheap")
 
 	_, err := decodeFrame(ctx, data)
 	if err != nil {
@@ -51,7 +51,7 @@ func TestDecodeSkipCheap(t *testing.T) {
 func TestDecodeSkip(t *testing.T) {
 	data := buffer.NewIoBufferBytes(benchmarkData)
 	// decode attachement
-	ctx := context.WithValue(context.TODO(), ContextKeyListenerName, IngressDubbo)
+	ctx := context.WithValue(context.TODO(), 1, IngressDubbo)
 
 	_, err := decodeFrame(ctx, data)
 	if err != nil {
@@ -61,7 +61,7 @@ func TestDecodeSkip(t *testing.T) {
 }
 
 func BenchmarkDecodeSkipCheap(t *testing.B) {
-	ctx := context.WithValue(context.TODO(), ContextKeyListenerName, "Cheap")
+	ctx := context.WithValue(context.TODO(), 1, "Cheap")
 	for i := 0; i < t.N; i++ {
 		data := buffer.NewIoBufferBytes(benchmarkData)
 		_, err := decodeFrame(ctx, data)
@@ -72,7 +72,7 @@ func BenchmarkDecodeSkipCheap(t *testing.B) {
 }
 
 func BenchmarkDecodeSkip(t *testing.B) {
-	ctx := context.WithValue(context.TODO(), ContextKeyListenerName, IngressDubbo)
+	ctx := context.WithValue(context.TODO(), 1, IngressDubbo)
 	for i := 0; i < t.N; i++ {
 		data := buffer.NewIoBufferBytes(benchmarkData)
 		_, err := decodeFrame(ctx, data)

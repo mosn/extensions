@@ -29,21 +29,9 @@ import (
 	"mosn.io/pkg/buffer"
 )
 
-// ContextKey type
-
-// Context key types(built-in), only used in mosn context package
-const (
-	ContextKeyListenerName = 5
-)
-
 // Decoder is heavy and caches to improve performance.
 // Avoid allocating 4k memory every time you create an object
 var (
-	decodePoolCheap = &sync.Pool{
-		New: func() interface{} {
-			return hessian.NewCheapDecoderWithSkip([]byte{})
-		},
-	}
 	decodePool = &sync.Pool{
 		New: func() interface{} {
 			return hessian.NewDecoderWithSkip([]byte{})
@@ -119,22 +107,8 @@ func getServiceAwareMeta(ctx context.Context, frame *Frame) (meta map[string]str
 		return meta, fmt.Errorf("[xprotocol][dubbo] not hessian,do not support")
 	}
 
-	// Recycle decode
-	var (
-		decoder  *hessian.Decoder
-		listener interface{}
-	)
-
-	if ctx != nil {
-		listener = ctx.Value(ContextKeyListenerName)
-	}
-	if listener == IngressDubbo || listener == EgressDubbo {
-		decoder = decodePool.Get().(*hessian.Decoder)
-		defer decodePool.Put(decoder)
-	} else {
-		decoder = decodePoolCheap.Get().(*hessian.Decoder)
-		defer decodePoolCheap.Put(decoder)
-	}
+	decoder := decodePool.Get().(*hessian.Decoder)
+	defer decodePool.Put(decoder)
 	decoder.Reset(frame.payload[:])
 
 	var (
@@ -193,71 +167,44 @@ func getServiceAwareMeta(ctx context.Context, frame *Frame) (meta map[string]str
 	meta[MethodNameHeader] = method
 
 	if ctx != nil {
-		var (
-			node    *Node
-			matched bool
-		)
-
-		// for better performance.
-		// If the ingress scenario is not using group,
-		// we can skip parsing attachment to improve performance
-		if listener == IngressDubbo {
-			if node, matched = DubboPubMetadata.Find(path, version); matched {
-				meta[ServiceNameHeader] = node.Service
-				meta[GroupNameHeader] = node.Group
+		// decode arguments maybe panic, when dubbo payload have complex struct
+		defer func() {
+			if r := recover(); r != nil {
+				err = fmt.Errorf("decode arguments error :%v\n%s", r, debug.Stack())
 			}
-		} else if listener == EgressDubbo {
-			// for better performance.
-			// If the egress scenario is not using group,
-			// we can skip parsing attachment to improve performance
-			if node, matched = DubboSubMetadata.Find(path, version); matched {
-				meta[ServiceNameHeader] = node.Service
-				meta[GroupNameHeader] = node.Group
+		}()
+
+		field, err = decoder.Decode()
+		if err != nil {
+			return nil, fmt.Errorf("[xprotocol][dubbo] decode dubbo argument api error: %v", err)
+		}
+
+		arguments := getArgumentCount(field.(string))
+		// we must skip all method arguments.
+		for i := 0; i < arguments; i++ {
+			_, err = decoder.Decode()
+			if err != nil {
+				return nil, fmt.Errorf("[xprotocol][dubbo] decode dubbo argument error: %v", err)
 			}
 		}
 
-		// decode the attachment to get the real service and group parameters
-		if !matched && (listener == EgressDubbo || listener == IngressDubbo) {
+		field, err = decoder.Decode()
+		if err != nil {
+			return nil, fmt.Errorf("[xprotocol][dubbo] decode dubbo attachments error: %v", err)
+		}
 
-			// decode arguments maybe panic, when dubbo payload have complex struct
-			defer func() {
-				if r := recover(); r != nil {
-					err = fmt.Errorf("decode arguments error :%v\n%s", r, debug.Stack())
-				}
-			}()
-
-			field, err = decoder.Decode()
-			if err != nil {
-				return nil, fmt.Errorf("[xprotocol][dubbo] decode dubbo argument api error: %v", err)
-			}
-
-			arguments := getArgumentCount(field.(string))
-			// we must skip all method arguments.
-			for i := 0; i < arguments; i++ {
-				_, err = decoder.Decode()
-				if err != nil {
-					return nil, fmt.Errorf("[xprotocol][dubbo] decode dubbo argument error: %v", err)
-				}
-			}
-
-			field, err = decoder.Decode()
-			if err != nil {
-				return nil, fmt.Errorf("[xprotocol][dubbo] decode dubbo attachments error: %v", err)
-			}
-
-			if field != nil {
-				if origin, ok := field.(map[interface{}]interface{}); ok {
-					// we loop all attachments and check element type,
-					// we should only read string api.
-					for k, v := range origin {
-						if key, ok := k.(string); ok {
-							if val, ok := v.(string); ok {
-								meta[key] = val
-								// we should use interface value,
-								// convenient for us to do service discovery.
-								if key == InterfaceNameHeader {
-									meta[ServiceNameHeader] = val
-								}
+		if field != nil {
+			if origin, ok := field.(map[interface{}]interface{}); ok {
+				// we loop all attachments and check element type,
+				// we should only read string api.
+				for k, v := range origin {
+					if key, ok := k.(string); ok {
+						if val, ok := v.(string); ok {
+							meta[key] = val
+							// we should use interface value,
+							// convenient for us to do service discovery.
+							if key == InterfaceNameHeader {
+								meta[ServiceNameHeader] = val
 							}
 						}
 					}
