@@ -32,7 +32,6 @@ func (r Codec) HTTPMapping() api.HTTPMapping {
 	return &r.HttpStatusMapping
 }
 
-/*
 // NewProtocolFactory create protocol per stream connection
 func (r Codec) NewProtocolFactory() api.XProtocolFactory {
 	return &r
@@ -45,4 +44,3 @@ func (r Codec) NewXProtocol() api.XProtocol {
 // compiler check
 var _ api.XProtocolFactory = &Codec{}
 var _ api.XProtocolCodec = &Codec{}
-*/

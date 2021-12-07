@@ -1,7 +1,7 @@
 {
   "name": "egress_dubbo",
   "type": "egress",
-  "address": "0.0.0.0:2046",
+  "address": "0.0.0.0:30880",
   "bind_port": true,
   "access_logs": [
     {
@@ -19,7 +19,7 @@
           "config": {
             "downstream_protocol": "X",
             "extend_config": {
-              "sub_protocol": "dubbo"
+              "sub_protocol": "dubbo-so"
             },
             "name": "proxy_config",
             "router_config_name": "egress_dubbo_router",

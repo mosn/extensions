@@ -1,0 +1,15 @@
+{
+	"name": "dubbo-so",
+	"kind": "protocol",
+	"framework": "X",
+	"internal": false,
+	"variables": [{
+		"field": "X-Govern-Service",
+		"pattern": ["test@dubbo-so"],
+		"required": true
+    }],
+	"dependencies": [{
+		"mosn_api": "^1.0.5$",
+		"mosn_pkg": ""
+	}]
+}
