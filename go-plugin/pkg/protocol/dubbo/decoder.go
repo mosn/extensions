@@ -32,9 +32,9 @@ import (
 // Decoder is heavy and caches to improve performance.
 // Avoid allocating 4k memory every time you create an object
 var (
-	decodePool = &sync.Pool{
+	decodePoolCheap = &sync.Pool{
 		New: func() interface{} {
-			return hessian.NewDecoderWithSkip([]byte{})
+			return hessian.NewCheapDecoderWithSkip([]byte{})
 		},
 	}
 )
@@ -107,8 +107,8 @@ func getServiceAwareMeta(ctx context.Context, frame *Frame) (meta map[string]str
 		return meta, fmt.Errorf("[xprotocol][dubbo] not hessian,do not support")
 	}
 
-	decoder := decodePool.Get().(*hessian.Decoder)
-	defer decodePool.Put(decoder)
+	decoder := decodePoolCheap.Get().(*hessian.Decoder)
+	defer decodePoolCheap.Put(decoder)
 	decoder.Reset(frame.payload[:])
 
 	var (
