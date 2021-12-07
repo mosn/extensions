@@ -1,7 +1,10 @@
 #! /bin/bash
 
+PLUGIN_TYPE="$1s"
+PLUGIN_TARGET="$2"
+
 mosn="/go/src/${PLUGIN_PROJECT_NAME}/build/sidecar/binary/mosn"
-SIDECAR_CONF="/go/src/${PLUGIN_PROJECT_NAME}/build/$1s/$2/mosn_config.json"
+SIDECAR_CONF="/go/src/${PLUGIN_PROJECT_NAME}/build/${PLUGIN_TYPE}/${PLUGIN_TARGET}/mosn_config.json"
 
 mkdir /home/admin/bin
 mkdir -p /home/admin/logs
