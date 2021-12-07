@@ -1,0 +1,15 @@
+# github.com/hashicorp/go-syslog v1.0.0
+github.com/hashicorp/go-syslog
+# github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0
+github.com/rcrowley/go-metrics
+# gopkg.in/natefinch/lumberjack.v2 v2.0.0
+gopkg.in/natefinch/lumberjack.v2
+# mosn.io/api v0.0.0-20211117121134-06701a68832b
+## explicit
+mosn.io/api
+# mosn.io/pkg v0.0.0-20211019125153-96b01e984d62
+## explicit
+mosn.io/pkg/buffer
+mosn.io/pkg/header
+mosn.io/pkg/log
+mosn.io/pkg/utils
