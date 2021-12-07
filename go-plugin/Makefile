@@ -5,6 +5,12 @@ OUTPUT			= ${TARGET}.so
 CODEC_PREFIX	= codec
 CODEC_OUTPUT	= ${CODEC_PREFIX}-${OUTPUT}
 
+TRANSCODER_PREFIX = transcoder
+TRANSCODER_OUTPUT = ${TRANSCODER_PREFIX}-${OUTPUT}
+
+STEAM_FILTER_PREFIX = streamfilter
+STEAM_FILTER_OUTPUT = ${STEAM_FILTER_PREFIX}-${OUTPUT}
+
 SIDECAR_PROJECT_NAME 	= mosn.io/mosn
 PROJECT_NAME			= github.com/mosn/extensions/go-plugin
 
@@ -22,6 +28,34 @@ codec:
 	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
 	make compile-codec
 
+trans: # alias for transcoder (more short)
+	make transcoder
+
+transcoder:
+	docker run --rm \
+	-e PLUGIN_TARGET=${TARGET} \
+	-e PLUGIN_TRANSCODER_OUTPUT=${TRANSCODER_OUTPUT} \
+	-e PLUGIN_TRANSCODER_PREFIX=${TRANSCODER_PREFIX} \
+	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
+	-v $(shell go env GOPATH):/go \
+	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
+	make compile-transcoder
+
+sf: # alias for streamfilter (more short)
+	make streamfilter
+
+streamfilter:
+	docker run --rm \
+	-e PLUGIN_TARGET=${TARGET} \
+	-e PLUGIN_STEAM_FILTER_OUTPUT=${STEAM_FILTER_OUTPUT} \
+	-e PLUGIN_STEAM_FILTER_PREFIX=${STEAM_FILTER_PREFIX} \
+	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
+	-v $(shell go env GOPATH):/go \
+	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
+	make compile-streamfilter
+
 compile-codec:
 	@rm -rf build/codecs/${PLUGIN_TARGET}
 	GO111MODULE=on go build \
@@ -32,6 +66,29 @@ compile-codec:
 	mv ${PLUGIN_CODEC_OUTPUT} build/codecs/${PLUGIN_TARGET}
 	@cd build/codecs/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_CODEC_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_CODEC_PREFIX}-${PLUGIN_TARGET}.md5
 	cp configs/codecs/${PLUGIN_TARGET}/*.json build/codecs/${PLUGIN_TARGET}
+
+compile-transcoder:
+	@rm -rf build/transcoders/${PLUGIN_TARGET}
+	GO111MODULE=on go build \
+		--buildmode=plugin -mod=mod \
+		-gcflags "all=-N -l" \
+		-o ${PLUGIN_TRANSCODER_OUTPUT} ${PLUGIN_PROJECT_NAME}/plugins/transcoders/${PLUGIN_TARGET}/main
+	mkdir -p build/transcoders/${PLUGIN_TARGET}
+	mv ${PLUGIN_TRANSCODER_OUTPUT} build/transcoders/${PLUGIN_TARGET}
+	@cd build/transcoders/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_TRANSCODER_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_TRANSCODER_PREFIX}-${PLUGIN_TARGET}.md5
+	cp configs/transcoders/${PLUGIN_TARGET}/*.json build/transcoders/${PLUGIN_TARGET}
+
+compile-streamfilter:
+	@rm -rf build/streamfilters/${PLUGIN_TARGET}
+	GO111MODULE=on go build \
+		--buildmode=plugin -mod=mod \
+		-gcflags "all=-N -l" \
+		-o ${PLUGIN_STEAM_FILTER_OUTPUT} ${PLUGIN_PROJECT_NAME}/plugins/streamfilters/${PLUGIN_TARGET}/main
+	mkdir -p build/streamfilters/${PLUGIN_TARGET}
+	mv ${PLUGIN_STEAM_FILTER_OUTPUT} build/streamfilters/${PLUGIN_TARGET}
+	@cd build/streamfilters/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_STEAM_FILTER_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_STEAM_FILTER_PREFIX}-${PLUGIN_TARGET}.md5
+	cp configs/streamfilters/${PLUGIN_TARGET}/*.json build/streamfilters/${PLUGIN_TARGET}
+
 
 sidecar:
 	docker run --rm \
