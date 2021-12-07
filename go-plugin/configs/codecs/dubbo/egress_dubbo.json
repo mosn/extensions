@@ -19,7 +19,7 @@
           "config": {
             "downstream_protocol": "X",
             "extend_config": {
-              "sub_protocol": "dubbo-so"
+              "sub_protocol": "dubbo"
             },
             "name": "proxy_config",
             "router_config_name": "egress_dubbo_router",
@@ -38,13 +38,7 @@
   ],
   "stream_filters": [
     {
-      "type": "mirror",
-      "config": {
-        "source": "drm"
-      }
-    },
-    {
-      "type": "govern_config"
+      "type": "stream_strategy_filter"
     },
     {
       "type": "tamperproofing"

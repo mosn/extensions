@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	ProtocolName = "dubbo-so"
+	ProtocolName = "dubbo"
 )
 
 // dubbo protocol

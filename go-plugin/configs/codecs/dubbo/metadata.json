@@ -1,11 +1,11 @@
 {
-	"name": "dubbo-so",
+	"name": "dubbo",
 	"kind": "protocol",
 	"framework": "X",
 	"internal": false,
 	"variables": [{
-		"field": "X-Govern-Service",
-		"pattern": ["test@dubbo-so"],
+		"field": "x-mosn-data-id",
+		"pattern": ["${serivce}[:${version}][:${group}]@dubbo"],
 		"required": true
     }],
 	"dependencies": [{
