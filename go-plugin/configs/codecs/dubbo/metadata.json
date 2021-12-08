@@ -1,0 +1,15 @@
+{
+	"name": "dubbo",
+	"kind": "protocol",
+	"framework": "X",
+	"internal": false,
+	"variables": [{
+		"field": "x-mosn-data-id",
+		"pattern": ["${serivce}[:${version}][:${group}]@dubbo"],
+		"required": true
+    }],
+	"dependencies": [{
+		"mosn_api": "^1.0.5$",
+		"mosn_pkg": ""
+	}]
+}
