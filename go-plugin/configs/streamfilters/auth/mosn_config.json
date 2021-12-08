@@ -37,7 +37,7 @@
 					}],
 					"stream_filters": [
 						{
-							"type":"loadso",
+							"type":"auth",
 							"go_plugin_config": {
 								"so_path":"/go/src/github.com/mosn/extensions/go-plugin/build/streamfilters/auth/streamfilter-auth.so"
 							},

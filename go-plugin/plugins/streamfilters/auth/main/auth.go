@@ -63,11 +63,12 @@ CHECK:
 		}
 	}
 	if !passed {
-		log.DefaultContextLogger.Warnf(ctx, "[streamfilter][simple_so]request does not matched the pass condition")
-		return api.StreamFilterContinue
+		log.DefaultContextLogger.Warnf(ctx, "[streamfilter][auth]request does not matched the pass condition")
+		f.handler.SendHijackReply(403, headers)
+		return api.StreamFilterStop
 	}
 
-	log.DefaultContextLogger.Infof(ctx, "[streamfilter][simple_so]request matched the pass condition")
+	log.DefaultContextLogger.Infof(ctx, "[streamfilter][auth]request matched the pass condition")
 	return api.StreamFilterContinue
 }
 
