@@ -1,0 +1,114 @@
+{
+  "name": "ingress_sofa_bolt",
+  "type": "ingress",
+  "address": "0.0.0.0:12200",
+  "bind_port": true,
+  "inspector": true,
+  "access_logs": [
+    {
+      "log_path": "./logs/mosn/access_ingress.log"
+    }
+  ],
+  "filter_chains": [
+    {
+      "filters": [
+        {
+          "type": "tcpcopy",
+          "config": {
+            "port": "12200"
+          }
+        },
+        {
+          "type": "proxy",
+          "config": {
+            "name": "proxy_config",
+            "downstream_protocol": "X",
+            "upstream_protocol": "X",
+            "extend_config": {
+              "sub_protocol": "bolt"
+            },
+            "router_config_name": "sofa_ingress_bolt_router"
+          }
+        },
+        {
+          "type": "connection_manager",
+          "config": {
+            "router_config_name": "sofa_ingress_bolt_router",
+            "router_configs": "./mosn/conf/routers/sofa_ingress_bolt_router/"
+          }
+        }
+      ]
+    }
+  ],
+  "stream_filters": [
+    {
+      "type": "govern_config"
+    },
+    {
+      "type": "tamperproofing"
+    },
+    {
+      "type": "rpc_service_tracer"
+    },
+    {
+      "type": "cloud_metrics"
+    },
+    {
+      "type": "tls_trace"
+    },
+    {
+      "type": "alipayDecodeFilter",
+      "config": {
+        "enable": true,
+        "direction": "inbound"
+      }
+    },
+    {
+      "type": "alipayLimitFilter",
+      "config": {
+        "enable": true,
+        "direction": "inbound"
+      }
+    },
+    {
+      "type": "verify-identity",
+      "config": {
+        "mist_port": 12311,
+        "key_sync_interval": 10
+      }
+    },
+    {
+      "type": "rbac",
+      "config": {
+        "rbac_log_path": "/home/admin/logs/mosn/rbac.log",
+        "dynamic_resource_type": "drm"
+      }
+    },
+    {
+      "type": "req_decision"
+    },
+    {
+      "type": "awatch",
+      "config": {
+        "log_dir_path": "/home/admin/logs/awatch-go/",
+        "disk_inject_path": "/home/admin/logs/.chaos/"
+      }
+    },
+    {
+      "type": "mirror",
+      "config": {
+        "mirror_log_path": "/home/admin/logs/mosn/mirror.log",
+        "mirror_control_type": "drm"
+      }
+    },
+    {
+      "type": "alipayResourceAopFilter",
+      "config": {
+        "direction": "inbound"
+      }
+    },
+    {
+      "type": "ingress_shm_check"
+    }
+  ]
+}
