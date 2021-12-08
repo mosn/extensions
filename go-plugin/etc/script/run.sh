@@ -1,10 +1,25 @@
 #! /bin/bash
 
-PLUGIN_TYPE="$1s"
-PLUGIN_TARGET="$2"
+PLUGIN_TYPE=$1
+PLUGIN_TARGET=$2
+
+# handle alias plugin type
+if [[ ${PLUGIN_TYPE} == "codec" ]];then
+  PLUGIN_TYPE="codecs"
+fi
+
+if [[ ${PLUGIN_TYPE} == "trans" ]];then
+  PLUGIN_TYPE="transcoders"
+fi
+
+if [[ ${PLUGIN_TYPE} == "sf" ]];then
+  PLUGIN_TYPE="transcoders"
+fi
 
 mosn="/go/src/${PLUGIN_PROJECT_NAME}/build/sidecar/binary/mosn"
 SIDECAR_CONF="/go/src/${PLUGIN_PROJECT_NAME}/build/${PLUGIN_TYPE}/${PLUGIN_TARGET}/mosn_config.json"
+
+echo "----> ${SIDECAR_CONF}"
 
 mkdir /home/admin/bin
 mkdir -p /home/admin/logs

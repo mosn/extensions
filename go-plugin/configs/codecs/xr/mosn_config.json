@@ -111,7 +111,7 @@
         "conn_buffer_limit_bytes": 32768,
         "hosts": [
           {
-            "address": "172.20.10.3:9999"
+            "address": "30.230.19.251:9999"
           }
         ]
       }
