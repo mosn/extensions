@@ -14,6 +14,9 @@ STEAM_FILTER_OUTPUT = ${STEAM_FILTER_PREFIX}-${OUTPUT}
 SIDECAR_PROJECT_NAME 	= mosn.io/mosn
 PROJECT_NAME			= github.com/mosn/extensions/go-plugin
 
+# only for local test
+SIDECAR_GITLAB_PROJECT_NAME = gitlab.alipay-inc.com/ant-mesh/mosn
+
 SIDECAR_BUILD_IMAGE     = mosn-builder
 BUILD_IMAGE				= golang:1.14.13
 
@@ -98,6 +101,17 @@ sidecar:
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-v $(shell go env GOPATH)/src/${SIDECAR_PROJECT_NAME}:/go/src/${SIDECAR_PROJECT_NAME} \
 	-w /go/src/${SIDECAR_PROJECT_NAME} ${BUILD_IMAGE} \
+	sh /go/src/${PROJECT_NAME}/etc/script/compile.sh
+
+
+ant:
+	docker run --rm \
+	--env PROJECT_NAME=${PROJECT_NAME} \
+	--env SIDECAR_PROJECT_NAME=${SIDECAR_GITLAB_PROJECT_NAME} \
+	-v $(shell go env GOPATH):/go \
+	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-v $(shell go env GOPATH)/src/${SIDECAR_GITLAB_PROJECT_NAME}:/go/src/${SIDECAR_GITLAB_PROJECT_NAME} \
+	-w /go/src/${SIDECAR_GITLAB_PROJECT_NAME} -it ${BUILD_IMAGE} \
 	sh /go/src/${PROJECT_NAME}/etc/script/compile.sh
 
 clean:

@@ -4,11 +4,13 @@ SHELL=/bin/bash
 
 go env -w GO111MODULE=on
 go env -w GOPROXY=https://goproxy.cn,direct
+go env -w GOPRIVATE=gitlab.alipay-inc.com,code.alipay.com
 
 export PLUGIN_PROJECT=${PROJECT_NAME}
 export SIDECAR_PROJECT=${SIDECAR_PROJECT_NAME}
 
 # update sidecar dependency.
+go mod tidy
 go mod download
 
 MAJOR_VERSION=$(cat VERSION)
