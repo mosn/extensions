@@ -2,6 +2,9 @@ SHELL			= /bin/bash
 TARGET			= ${plugin}
 OUTPUT			= ${TARGET}.so
 
+STREAM_FILTER = ${filter}
+TRANSCODER = ${trans}
+
 CODEC_PREFIX	= codec
 CODEC_OUTPUT	= ${CODEC_PREFIX}-${OUTPUT}
 
@@ -26,10 +29,12 @@ codec:
 	-e PLUGIN_CODEC_OUTPUT=${CODEC_OUTPUT} \
 	-e PLUGIN_CODEC_PREFIX=${CODEC_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
+	-e PLUGIN_STREAM_FILTER=${STREAM_FILTER} \
+	-e PLUGIN_TRANSCODER=${TRANSCODER} \
 	-v $(shell go env GOPATH):/go \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
-	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
-	make compile-codec
+	-w /go/src/${PROJECT_NAME} -it ${BUILD_IMAGE} \
+	bash /go/src/${PROJECT_NAME}/etc/script/compile-codec.sh
 
 trans: # alias for transcoder (more short)
 	make transcoder
@@ -45,7 +50,7 @@ transcoder:
 	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
 	make compile-transcoder
 
-sf: # alias for streamfilter (more short)
+filter: # alias for streamfilter (more short)
 	make streamfilter
 
 streamfilter:
@@ -115,6 +120,6 @@ ant:
 	sh /go/src/${PROJECT_NAME}/etc/script/compile.sh
 
 clean:
-	@rm -rf build/*
+	@rm -rf build/codecs build/streamfilters build/transcoders
 
 .PHONY: codec clean
