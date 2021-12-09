@@ -21,16 +21,16 @@ SIDECAR_CONF="/go/src/${PLUGIN_PROJECT_NAME}/build/${PLUGIN_TYPE}/${PLUGIN_TARGE
 
 echo "----> ${SIDECAR_CONF}"
 
-mkdir /home/admin/bin
+mkdir /home/admin/mosn/bin
 mkdir -p /home/admin/logs
 
-cp "${mosn}" /home/admin/bin/mosn
-cp "${SIDECAR_CONF}" /home/admin/bin/mosn_config.json
+cp "${mosn}" /home/admin/mosn/bin/mosn
+cp "${SIDECAR_CONF}" /home/admin/mosn/bin/mosn_config.json
 
-chmod +x /home/admin/bin/mosn
+chmod +x /home/admin/mosn/bin/mosn
 chown -R admin:admin /home/admin
 
 echo "sidecar->  ${mosn}"
 echo "conf-> ${SIDECAR_CONF}"
 
-dlv --listen=0.0.0.0:2345 --headless=true --api-version=2 --accept-multiclient --allow-non-terminal-interactive exec /home/admin/bin/mosn -- start -c /home/admin/bin/mosn_config.json
+dlv --listen=0.0.0.0:2345 --headless=true --api-version=2 --accept-multiclient --allow-non-terminal-interactive exec /home/admin/mosn/bin/mosn -- start -c /home/admin/mosn/bin/mosn_config.json
