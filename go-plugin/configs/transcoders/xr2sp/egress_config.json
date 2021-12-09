@@ -1,0 +1,16 @@
+{
+  "type": "xr2sp",
+  "go_plugin_config": {
+    "so_path": "./transcoder-xr2sp.so",
+    "src_protocol": "xr",
+    "dst_protocol": "sp"
+  },
+  "rule_info": {
+    "upstream_sub_protocol": "sp",
+    "upstream_protocol": "HTTP1",
+    "description": "xr -> spring cloud"
+  },
+  "config": {
+    "User": "admin"
+  }
+}

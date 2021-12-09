@@ -12,8 +12,8 @@ if [[ ${PLUGIN_TYPE} == "trans" ]];then
   PLUGIN_TYPE="transcoders"
 fi
 
-if [[ ${PLUGIN_TYPE} == "sf" ]];then
-  PLUGIN_TYPE="transcoders"
+if [[ ${PLUGIN_TYPE} == "filter" ]];then
+  PLUGIN_TYPE="streamfilters"
 fi
 
 mosn="/go/src/${PLUGIN_PROJECT_NAME}/build/sidecar/binary/mosn"
