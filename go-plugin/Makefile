@@ -12,7 +12,6 @@ TRANSCODER_PREFIX = transcoder
 TRANSCODER_OUTPUT = ${TRANSCODER_PREFIX}-${OUTPUT}
 
 STEAM_FILTER_PREFIX = streamfilter
-STEAM_FILTER_OUTPUT = ${STEAM_FILTER_PREFIX}-${OUTPUT}
 
 SIDECAR_PROJECT_NAME 	= mosn.io/mosn
 PROJECT_NAME			= github.com/mosn/extensions/go-plugin
@@ -41,28 +40,26 @@ trans: # alias for transcoder (more short)
 
 transcoder:
 	docker run --rm \
-	-e PLUGIN_TARGET=${TARGET} \
-	-e PLUGIN_TRANSCODER_OUTPUT=${TRANSCODER_OUTPUT} \
+	-e PLUGIN_TRANSCODER=${TARGET} \
 	-e PLUGIN_TRANSCODER_PREFIX=${TRANSCODER_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-v $(shell go env GOPATH):/go \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
-	make compile-transcoder
+	bash /go/src/${PROJECT_NAME}/etc/script/compile-transcoder.sh
 
 filter: # alias for streamfilter (more short)
 	make streamfilter
 
 streamfilter:
 	docker run --rm \
-	-e PLUGIN_TARGET=${TARGET} \
-	-e PLUGIN_STEAM_FILTER_OUTPUT=${STEAM_FILTER_OUTPUT} \
+	-e PLUGIN_STREAM_FILTER=${TARGET} \
 	-e PLUGIN_STEAM_FILTER_PREFIX=${STEAM_FILTER_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-v $(shell go env GOPATH):/go \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
-	make compile-streamfilter
+	bash /go/src/${PROJECT_NAME}/etc/script/compile-filter.sh
 
 compile-codec:
 	@rm -rf build/codecs/${PLUGIN_TARGET}
