@@ -37,7 +37,10 @@
   ],
   "stream_filters": [
     {
-      "type": "govern_config"
+      "type": "transcoder"
+    },
+    {
+      "type": "stream_strategy_filter"
     },
     {
       "type": "tamperproofing"

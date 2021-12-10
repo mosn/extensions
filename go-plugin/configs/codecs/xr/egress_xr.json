@@ -38,13 +38,10 @@
   ],
   "stream_filters": [
     {
-      "type": "mirror",
-      "config": {
-        "source": "drm"
-      }
+      "type": "transcoder"
     },
     {
-      "type": "govern_config"
+      "type": "stream_strategy_filter"
     },
     {
       "type": "tamperproofing"

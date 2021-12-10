@@ -38,6 +38,9 @@
   ],
   "stream_filters": [
     {
+      "type": "transcoder"
+    },
+    {
       "type": "stream_strategy_filter"
     },
     {
