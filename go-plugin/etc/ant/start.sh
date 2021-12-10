@@ -13,6 +13,7 @@ sidecar=$(docker ps -a -q -f name=mosn-container)
 if [[ -n "$sidecar" ]]; then
   docker stop mosn-container >/dev/null
   docker rm -f mosn-container >/dev/null
+  rm -rf $(go env GOPATH)/src/${PROJECT_NAME}/logs
   echo "stop existed sidecar success."
 fi
 
@@ -25,8 +26,9 @@ docker run -u admin \
   -e DYNAMIC_CONF_PATH=/go/src/${PROJECT_NAME}/build/codecs \
   -e SIDECAR_PROJECT_NAME=${SIDECAR_GITLAB_PROJECT_NAME} \
   -v $(go env GOPATH)/src/${PROJECT_NAME}:/go/src/${PROJECT_NAME} \
+  -v $(go env GOPATH)/src/${PROJECT_NAME}/logs:/home/admin/logs \
   -v $(go env GOPATH)/src/${SIDECAR_GITLAB_PROJECT_NAME}:/go/src/${SIDECAR_GITLAB_PROJECT_NAME} \
-  -it --name mosn-container --env-file env_conf ${EXPORT_PORTS} \
+  -itd --name mosn-container --env-file env_conf ${EXPORT_PORTS} \
   -w /go/src/${PROJECT_NAME} \
   ${BASE_IMAGE} /go/src/${PROJECT_NAME}/etc/ant/run.sh "$@"
 
