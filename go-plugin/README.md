@@ -8,9 +8,16 @@ make `module` plugin=`target`
 - trans build transcoder module
 - filter build stream filter module
 
-`target`:
+`target`(plugin name):
 
 - xr build xr protocol
+
+when compiling the trans and filter module, target supports comma list separations, eg:
+
+```shell
+make filter plugin=auth,other_plugin_name
+make trans plugin=xr2sp,other_plugin_name
+```
 
 example:
 
@@ -25,6 +32,9 @@ make codec plugin=xr filter=auth
 # build code and copy transcoder
 # make trans plugin=xr2sp (build trancoder plugin)
 make codec plugin=xr transcoder=xr2sp
+
+# build filter and build codec
+make filter plugin=auth && make codec plugin=xr filter=auth 
 ``` 
 
 ## build sidecar:

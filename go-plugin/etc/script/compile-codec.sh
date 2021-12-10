@@ -1,15 +1,14 @@
 #!/bin/bash
 
-#make compile-codec
+make compile-codec
 
 # copy stream filter
 if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
-  # IFS=',' read -ra filters <<<"$PLUGIN_STREAM_FILTER"
   filters=(${PLUGIN_STREAM_FILTER//,/ })
-  rm -rf /go/src/${PLUGIN_PROJECT_NAME}/plugins/codecs/${PLUGIN_TARGET}/streamfilters
-  mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/plugins/codecs/${PLUGIN_TARGET}/streamfilters
+  rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/streamfilters
   meta=
   for name in "${filters[@]}"; do
+    mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/streamfilters/${name}
     echo "cp  /go/src/${PLUGIN_PROJECT_NAME}/build/streamfilters/${name} /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/streamfilters/"
     cp -r /go/src/${PLUGIN_PROJECT_NAME}/build/streamfilters/${name} \
       /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/streamfilters/
@@ -27,9 +26,9 @@ fi
 # copy transcoder
 if [[ ${PLUGIN_TRANSCODER} != "" ]]; then
   coders=(${PLUGIN_TRANSCODER//,/ })
-  rm -rf /go/src/${PLUGIN_PROJECT_NAME}/plugins/codecs/${PLUGIN_TARGET}/transcoders
-  mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/plugins/codecs/${PLUGIN_TARGET}/transcoders
+  rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/transcoders
   for name in "${coders[@]}"; do
+    mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/transcoders/${name}/
     echo "cp  /go/src/${PLUGIN_PROJECT_NAME}/build/transcoders/${name} /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/transcoders/"
     cp -r /go/src/${PLUGIN_PROJECT_NAME}/build/transcoders/${name} \
       /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/transcoders/
