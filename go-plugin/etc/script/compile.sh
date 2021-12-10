@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 SHELL=/bin/bash
 
@@ -18,6 +18,8 @@ GIT_VERSION=$(git log -1 --pretty=format:%h)
 
 mkdir -p "/go/src/${PLUGIN_PROJECT}/build/sidecar/binary/"
 rm -rf "/go/src/${PLUGIN_PROJECT}/build/sidecar/binary/*"
+
+echo "go build -o mosn ${SIDECAR_PROJECT}/cmd/mosn/main"
 
 go build -mod=readonly -gcflags "all=-N -l" \
   -ldflags "-B 0x$(head -c20 /dev/urandom | od -An -tx1 | tr -d ' \n') -X main.Version=${MAJOR_VERSION} -X main.GitVersion=${GIT_VERSION}" \
