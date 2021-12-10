@@ -1,0 +1,9 @@
+{
+  "type": "auth",
+  "go_plugin_config": {
+    "so_path": "./stream_filter-auth.so"
+  },
+  "config": {
+    "User": "admin"
+  }
+}

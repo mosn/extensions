@@ -13,7 +13,7 @@ if [[ ${PLUGIN_TYPE} == "trans" ]];then
 fi
 
 if [[ ${PLUGIN_TYPE} == "filter" ]];then
-  PLUGIN_TYPE="streamfilters"
+  PLUGIN_TYPE="stream_filters"
 fi
 
 mosn="/go/src/${PLUGIN_PROJECT_NAME}/build/sidecar/binary/mosn"

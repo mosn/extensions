@@ -39,7 +39,7 @@
 						{
 							"type":"auth",
 							"go_plugin_config": {
-								"so_path":"/go/src/github.com/mosn/extensions/go-plugin/build/streamfilters/auth/streamfilter-auth.so"
+								"so_path":"/go/src/github.com/mosn/extensions/go-plugin/build/stream_filters/auth/filter-auth.so"
 							},
 							"config": {
 								"User":"admin"

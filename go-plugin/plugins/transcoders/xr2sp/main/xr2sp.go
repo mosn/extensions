@@ -28,7 +28,7 @@ import (
 	"mosn.io/pkg/protocol/http"
 )
 
-type xr2sp struct{}
+type xr2sp struct{ cfg map[string]interface{} }
 
 func (t *xr2sp) Accept(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) bool {
 	return true
@@ -74,6 +74,6 @@ func (t *xr2sp) TranscodingResponse(ctx context.Context, headers api.HeaderMap, 
 	return respHeader, buf, trailers, nil
 }
 
-func LoadTranscoder() transcoder.Transcoder {
-	return &xr2sp{}
+func LoadTranscoderFactory(cfg map[string]interface{}) transcoder.Transcoder {
+	return &xr2sp{cfg: cfg}
 }

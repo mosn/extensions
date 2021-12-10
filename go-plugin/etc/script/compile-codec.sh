@@ -5,13 +5,13 @@ make compile-codec
 # copy stream filter
 if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
   filters=(${PLUGIN_STREAM_FILTER//,/ })
-  rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/streamfilters
+  rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/stream_filters
   meta=
   for name in "${filters[@]}"; do
-    mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/streamfilters/${name}
-    echo "cp  /go/src/${PLUGIN_PROJECT_NAME}/build/streamfilters/${name} /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/streamfilters/"
-    cp -r /go/src/${PLUGIN_PROJECT_NAME}/build/streamfilters/${name} \
-      /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/streamfilters/
+    mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/stream_filters/${name}
+    echo "cp  /go/src/${PLUGIN_PROJECT_NAME}/build/stream_filters/${name} /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/stream_filters/"
+    cp -r /go/src/${PLUGIN_PROJECT_NAME}/build/stream_filters/${name} \
+      /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/stream_filters/
     # append ,
     if [[ -n ${meta} ]]; then
       meta+=","
@@ -20,7 +20,7 @@ if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
   done
 
   # write metadata
-  echo "{\"plugins\":[${meta}]}" >/go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/streamfilters/plugin-meta.json
+  echo "{\"plugins\":[${meta}]}" >/go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/stream_filters/plugin-meta.json
 fi
 
 # copy transcoder
