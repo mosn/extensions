@@ -1,0 +1,15 @@
+{
+	"name": "sp",
+	"kind": "protocol",
+	"framework": "HTTP1",
+	"internal": false,
+	"variables": [{
+		"field": "x-mosn-data-id",
+		"pattern": ["A:1:B@Http1"],
+		"required": true
+	}],
+	"dependencies": [{
+		"mosn_api": "^1.0.5$",
+		"mosn_pkg": ""
+	}]
+}
