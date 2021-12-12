@@ -5,7 +5,7 @@
 	"internal": false,
 	"variables": [{
 		"field": "x-mosn-data-id",
-		"pattern": ["${service}@sp"],
+		"pattern": ["service@sp"],
 		"required": true
 	}],
 	"dependencies": [{
