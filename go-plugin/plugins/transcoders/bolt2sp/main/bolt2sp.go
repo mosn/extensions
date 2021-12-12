@@ -10,6 +10,8 @@ import (
 	"mosn.io/pkg/protocol/http"
 )
 
+var HeaderKeys = []string{"x-mosn-host", "x-mosn-method", "x-mosn-path"}
+
 type bolt2sp struct {
 	cfg         map[string]interface{}
 	boltRequest *bolt.Request
@@ -30,21 +32,14 @@ func (t *bolt2sp) TranscodingRequest(ctx context.Context, headers api.HeaderMap,
 	if !ok {
 		return headers, buf, trailers, nil
 	}
+	t.boltRequest = sourceRequest
 	targetRequest := fasthttp.Request{}
-	// 1. headers
 	sourceRequest.Range(func(Key, Value string) bool {
 		targetRequest.Header.Set(Key, Value)
 		return true
 	})
-	if t.cfg != nil {
-		// 协议头变更
-		path := t.cfg["x-mosn-path"].(string)
-		targetRequest.Header.Set("x-mosn-path", path)
-		methond := t.cfg["x-mosn-method"].(string)
-		targetRequest.Header.Set("x-mosn-method", methond)
-	}
-	targetRequest.Header.Set("x-mosn-path", "/meshtest/bolt/test")
-	t.boltRequest = sourceRequest
+	// update headers
+	t.updateRequestHeader()
 	return http.RequestHeader{RequestHeader: &targetRequest.Header}, buf, trailers, nil
 }
 
@@ -56,5 +51,16 @@ func (t *bolt2sp) TranscodingResponse(ctx context.Context, headers api.HeaderMap
 	bufdst := buf.Clone()
 	targetResponse := bolt.NewRpcResponse(t.boltRequest.RequestId, uint16(sourceResponse.StatusCode()), headers, bufdst)
 	return targetResponse, bufdst, trailers, nil
+}
 
+func (t *bolt2sp) updateRequestHeader() {
+	if t.cfg == nil {
+		return
+	}
+	for _, key := range HeaderKeys {
+		val := t.cfg[key].(string)
+		if val != "" {
+			t.boltRequest.Header.Set(key, val)
+		}
+	}
 }
