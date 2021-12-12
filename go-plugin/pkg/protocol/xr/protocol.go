@@ -180,7 +180,9 @@ func (proto *Proto) hijackResponse(request api.XFrame, statusCode uint32) *Respo
 		bodyBuf.WriteString("<ReturnCode>")
 		bodyBuf.WriteString(strconv.Itoa(int(statusCode)))
 		bodyBuf.WriteString("</ReturnCode>")
-		bodyBuf.WriteString("<ReturnMessage>此请求被劫持</ReturnMessage>")
+		bodyBuf.WriteString("<ReturnMessage>此请求被劫持，code: ")
+		bodyBuf.WriteString(strconv.Itoa(int(statusCode)))
+		bodyBuf.WriteString("</ReturnMessage>")
 		bodyBuf.WriteString("</Response>")
 		bodyBuf.WriteString(body[headerIndex+len(startHeader):])
 	}
