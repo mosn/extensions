@@ -11,10 +11,11 @@ import (
 )
 
 type bolt2sp struct {
-	cfg map[string]interface{}
+	cfg         map[string]interface{}
+	boltRequest *bolt.Request
 }
 
-func NewTranscoder(cfg map[string]interface{}) at.Transcoder {
+func LoadTranscoderFactory(cfg map[string]interface{}) at.Transcoder {
 	return &bolt2sp{
 		cfg: cfg,
 	}
@@ -35,11 +36,15 @@ func (t *bolt2sp) TranscodingRequest(ctx context.Context, headers api.HeaderMap,
 		targetRequest.Header.Set(Key, Value)
 		return true
 	})
-	// 协议头变更
-	path := t.cfg["x-mosn-path"].(string)
-	targetRequest.Header.Set("x-mosn-path", path)
-	methond := t.cfg["x-mosn-method"].(string)
-	targetRequest.Header.Set("x-mosn-methond", methond)
+	if t.cfg != nil {
+		// 协议头变更
+		path := t.cfg["x-mosn-path"].(string)
+		targetRequest.Header.Set("x-mosn-path", path)
+		methond := t.cfg["x-mosn-method"].(string)
+		targetRequest.Header.Set("x-mosn-method", methond)
+	}
+	targetRequest.Header.Set("x-mosn-path", "/meshtest/bolt/test")
+	t.boltRequest = sourceRequest
 	return http.RequestHeader{RequestHeader: &targetRequest.Header}, buf, trailers, nil
 }
 
@@ -48,7 +53,8 @@ func (t *bolt2sp) TranscodingResponse(ctx context.Context, headers api.HeaderMap
 	if !ok {
 		return headers, buf, trailers, nil
 	}
-	targetResponse := bolt.NewRpcResponse(0, uint16(sourceResponse.StatusCode()), headers, buf)
-	return targetResponse, buf, trailers, nil
+	bufdst := buf.Clone()
+	targetResponse := bolt.NewRpcResponse(t.boltRequest.RequestId, uint16(sourceResponse.StatusCode()), headers, bufdst)
+	return targetResponse, bufdst, trailers, nil
 
 }
