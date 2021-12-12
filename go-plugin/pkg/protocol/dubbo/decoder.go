@@ -20,6 +20,7 @@ package dubbo
 import (
 	"context"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"runtime/debug"
 	"sync"
@@ -179,7 +180,7 @@ func getServiceAwareMeta(ctx context.Context, frame *Frame) (meta map[string]str
 			return nil, fmt.Errorf("[xprotocol][dubbo] decode dubbo argument api error: %v", err)
 		}
 
-		arguments := getArgumentCount(field.(string))
+		arguments := GetArgumentCount(field.(string))
 		// we must skip all method arguments.
 		for i := 0; i < arguments; i++ {
 			_, err = decoder.Decode()
@@ -218,7 +219,7 @@ func getServiceAwareMeta(ctx context.Context, frame *Frame) (meta map[string]str
 
 //  more unit test:
 // https://github.com/zonghaishang/dubbo/commit/e0fd702825a274379fb609229bdb06ca0586122e
-func getArgumentCount(desc string) int {
+func GetArgumentCount(desc string) int {
 	len := len(desc)
 	if len == 0 {
 		return 0
@@ -261,4 +262,100 @@ func getArgumentCount(desc string) int {
 
 	}
 	return args
+}
+
+func DecodeParams(paramsTypes string, i [][]byte) ([]Parameter, error) {
+	params := make([]Parameter, 0, len(i))
+	types := getArguments(paramsTypes)
+	if len(types) == 0 {
+		return params, nil
+	}
+	for key, val := range types {
+		pa := Parameter{}
+		pa.Type = val
+		err := json.Unmarshal(i[key], &pa.Value)
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, pa)
+	}
+	return params, nil
+}
+
+func getArguments(desc string) []string {
+	typesArr := []string{}
+	lens := len(desc)
+	if lens == 0 {
+		return typesArr
+	}
+
+	var next, tmp = false, ""
+	for _, ch := range desc {
+		// is array ?
+		if ch == '[' {
+			tmp += "["
+			continue
+		}
+
+		// is object ?
+		if next && ch != ';' {
+			if ch == '/' {
+				tmp += string('.')
+			} else {
+				tmp += string(ch)
+			}
+			continue
+		}
+
+		switch ch {
+		case 'V': // void
+			tmp += "void"
+			typesArr = append(typesArr, tmp)
+			tmp = ""
+		case 'Z': // boolean
+			tmp += "boolean"
+			typesArr = append(typesArr, tmp)
+			tmp = ""
+		case 'B': // byte
+			tmp += "byte"
+			typesArr = append(typesArr, tmp)
+			tmp = ""
+		case 'C': // char
+			tmp += "char"
+			typesArr = append(typesArr, tmp)
+			tmp = ""
+		case 'D': // double
+			tmp += "double"
+			typesArr = append(typesArr, tmp)
+			tmp = ""
+		case 'F': // float
+			tmp += "float"
+			typesArr = append(typesArr, tmp)
+			tmp = ""
+		case 'I': // int
+			tmp += "int"
+			typesArr = append(typesArr, tmp)
+			tmp = ""
+		case 'J': // long
+			tmp += "long"
+			typesArr = append(typesArr, tmp)
+			tmp = ""
+		case 'S': // short
+			tmp += "short"
+			typesArr = append(typesArr, tmp)
+			tmp = ""
+		default:
+			// we found object
+			if ch == 'L' {
+				next = true
+				// end of object ?
+			} else if ch == ';' {
+				next = false
+				typesArr = append(typesArr, tmp)
+				tmp = ""
+			}
+		}
+
+	}
+	return typesArr
 }

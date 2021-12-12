@@ -100,6 +100,11 @@ type dubboStatusInfo struct {
 	Msg    string
 }
 
+type Parameter struct {
+	Type  string      `json:"type"`
+	Value interface{} `json:"value"`
+}
+
 var (
 	dubboMosnStatusMap = map[int]dubboStatusInfo{
 		api.CodecExceptionCode:    {Status: hessian.Response_SERVICE_ERROR, Msg: "0|codec exception"},
@@ -115,3 +120,21 @@ var (
 		api.LimitExceededCode:     {Status: hessian.Response_BAD_REQUEST, Msg: "509|limit exceeded"},
 	}
 )
+
+//dubbo response code
+const (
+	RESPONSE_WITH_EXCEPTION                  = 0
+	RESPONSE_VALUE                           = 1
+	RESPONSE_NULL_VALUE                      = 2
+	RESPONSE_WITH_EXCEPTION_WITH_ATTACHMENTS = 3
+	RESPONSE_VALUE_WITH_ATTACHMENTS          = 4
+	RESPONSE_NULL_VALUE_WITH_ATTACHMENTS     = 5
+)
+
+func HeadGetDefault(headers api.HeaderMap, key string, defaultValue string) string {
+	if value, ok := headers.Get(key); !ok {
+		return defaultValue
+	} else {
+		return value
+	}
+}

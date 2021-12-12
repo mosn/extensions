@@ -1,0 +1,8 @@
+{
+	"name" : "dubbo2sp",
+	"kind": "transcoder",
+	"dependencies": [{
+		"mosn_api": "^1.0.5$",
+		"mosn_pkg": ""
+	}]
+}

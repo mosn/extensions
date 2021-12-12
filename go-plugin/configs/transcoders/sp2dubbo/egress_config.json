@@ -1,0 +1,16 @@
+{
+  "type": "sp2dubbo",
+  "go_plugin_config": {
+    "so_path": "./transcoder-sp2dubbo.so",
+    "src_protocol": "Http1",
+    "dst_protocol": "dubbo"
+  },
+  "rule_info": {
+    "upstream_sub_protocol": "dubbo",
+    "upstream_protocol": "X",
+    "description": "spring cloud -> dubbo"
+  },
+  "config": {
+    "User": "admin"
+  }
+}
