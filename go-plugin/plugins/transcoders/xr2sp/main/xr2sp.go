@@ -42,12 +42,13 @@ func (t *xr2sp) TranscodingRequest(ctx context.Context, headers api.HeaderMap, b
 	reqHeaderImpl := &fasthttp.RequestHeader{}
 	sourceHeader.Header.Range(func(key, value string) bool {
 		if key != fasthttp.HeaderContentLength {
-			reqHeaderImpl.SetCanonical([]byte(key), []byte(value))
+			reqHeaderImpl.Set(key, value)
 		}
 		return true
 	})
 	//set request idoujju
-
+	serviceCode, _ := headers.Get("ServiceCode")
+	reqHeaderImpl.Set("service", serviceCode)
 	reqHeaders := http.RequestHeader{reqHeaderImpl}
 
 	return reqHeaders, buf, trailers, nil
