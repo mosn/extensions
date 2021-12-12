@@ -1,5 +1,5 @@
 {
-	"name": "dubbo",
+	"name": "bolt",
 	"kind": "protocol",
 	"framework": "X",
 	"internal": false,
