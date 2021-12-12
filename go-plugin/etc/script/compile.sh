@@ -16,8 +16,8 @@ go mod download
 MAJOR_VERSION=$(cat VERSION)
 GIT_VERSION=$(git log -1 --pretty=format:%h)
 
+rm -rf "/go/src/${PLUGIN_PROJECT}/build/sidecar/binary/"
 mkdir -p "/go/src/${PLUGIN_PROJECT}/build/sidecar/binary/"
-rm -rf "/go/src/${PLUGIN_PROJECT}/build/sidecar/binary/*"
 
 echo "go build -o mosn ${SIDECAR_PROJECT}/cmd/mosn/main"
 
