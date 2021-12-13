@@ -96,6 +96,7 @@ compile-stream-filter:
 
 
 sidecar:
+	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/script/stop.sh
 	docker run --rm \
 	--env PROJECT_NAME=${PROJECT_NAME} \
 	--env SIDECAR_PROJECT_NAME=${SIDECAR_PROJECT_NAME} \
@@ -107,6 +108,7 @@ sidecar:
 
 
 ant:
+	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/ant/stop.sh
 	docker run --rm \
 	--env PROJECT_NAME=${PROJECT_NAME} \
 	--env SIDECAR_PROJECT_NAME=${SIDECAR_GITLAB_PROJECT_NAME} \
