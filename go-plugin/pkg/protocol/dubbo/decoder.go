@@ -18,6 +18,7 @@
 package dubbo
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"encoding/json"
@@ -36,6 +37,11 @@ var (
 	decodePoolCheap = &sync.Pool{
 		New: func() interface{} {
 			return hessian.NewCheapDecoderWithSkip([]byte{})
+		},
+	}
+	decodePool = &sync.Pool{
+		New: func() interface{} {
+			return hessian.NewDecoderWithSkip([]byte{})
 		},
 	}
 )
@@ -101,7 +107,29 @@ func decodeFrame(ctx context.Context, data api.IoBuffer) (cmd interface{}, err e
 	return frame, nil
 }
 
-func getServiceAwareMeta(ctx context.Context, frame *Frame) (meta map[string]string, err error) {
+func getServiceAwareMeta(ctx context.Context, frame *Frame) (map[string]string, error) {
+	meta := make(map[string]string, 8)
+	switch frame.SerializationId {
+	//dubbo encode by Hessian
+	case 2:
+		m, err2 := decodeHessian(ctx, frame, meta)
+		if err2 != nil {
+			return m, err2
+		}
+	// dubbo decode by fastson
+	case 6:
+		m, err2 := decodeFastjosn(ctx, frame, meta)
+		if err2 != nil {
+			return m, err2
+		}
+	default:
+		return meta, nil
+	}
+	return meta, nil
+}
+
+func decodeHessian(ctx context.Context, frame *Frame, meta map[string]string) (map[string]string, error) {
+
 	meta = make(map[string]string, 8)
 	if frame.SerializationId != 2 {
 		// not hessian , do not support
@@ -119,6 +147,7 @@ func getServiceAwareMeta(ctx context.Context, frame *Frame) (meta map[string]str
 		path             string
 		version          string
 		method           string
+		err              error
 	)
 
 	// framework version + path + version + method
@@ -210,6 +239,69 @@ func getServiceAwareMeta(ctx context.Context, frame *Frame) (meta map[string]str
 						}
 					}
 				}
+			}
+		}
+	}
+
+	return meta, nil
+}
+
+func decodeFastjosn(ctx context.Context, frame *Frame, meta map[string]string) (map[string]string, error) {
+	var (
+		err              error
+		frameworkVersion string
+		path             string
+		version          string
+		method           string
+		paramsTypes      string
+		attachmentsMap   map[string]string
+	)
+	arr := bytes.Split(frame.payload[:], []byte{10})
+	err = json.Unmarshal(arr[0], &frameworkVersion)
+	if err != nil {
+		return meta, fmt.Errorf("[xprotocol][dubbo] fastjson decode framework version fail")
+	}
+	meta[FrameworkVersionNameHeader] = frameworkVersion
+
+	err = json.Unmarshal(arr[1], &path)
+	if err != nil {
+		return meta, fmt.Errorf("[xprotocol][dubbo] fastjson decode service path fail")
+	}
+	meta[ServiceNameHeader] = path
+
+	// get version name
+	err = json.Unmarshal(arr[2], &version)
+	if err != nil {
+		return nil, fmt.Errorf("[xprotocol][dubbo] fastjson decode method version fail")
+	}
+	meta[VersionNameHeader] = version
+	//method
+	err = json.Unmarshal(arr[3], &method)
+	if err != nil {
+		return nil, fmt.Errorf("[xprotocol][dubbo] fastjson decode method fail")
+	}
+	meta[MethodNameHeader] = method
+	//params
+	err = json.Unmarshal(arr[4], &paramsTypes)
+	if err != nil {
+		return nil, fmt.Errorf("[xprotocol][dubbo] fastjson decode paramsTypes fail")
+	}
+
+	if ctx != nil {
+		count := GetArgumentCount(paramsTypes)
+		attachments := arr[5+count]
+		err = json.Unmarshal(attachments, &attachmentsMap)
+		if err != nil {
+			return nil, fmt.Errorf("[xprotocol][dubbo] fastjosn decode dubbo attachments error, %v", err)
+		}
+		// we loop all attachments and check element type,
+		// we should only read string types.
+		for k, v := range attachmentsMap {
+			meta[k] = v
+			// we should use interface value,
+			// convenient for us to do service discovery.
+			if k == InterfaceNameHeader {
+				meta[ServiceNameHeader] = v
 			}
 		}
 	}

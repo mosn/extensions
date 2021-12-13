@@ -5,6 +5,9 @@
     "src_protocol": "Http1",
     "dst_protocol": "dubbo"
   },
+  "macther_config":{
+    "matcher_type" :"simpleMatcher"
+  },
   "rule_info": {
     "upstream_sub_protocol": "dubbo",
     "upstream_protocol": "X",
