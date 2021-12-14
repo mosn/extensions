@@ -11,7 +11,11 @@
   "rule_info":{
     "upstream_sub_protocol":"sp",
     "upstream_protocol":"Http1",
-    "description":"hello"
+    "description":"hello",
+    "config": {
+        "x-mosn-path":"/test/",
+        "class":"com.alipay.sofa.rpc.core.response.SofaResponse"
+    }
   },
   "config": {
     "User":"admin" 
