@@ -41,10 +41,10 @@
   ],
   "stream_filters": [
     {
-      "type": "transcoder"
+      "type": "stream_strategy_filter"
     },
     {
-      "type": "stream_strategy_filter"
+      "type": "transcoder"
     },
     {
       "type": "tamperproofing"
