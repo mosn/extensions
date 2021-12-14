@@ -5,7 +5,7 @@
 	"internal": false,
 	"variables": [{
 		"field": "x-mosn-data-id",
-		"pattern": ["${serivce}[:${version}][:${group}]@dubbo"],
+		"pattern": ["${Service}[:${Version}][:${Group}]@dubbo"],
 		"required": true
     }],
 	"dependencies": [{

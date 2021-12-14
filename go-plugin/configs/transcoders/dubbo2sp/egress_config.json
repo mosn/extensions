@@ -10,8 +10,15 @@
   },
   "rule_info": {
     "upstream_sub_protocol": "sp",
-    "upstream_protocol": "HTTP1",
-    "description": "dubbo -> spring cloud"
+    "upstream_protocol": "Http1",
+    "description": "dubbo -> spring cloud",
+    "config": {
+      "com.alipay.sofa.ms.service.EchoService.echo": {
+          "http_path": "/reservations/echo",
+          "http_method": "POST",
+          "http_service": "reservation-service"
+      }
+    }
   },
   "config": {
     "User": "admin"

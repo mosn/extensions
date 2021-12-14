@@ -33,6 +33,16 @@ type DubboHttpRequestParams struct {
 	Parameters  []dubbo.Parameter `json:"parameters"`
 }
 
+type paramAdapter struct {
+	Service string `json:"service"`
+	Method string `json:"method"`
+	Version string `json:"version"`
+	Group string `json:"group"`
+	Double string `json:"double"`
+}
+
+var conf = map[string]*paramAdapter{}
+
 //accept return when head has transcoder key and value is equal to TRANSCODER_NAME
 func (t *http2dubbo) Accept(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) bool {
 	return true
@@ -41,6 +51,19 @@ func (t *http2dubbo) Accept(ctx context.Context, headers api.HeaderMap, buf api.
 // transcode dubbp request to http request
 func (t *http2dubbo) TranscodingRequest(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
 
+	if httpRequest, ok := headers.(http.RequestHeader); ok{
+		service, _ := httpRequest.Get("service")
+		method := string(httpRequest.Method())
+		path := string(httpRequest.RequestURI())
+		param := conf[service + "." + path + "." + method]
+		if param != nil {
+			headers.Set("service", param.Service)
+			headers.Set("dubbo", param.Double)
+			headers.Set("method", param.Method)
+			headers.Set("version", param.Version)
+			headers.Set("group", param.Group)
+		}
+	}
 	// 2. assemble target request
 	targetRequest, err := EncodeHttp2Dubbo(ctx, headers, buf)
 	if err != nil {
@@ -329,5 +352,8 @@ func EncodeWorkLoad(headers api.HeaderMap, buf api.IoBuffer) ([]byte, error) {
 }
 
 func LoadTranscoderFactory(cfg map[string]interface{}) transcoder.Transcoder {
+	if cfgJson, err := json.Marshal(cfg); err == nil {
+		json.Unmarshal(cfgJson, &conf)
+	}
 	return &http2dubbo{cfg: cfg}
 }

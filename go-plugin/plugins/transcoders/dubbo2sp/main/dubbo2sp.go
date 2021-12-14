@@ -22,12 +22,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"mosn.io/api"
-	"mosn.io/api/extensions/transcoder"
-	"strconv"
-
 	"github.com/mosn/extensions/go-plugin/pkg/protocol/dubbo"
 	"github.com/valyala/fasthttp"
+	"mosn.io/api"
+	"mosn.io/api/extensions/transcoder"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/protocol/http"
 )
@@ -40,7 +38,22 @@ type DubboHttpResponseBody struct {
 	Exception   string            `json:"exception"`
 }
 
-type dubbo2http struct{ cfg map[string]interface{} }
+//"service": "com.alipay.sofa.ms.service.EchoService",
+//"http_path": "/reservations/echo",
+//"http_method": "POST",
+//"http_service": "reservation-service"
+type paramAdapter struct {
+	HttpPath string `json:"http_path"`
+	HttpMethod string `json:"http_method"`
+	HttpService string `json:"http_service"`
+}
+
+var conf = map[string]*paramAdapter{}
+
+type dubbo2http struct{
+	cfg map[string]interface{}
+	Id uint64
+}
 
 //accept return when head has transcoder key and value is equal to TRANSCODER_NAME
 func (t *dubbo2http) Accept(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) bool {
@@ -54,6 +67,7 @@ func (t *dubbo2http) TranscodingRequest(ctx context.Context, headers api.HeaderM
 	if !ok {
 		return nil, nil, nil, fmt.Errorf("[xprotocol][dubbo] decode dubbo header type error")
 	}
+	t.Id = sourceHeader.GetRequestId()
 	//// 2. assemble target request
 	byteData, err := DeocdeWorkLoad(headers, buf)
 	if err != nil {
@@ -66,8 +80,17 @@ func (t *dubbo2http) TranscodingRequest(ctx context.Context, headers api.HeaderM
 		}
 		return true
 	})
+	service, _ := sourceHeader.Get("service")
+	method, _ := sourceHeader.Get("method")
+	param := conf[service + "." + method]
+	if param != nil {
+		reqHeaderImpl.Set("x-mosn-method", param.HttpMethod)
+		reqHeaderImpl.Set("x-mosn-path", param.HttpPath)
+		reqHeaderImpl.Set("service", param.HttpService)
+	}
 	//set request id
-	reqHeaderImpl.Set(HTTP_DUBBO_REQUEST_ID_NAME, strconv.FormatUint(sourceHeader.Id, 10))
+	//reqHeaderImpl.Set(HTTP_DUBBO_REQUEST_ID_NAME, strconv.FormatUint(sourceHeader.Id, 10))
+	reqHeaderImpl.Set("Content-Type", "application/json")
 	reqHeaders := http.RequestHeader{reqHeaderImpl}
 	return reqHeaders, buffer.NewIoBufferBytes(byteData), nil, nil
 }
@@ -107,7 +130,7 @@ func DeocdeWorkLoad(headers api.HeaderMap, buf api.IoBuffer) ([]byte, error) {
 
 //http2dubbo
 func (t *dubbo2http) TranscodingResponse(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
-	targetRequest, err := DecodeHttp2Dubbo(headers, buf)
+	targetRequest, err := DecodeHttp2Dubbo(headers, buf, t.Id)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -115,7 +138,7 @@ func (t *dubbo2http) TranscodingResponse(ctx context.Context, headers api.Header
 }
 
 // decode http response to dubbo response
-func DecodeHttp2Dubbo(headers api.HeaderMap, buf api.IoBuffer) (*dubbo.Frame, error) {
+func DecodeHttp2Dubbo(headers api.HeaderMap, buf api.IoBuffer, id uint64) (*dubbo.Frame, error) {
 
 	sourceHeader, ok := headers.(http.ResponseHeader)
 	if !ok {
@@ -154,12 +177,7 @@ func DecodeHttp2Dubbo(headers api.HeaderMap, buf api.IoBuffer) (*dubbo.Frame, er
 		frame.Status = 20
 	}
 	// decode request id
-	if id, ok := allHeaders[HTTP_DUBBO_REQUEST_ID_NAME]; !ok {
-		return nil, fmt.Errorf("[xprotocol][dubbo] decode dubbo id missed")
-	} else {
-		frameId, _ := strconv.ParseInt(id, 10, 64)
-		frame.Id = uint64(frameId)
-	}
+	frame.Id = id
 
 	// event
 	frame.IsEvent = false
@@ -209,5 +227,10 @@ func EncodeWorkLoad(headers api.HeaderMap, buf api.IoBuffer) ([]byte, error) {
 }
 
 func LoadTranscoderFactory(cfg map[string]interface{}) transcoder.Transcoder {
+
+	if cfgJson, err := json.Marshal(cfg); err == nil {
+		json.Unmarshal(cfgJson, &conf)
+	}
+
 	return &dubbo2http{cfg: cfg}
 }
