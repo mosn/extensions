@@ -1,0 +1,25 @@
+{
+  "type": "sp2dubbo",
+  "go_plugin_config": {
+    "so_path": "./transcoder-sp2dubbo.so",
+    "src_protocol": "sp",
+    "dst_protocol": "dubbo"
+  },
+  "macther_config":{
+    "matcher_type" :"simpleMatcher"
+  },
+  "rule_info": {
+    "upstream_sub_protocol": "dubbo",
+    "upstream_protocol": "X",
+    "description": "spring cloud -> dubbo",
+    "config": {
+      "reservation-client./reservations/echo.POST": {
+        "method": "echo",
+        "service": "com.alipay.sofa.ms.service.EchoService"
+      }
+    }
+  },
+  "config": {
+    "User": "admin"
+  }
+}

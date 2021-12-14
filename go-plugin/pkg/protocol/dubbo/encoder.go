@@ -20,6 +20,7 @@ package dubbo
 import (
 	"context"
 	"encoding/binary"
+	"strings"
 
 	"mosn.io/api"
 	"mosn.io/pkg/buffer"
@@ -57,4 +58,35 @@ func encodeFrame(ctx context.Context, frame *Frame) (api.IoBuffer, error) {
 	// encode payload
 	buf.Write(frame.payload)
 	return buf, nil
+}
+
+func EncodeRequestType(tp string) string {
+	var res string
+	if strings.HasPrefix(tp, "[") {
+		res += "["
+		tp = tp[1:]
+	}
+	switch tp {
+	case "void":
+		res += "V"
+	case "boolean":
+		res += "Z"
+	case "byte":
+		res += "B"
+	case "char":
+		res += "C"
+	case "double":
+		res += "D"
+	case "float":
+		res += "F"
+	case "int":
+		res += "I"
+	case "long":
+		res += "J"
+	case "short":
+		res += "S"
+	default:
+		res += "L" + strings.ReplaceAll(tp, ".", "/") + ";"
+	}
+	return res
 }
