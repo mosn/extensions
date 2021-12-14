@@ -72,7 +72,7 @@ func (t *xr2sp) TranscodingResponse(ctx context.Context, headers api.HeaderMap, 
 	payloads := buffer.NewIoBufferBytes(buf.Bytes())
 	respHeader := xr.NewRpcResponse(&xrResponse.Header, payloads)
 
-	return respHeader, buf, trailers, nil
+	return respHeader.GetHeader(), respHeader.GetData(), trailers, nil
 }
 
 func LoadTranscoderFactory(cfg map[string]interface{}) transcoder.Transcoder {

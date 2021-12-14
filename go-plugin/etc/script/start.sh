@@ -7,7 +7,7 @@ sidecar=$(docker ps -a -q -f name=mosn-container)
 if [[ -n "$sidecar" ]]; then
   docker stop mosn-container >/dev/null
   docker rm -f mosn-container >/dev/null
-  echo "stop existed sidecar success."
+  echo "terminate running mosn-container success."
 fi
 
 EXPORT_PORTS="-p 2345:2345 -p 2045:2045 -p 2046:2046 -p 34801:34801"

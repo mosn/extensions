@@ -18,7 +18,7 @@ if [[ -n "$sidecar" ]]; then
   docker stop mosn-container >/dev/null
   docker rm -f mosn-container >/dev/null
   rm -rf $(go env GOPATH)/src/${PROJECT_NAME}/logs
-  echo "stop existed sidecar success."
+  echo "terminate running mosn-container success."
 fi
 
 # export local ip for mosn

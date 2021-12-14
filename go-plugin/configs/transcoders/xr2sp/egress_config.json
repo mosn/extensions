@@ -5,9 +5,6 @@
     "src_protocol": "xr",
     "dst_protocol": "sp"
   },
-  "macther_config":{
-    "matcher_type" :"simpleMatcher"
-  },
   "rule_info": {
     "upstream_sub_protocol": "sp",
     "upstream_protocol": "Http1",
