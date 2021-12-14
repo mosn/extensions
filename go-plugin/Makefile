@@ -7,6 +7,8 @@ TRANSCODER = ${trans}
 
 CODEC_PREFIX	= codec
 CODEC_OUTPUT	= ${CODEC_PREFIX}-${OUTPUT}
+CODEC_ZIP_OUTPUT = ${TARGET}.zip
+TRANSCODER_ZIP_OUTPUT = ${TARGET}.zip
 
 TRANSCODER_PREFIX = transcoder
 TRANSCODER_OUTPUT = ${TRANSCODER_PREFIX}-${OUTPUT}
@@ -21,6 +23,7 @@ SIDECAR_GITLAB_PROJECT_NAME = gitlab.alipay-inc.com/ant-mesh/mosn
 
 SIDECAR_BUILD_IMAGE     = mosn-builder
 BUILD_IMAGE				= golang:1.14.13
+BASE_IMAGE				= zonghaishang/delve:1.6.1
 
 codec:
 	docker run --rm \
@@ -95,6 +98,33 @@ compile-stream-filter:
 	cp configs/stream_filters/${PLUGIN_TARGET}/*.json build/stream_filters/${PLUGIN_TARGET}
 
 
+pkg-codec:
+	docker run --rm \
+	-e PLUGIN_CODEC=${TARGET} \
+	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
+	-v $(shell go env GOPATH):/go \
+	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
+	bash /go/src/${PROJECT_NAME}/etc/script/package-codec.sh
+
+pkg-filter:
+	docker run --rm \
+	-e PLUGIN_STREAM_FILTER=${TARGET} \
+	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
+	-v $(shell go env GOPATH):/go \
+	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
+	bash /go/src/${PROJECT_NAME}/etc/script/package-filter.sh
+
+pkg-trans:
+	docker run --rm \
+	-e PLUGIN_TRANSCODER=${TARGET} \
+	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
+	-v $(shell go env GOPATH):/go \
+	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
+	bash /go/src/${PROJECT_NAME}/etc/script/package-transcoder.sh
+
 sidecar:
 	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/script/stop.sh
 	docker run --rm \
@@ -105,7 +135,6 @@ sidecar:
 	-v $(shell go env GOPATH)/src/${SIDECAR_PROJECT_NAME}:/go/src/${SIDECAR_PROJECT_NAME} \
 	-w /go/src/${SIDECAR_PROJECT_NAME} ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile.sh
-
 
 ant:
 	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/ant/stop.sh

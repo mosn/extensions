@@ -6,7 +6,7 @@ ENV GOPROXY=https://goproxy.cn,direct
 RUN go get github.com/go-delve/delve/cmd/dlv@v1.6.1
 
 # install tools.
-RUN apt update && apt -y install net-tools sudo openbsd-inetd telnet tcpdump
+RUN apt update && apt -y install net-tools sudo openbsd-inetd telnet tcpdump zip
 
 # change container root pwd
 RUN  useradd -ms /bin/bash admin && \
