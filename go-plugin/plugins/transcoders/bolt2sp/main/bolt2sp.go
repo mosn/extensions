@@ -11,12 +11,17 @@ import (
 )
 
 const (
-	DefalutClass = "com.alipay.sofa.rpc.core.response.SofaResponse"
+	DefaultClass = "com.alipay.sofa.rpc.core.response.SofaResponse"
+	DefaultPath  = "/"
 	ClassName    = "class"
+	ServiceName  = "service"
+	MethodName   = "sofa_head_method_name"
+	MosnPath     = "x-mosn-path"
+	MosnMethod   = "x-mosn-method"
+	MosnHost     = "x-mosn-host"
 )
 
 var (
-	HeaderKeys    = []string{"x-mosn-host", "x-mosn-method", "x-mosn-path"}
 	Http2BoltCode = map[int]uint16{
 		http.OK:                  bolt.ResponseStatusSuccess,
 		http.BadRequest:          bolt.ResponseStatusError,
@@ -39,7 +44,8 @@ func LoadTranscoderFactory(cfg map[string]interface{}) at.Transcoder {
 }
 
 func (t *bolt2sp) Accept(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) bool {
-	return true
+	_, ok := headers.(*bolt.Request)
+	return ok
 }
 
 func (t *bolt2sp) TranscodingRequest(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
@@ -48,13 +54,8 @@ func (t *bolt2sp) TranscodingRequest(ctx context.Context, headers api.HeaderMap,
 		return headers, buf, trailers, nil
 	}
 	t.boltRequest = sourceRequest
-	targetRequest := fasthttp.Request{}
-	sourceRequest.Range(func(Key, Value string) bool {
-		targetRequest.Header.Set(Key, Value)
-		return true
-	})
 	// update headers
-	targetRequest = t.updateRequestHeader(targetRequest)
+	targetRequest := t.httpReq2BoltReq(sourceRequest)
 	return http.RequestHeader{RequestHeader: &targetRequest.Header}, buf, trailers, nil
 }
 
@@ -69,30 +70,53 @@ func (t *bolt2sp) TranscodingResponse(ctx context.Context, headers api.HeaderMap
 	return targetResponse, buf, trailers, nil
 }
 
-func (t *bolt2sp) updateRequestHeader(req fasthttp.Request) fasthttp.Request {
+func (t *bolt2sp) httpReq2BoltReq(headers *bolt.Request) fasthttp.Request {
+	targetRequest := fasthttp.Request{}
+	headers.Range(func(Key, Value string) bool {
+		targetRequest.Header.Set(Key, Value)
+		return true
+	})
+
 	if t.cfg == nil {
-		return req
+		targetRequest.Header.Set(MosnPath, t.httpPath(headers))
+		return targetRequest
 	}
-	for _, key := range HeaderKeys {
-		val, ok := t.cfg[key].(string)
-		if ok && val != "" {
-			req.Header.Set(key, val)
-		}
+	targetRequest.Header.Set(MosnPath, t.httpPath(headers))
+	return targetRequest
+}
+
+//service
+func (t *bolt2sp) httpPath(headers *bolt.Request) string {
+	service, ok := headers.Get(ServiceName)
+	if !ok {
+		return DefaultPath
 	}
-	return req
+	method, ok := headers.Get(MethodName)
+	if !ok {
+		return DefaultPath
+	}
+	serviceMap, ok := t.cfg[service].(map[string]interface{})
+	if !ok {
+		return DefaultPath
+	}
+	path, ok := serviceMap[method].(string)
+	if !ok {
+		return DefaultPath
+	}
+	return path
 }
 
 func (t *bolt2sp) getClass() string {
 	if t.cfg == nil {
-		return DefalutClass
+		return DefaultClass
 	}
 	name, ok := t.cfg[ClassName]
 	if ok {
-		return DefalutClass
+		return DefaultClass
 	}
 	n, ok := name.(string)
 	if ok {
-		return DefalutClass
+		return DefaultClass
 	}
 	return n
 }

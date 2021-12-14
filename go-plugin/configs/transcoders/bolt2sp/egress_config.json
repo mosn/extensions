@@ -13,8 +13,11 @@
     "upstream_protocol":"Http1",
     "description":"hello",
     "config": {
-        "x-mosn-path":"/test/",
-        "class":"com.alipay.sofa.rpc.core.response.SofaResponse"
+        "class":"com.alipay.sofa.rpc.core.response.SofaResponse",
+        "com.alipay.sofa.ms.service.SofaEchoService:1.0":{
+            "Test":"/test/",
+            "echo":"/echo/"
+        }
     }
   },
   "config": {
