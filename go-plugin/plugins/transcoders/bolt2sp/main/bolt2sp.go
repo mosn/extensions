@@ -2,27 +2,32 @@ package main
 
 import (
 	"context"
+	"errors"
 
 	"github.com/mosn/extensions/go-plugin/pkg/protocol/bolt"
 	"github.com/valyala/fasthttp"
 	"mosn.io/api"
 	at "mosn.io/api/extensions/transcoder"
+	"mosn.io/pkg/log"
 	"mosn.io/pkg/protocol/http"
 )
 
 const (
-	DefaultClass = "com.alipay.sofa.rpc.core.response.SofaResponse"
-	DefaultPath  = "/"
-	ClassName    = "class"
-	ServiceName  = "service"
-	MethodName   = "sofa_head_method_name"
-	MosnPath     = "x-mosn-path"
-	MosnMethod   = "x-mosn-method"
-	MosnHost     = "x-mosn-host"
+	DefaultClass   = "com.alipay.sofa.rpc.core.response.SofaResponse"
+	DefaultPath    = "/"
+	ClassName      = "class"
+	ServiceName    = "service"
+	BoltMethodName = "sofa_head_method_name"
+	MosnPath       = "x-mosn-path"
+	MosnMethod     = "x-mosn-method"
+	MosnHost       = "x-mosn-host"
 )
 
 var (
-	Http2BoltCode = map[int]uint16{
+	ErrEmptyPath    = errors.New("path is empty")
+	ErrEmptyService = errors.New("service is empty")
+	HttpHeaderKeys  = []string{"x-mosn-host", "x-mosn-method", "x-mosn-path"}
+	Http2BoltCode   = map[int]uint16{
 		http.OK:                  bolt.ResponseStatusSuccess,
 		http.BadRequest:          bolt.ResponseStatusError,
 		http.InternalServerError: bolt.ResponseStatusServerException,
@@ -78,32 +83,53 @@ func (t *bolt2sp) httpReq2BoltReq(headers *bolt.Request) fasthttp.Request {
 	})
 
 	if t.cfg == nil {
-		targetRequest.Header.Set(MosnPath, t.httpPath(headers))
+		targetRequest.Header.Set(MosnPath, DefaultPath)
 		return targetRequest
 	}
-	targetRequest.Header.Set(MosnPath, t.httpPath(headers))
+	if err := t.updateHttpPath(headers, &targetRequest); err != nil {
+		log.DefaultLogger.Warnf("[bolt2s] [httpReq2BoltReq] parse conf failed:%v", err)
+	}
+	if err := t.updateHttpService(&targetRequest); err != nil {
+		log.DefaultLogger.Warnf("[bolt2s] [UpdateHttpService] failed:%v", err)
+	}
 	return targetRequest
 }
 
 //service
-func (t *bolt2sp) httpPath(headers *bolt.Request) string {
-	service, ok := headers.Get(ServiceName)
+
+func (t *bolt2sp) updateHttpService(httpHeaders *fasthttp.Request) error {
+	value, ok := t.cfg[ServiceName].(string)
 	if !ok {
-		return DefaultPath
+		return ErrEmptyService
 	}
-	method, ok := headers.Get(MethodName)
+	httpHeaders.Header.Set(ServiceName, value)
+	return nil
+}
+
+func (t *bolt2sp) updateHttpPath(boltHeaders *bolt.Request, httpHeaders *fasthttp.Request) error {
+	service, ok := boltHeaders.Get(ServiceName)
 	if !ok {
-		return DefaultPath
+		return ErrEmptyPath
+	}
+	method, ok := boltHeaders.Get(BoltMethodName)
+	if !ok {
+		return ErrEmptyPath
 	}
 	serviceMap, ok := t.cfg[service].(map[string]interface{})
 	if !ok {
-		return DefaultPath
+		return ErrEmptyPath
 	}
-	path, ok := serviceMap[method].(string)
+	datas, ok := serviceMap[method].(map[string]interface{})
 	if !ok {
-		return DefaultPath
+		return ErrEmptyPath
 	}
-	return path
+	for _, key := range HttpHeaderKeys {
+		value, ok := datas[key].(string)
+		if ok {
+			httpHeaders.Header.Set(key, value)
+		}
+	}
+	return nil
 }
 
 func (t *bolt2sp) getClass() string {
