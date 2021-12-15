@@ -16,7 +16,25 @@
       "com.alipay.sofa.ms.service.EchoService.echo": {
           "http_path": "/reservations/echo",
           "http_method": "POST",
-          "http_service": "reservation-service"
+          "http_service": "reservation-service",
+          "http_query": [
+            {"type": "java.lang.String", "key": "message"}
+          ]
+      },
+      "com.alipay.sofa.ms.service.EchoService.add": {
+        "http_path": "/reservations/add",
+        "http_method": "POST",
+        "http_service": "reservation-service",
+        "http_query": [
+          {"type": "java.lang.Integer", "key": "a"},
+          {"type": "java.lang.Integer", "key": "b"}
+        ]
+      },
+      "com.alipay.sofa.ms.service.EchoService.sub": {
+        "http_path": "/reservations/sub",
+        "http_method": "POST",
+        "http_service": "reservation-service",
+        "http_body": {"type": "com.alipay.sofa.ms.service.model.SubReq"}
       }
     }
   },

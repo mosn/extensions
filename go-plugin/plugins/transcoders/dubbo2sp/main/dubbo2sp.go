@@ -27,7 +27,9 @@ import (
 	"mosn.io/api"
 	"mosn.io/api/extensions/transcoder"
 	"mosn.io/pkg/buffer"
+	"mosn.io/pkg/log"
 	"mosn.io/pkg/protocol/http"
+	"strconv"
 )
 
 const HTTP_DUBBO_REQUEST_ID_NAME = "Dubbo-Request-Id"
@@ -43,16 +45,27 @@ type DubboHttpResponseBody struct {
 //"http_method": "POST",
 //"http_service": "reservation-service"
 type paramAdapter struct {
-	HttpPath string `json:"http_path"`
-	HttpMethod string `json:"http_method"`
-	HttpService string `json:"http_service"`
+	HttpPath    string   `json:"http_path"`
+	HttpMethod  string   `json:"http_method"`
+	HttpService string   `json:"http_service"`
+	HttpQuery   []*query `json:"http_query"`
+	HttpBody    *body    `json:"http_body"`
+}
+
+type query struct {
+	Type string `json:"type"`
+	Key  string `json:"key"`
+}
+
+type body struct {
+	Type string `json:"type"`
 }
 
 var conf = map[string]*paramAdapter{}
 
-type dubbo2http struct{
+type dubbo2http struct {
 	cfg map[string]interface{}
-	Id uint64
+	Id  uint64
 }
 
 //accept return when head has transcoder key and value is equal to TRANSCODER_NAME
@@ -62,6 +75,8 @@ func (t *dubbo2http) Accept(ctx context.Context, headers api.HeaderMap, buf api.
 
 //dubbo request 2 http request
 func (t *dubbo2http) TranscodingRequest(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
+
+	log.DefaultContextLogger.Debugf(ctx, "[dubbo2http transcoder] request header %v ,buf %v,", headers, buf)
 	// 1. set sub protocol
 	sourceHeader, ok := headers.(*dubbo.Frame)
 	if !ok {
@@ -69,7 +84,7 @@ func (t *dubbo2http) TranscodingRequest(ctx context.Context, headers api.HeaderM
 	}
 	t.Id = sourceHeader.GetRequestId()
 	//// 2. assemble target request
-	byteData, err := DeocdeWorkLoad(headers, buf)
+	content, err := DeocdeWorkLoad(headers, buf)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -82,12 +97,42 @@ func (t *dubbo2http) TranscodingRequest(ctx context.Context, headers api.HeaderM
 	})
 	service, _ := sourceHeader.Get("service")
 	method, _ := sourceHeader.Get("method")
-	param := conf[service + "." + method]
+	param := conf[service+"."+method]
+
+	querys := map[string]string{}
+	var byteData []byte
 	if param != nil {
 		reqHeaderImpl.Set("x-mosn-method", param.HttpMethod)
-		reqHeaderImpl.Set("x-mosn-path", param.HttpPath)
 		reqHeaderImpl.Set("service", param.HttpService)
+		if params, ok := content["parameters"].([]dubbo.Parameter); ok {
+			for _, p := range params {
+				if param.HttpBody != nil && p.Type == param.HttpBody.Type {
+					byteData, _ = json.Marshal(p.Value)
+				}
+				for _, q := range param.HttpQuery {
+					if p.Type == q.Type {
+						if querys[q.Key] == "" {
+							querys[q.Key] = Strval(p.Value)
+							break
+						}
+					}
+				}
+			}
+
+		}
+
+		queryStr := ""
+		for k, v := range querys {
+			queryStr = queryStr + "&" + k + "=" + v
+		}
+
+		path := param.HttpPath
+		if queryStr != "" {
+			reqHeaderImpl.Set("x-mosn-querystring", queryStr[1:])
+		}
+		reqHeaderImpl.Set("x-mosn-path", path)
 	}
+
 	//set request id
 	//reqHeaderImpl.Set(HTTP_DUBBO_REQUEST_ID_NAME, strconv.FormatUint(sourceHeader.Id, 10))
 	reqHeaderImpl.Set("Content-Type", "application/json")
@@ -96,7 +141,7 @@ func (t *dubbo2http) TranscodingRequest(ctx context.Context, headers api.HeaderM
 }
 
 // encode the dubbo request body 2 http request body
-func DeocdeWorkLoad(headers api.HeaderMap, buf api.IoBuffer) ([]byte, error) {
+func DeocdeWorkLoad(headers api.HeaderMap, buf api.IoBuffer) (map[string]interface{}, error) {
 	var paramsTypes string
 	sourceRequest, ok := headers.(*dubbo.Frame)
 	if !ok {
@@ -124,12 +169,12 @@ func DeocdeWorkLoad(headers api.HeaderMap, buf api.IoBuffer) ([]byte, error) {
 	content := map[string]interface{}{}
 	content["attachments"] = attachments
 	content["parameters"] = params
-	byte, _ := json.Marshal(content)
-	return byte, nil
+	return content, nil
 }
 
 //http2dubbo
 func (t *dubbo2http) TranscodingResponse(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
+	log.DefaultContextLogger.Debugf(ctx, "[dubbo2http transcoder] response header %v ,buf %v,", headers, buf)
 	targetRequest, err := DecodeHttp2Dubbo(headers, buf, t.Id)
 	if err != nil {
 		return nil, nil, nil, err
@@ -159,7 +204,7 @@ func DecodeHttp2Dubbo(headers api.HeaderMap, buf api.IoBuffer, id uint64) (*dubb
 		},
 	}
 	// convert data to dubbo frame
-	workLoad, err := EncodeWorkLoad(headers, buf)
+	workLoad, err := EncodeWorkLoad(sourceHeader, buf)
 	if err != nil {
 		return nil, err
 	}
@@ -193,34 +238,53 @@ func DecodeHttp2Dubbo(headers api.HeaderMap, buf api.IoBuffer, id uint64) (*dubb
 
 // http response body example: {"attachments":null,"value":"22222","exception":null}
 // make dubbo workload
-func EncodeWorkLoad(headers api.HeaderMap, buf api.IoBuffer) ([]byte, error) {
+func EncodeWorkLoad(headers http.ResponseHeader, buf api.IoBuffer) ([]byte, error) {
 	responseBody := DubboHttpResponseBody{}
 	workload := [][]byte{}
 	if buf == nil {
 		return nil, fmt.Errorf("no workload to decode")
 	}
-	err := json.Unmarshal(buf.Bytes(), &responseBody)
-	if err != nil {
-		return nil, err
-	}
-	if responseBody.Exception == "" {
-		//out.writeByte(
-		if responseBody.Value == nil {
+
+	if headers.StatusCode() >= 400 {
+		resType, _ := json.Marshal(dubbo.RESPONSE_WITH_EXCEPTION)
+		workload = append(workload, resType)
+		ret, _ := json.Marshal(responseBody.Exception)
+		workload = append(workload, ret)
+	} else {
+		if buf == nil {
 			resType, _ := json.Marshal(dubbo.RESPONSE_NULL_VALUE)
 			workload = append(workload, resType)
 		} else {
 			resType, _ := json.Marshal(dubbo.RESPONSE_VALUE)
 			workload = append(workload, resType)
-			ret, _ := json.Marshal(responseBody.Value)
-			workload = append(workload, ret)
+			workload = append(workload, buf.Bytes())
 
 		}
-	} else {
-		resType, _ := json.Marshal(dubbo.RESPONSE_WITH_EXCEPTION)
-		workload = append(workload, resType)
-		ret, _ := json.Marshal(responseBody.Exception)
-		workload = append(workload, ret)
 	}
+
+	//err := json.Unmarshal(buf.Bytes(), &responseBody)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//if responseBody.Exception == "" {
+	//	//out.writeByte(
+	//	if responseBody.Value == nil {
+	//		resType, _ := json.Marshal(dubbo.RESPONSE_NULL_VALUE)
+	//		workload = append(workload, resType)
+	//	} else {
+	//		resType, _ := json.Marshal(dubbo.RESPONSE_VALUE)
+	//		workload = append(workload, resType)
+	//		ret, _ := json.Marshal(responseBody.Value)
+	//		workload = append(workload, ret)
+	//
+	//	}
+	//} else {
+	//	resType, _ := json.Marshal(dubbo.RESPONSE_WITH_EXCEPTION)
+	//	workload = append(workload, resType)
+	//	ret, _ := json.Marshal(responseBody.Exception)
+	//	workload = append(workload, ret)
+	//}
+
 	workloadByte := bytes.Join(workload, []byte{10})
 
 	return workloadByte, nil
@@ -233,4 +297,60 @@ func LoadTranscoderFactory(cfg map[string]interface{}) transcoder.Transcoder {
 	}
 
 	return &dubbo2http{cfg: cfg}
+}
+
+func Strval(value interface{}) string {
+	// interface 转 string
+	var key string
+	if value == nil {
+		return key
+	}
+
+	switch value.(type) {
+	case float64:
+		ft := value.(float64)
+		key = strconv.FormatFloat(ft, 'f', -1, 64)
+	case float32:
+		ft := value.(float32)
+		key = strconv.FormatFloat(float64(ft), 'f', -1, 64)
+	case int:
+		it := value.(int)
+		key = strconv.Itoa(it)
+	case uint:
+		it := value.(uint)
+		key = strconv.Itoa(int(it))
+	case int8:
+		it := value.(int8)
+		key = strconv.Itoa(int(it))
+	case uint8:
+		it := value.(uint8)
+		key = strconv.Itoa(int(it))
+	case int16:
+		it := value.(int16)
+		key = strconv.Itoa(int(it))
+	case uint16:
+		it := value.(uint16)
+		key = strconv.Itoa(int(it))
+	case int32:
+		it := value.(int32)
+		key = strconv.Itoa(int(it))
+	case uint32:
+		it := value.(uint32)
+		key = strconv.Itoa(int(it))
+	case int64:
+		it := value.(int64)
+		key = strconv.FormatInt(it, 10)
+	case uint64:
+		it := value.(uint64)
+		key = strconv.FormatUint(it, 10)
+	case string:
+		key = value.(string)
+	case []byte:
+		key = string(value.([]byte))
+	default:
+		newValue, _ := json.Marshal(value)
+		key = string(newValue)
+	}
+
+	return key
 }
