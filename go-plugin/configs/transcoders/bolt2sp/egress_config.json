@@ -1,0 +1,26 @@
+{
+  "type":"bolt2sp",
+  "go_plugin_config": {
+    "so_path":"./bolt2sp.so",  
+    "src_protocol":"bolt",    
+    "dst_protocol":"sp"     
+  },
+  "macther_config":{
+       "matcher_type" :"simpleMatcher"
+  },
+  "rule_info":{
+    "upstream_sub_protocol":"sp",
+    "upstream_protocol":"Http1",
+    "description":"hello",
+    "config": {
+        "class":"com.alipay.sofa.rpc.core.response.SofaResponse",
+        "com.alipay.sofa.ms.service.SofaEchoService:1.0":{
+            "Test":"/test/",
+            "echo":"/echo/"
+        }
+    }
+  },
+  "config": {
+    "User":"admin" 
+  }
+}

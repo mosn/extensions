@@ -19,8 +19,9 @@ package bolt
 
 import (
 	"errors"
-	"mosn.io/api"
 	"time"
+
+	"mosn.io/api"
 )
 
 // bolt constants
@@ -37,7 +38,8 @@ const (
 	CmdCodeRpcRequest  uint16 = 1
 	CmdCodeRpcResponse uint16 = 2
 
-	Hessian2Serialize byte = 1 // serialize
+	Hessian2Serialize byte = 1  // serialize
+	JsonSerialize     byte = 12 // json
 
 	ResponseStatusSuccess                 uint16 = 0  // 0x00 response status
 	ResponseStatusError                   uint16 = 1  // 0x01
