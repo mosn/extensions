@@ -14,9 +14,18 @@
     "description":"hello",
     "config": {
         "class":"com.alipay.sofa.rpc.core.response.SofaResponse",
+        "service":"com.alipay.sofa.ms.service.SofaEchoService:1.0",
         "com.alipay.sofa.ms.service.SofaEchoService:1.0":{
-            "Test":"/test/",
-            "echo":"/echo/"
+            "Test":{
+                "x-mosn-path":"/test/",
+                "x-mosn-host":"",
+                "x-mosn-method":""
+            },
+            "echo":{
+                "x-mosn-path":"/echo/",
+                "x-mosn-host":"",
+                "x-mosn-method":""
+            }
         }
     }
   },

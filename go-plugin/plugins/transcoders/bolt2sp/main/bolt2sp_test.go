@@ -6,6 +6,7 @@ import (
 
 	"github.com/mosn/extensions/go-plugin/pkg/protocol/bolt"
 	"github.com/stretchr/testify/assert"
+	"github.com/valyala/fasthttp"
 )
 
 func TestBolt2spHttpPath(t *testing.T) {
@@ -18,24 +19,33 @@ func TestBolt2spHttpPath(t *testing.T) {
 
 	RequestHeader := bolt.RequestHeader{}
 	RequestHeader.Header.Set(ServiceName, "a")
-	RequestHeader.Header.Set(MethodName, "b")
+	RequestHeader.Header.Set(BoltMethodName, "b")
+
+	fh := fasthttp.RequestHeader{}
+	fh.Set(ServiceName, "a")
+	fh.Set(BoltMethodName, "b")
+	fh.Set(MosnPath, "/hello")
+	fh.Set(ServiceName, "dubbo2http")
+
 	tests := []struct {
 		name   string
 		fields fields
 		args   args
-		want   string
+		want   fasthttp.Request
 	}{
 		{
 			name: "TestBolt2spHttpPath",
 			fields: fields{
-				cfg: `{"a":{"b":"/hello","c":"test"}}`,
+				cfg: `{"service":"dubbo2http","a":{"b":{"x-mosn-path":"/hello"},"c":{"x-mosn-path":"test"}}}`,
 			},
 			args: args{
 				headers: &bolt.Request{
 					RequestHeader: RequestHeader,
 				},
 			},
-			want: "/hello",
+			want: fasthttp.Request{
+				Header: fh,
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -45,7 +55,7 @@ func TestBolt2spHttpPath(t *testing.T) {
 			bolt := &bolt2sp{
 				cfg: cfg,
 			}
-			got := bolt.httpPath(tt.args.headers)
+			got := bolt.httpReq2BoltReq(tt.args.headers)
 			assert.Equal(t, tt.want, got)
 		})
 	}
