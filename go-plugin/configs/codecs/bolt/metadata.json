@@ -5,7 +5,7 @@
 	"internal": false,
 	"variables": [{
 		"field": "x-mosn-data-id",
-		"pattern": ["${serivce}@DEFAULT"],
+		"pattern": ["${service}@bolt"],
 		"required": true
     }],
 	"dependencies": [{
