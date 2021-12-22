@@ -8,6 +8,12 @@
 		"pattern": ["${ServiceCode}@xr"],
 		"required": true
     }],
+	"health_check": {
+		"enable": true,
+		"callbacks": ["confreg"],
+		"timeout": 1,
+		"interval": 10
+	},
 	"dependencies": [{
 		"mosn_api": "v0.0.0-20211119033852-6e898f4d8222",
 		"mosn_pkg": "v0.0.0-20211208031317-7b020e8bcdd4"
