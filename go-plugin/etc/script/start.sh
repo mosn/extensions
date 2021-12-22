@@ -19,5 +19,5 @@ docker run -u admin \
   -w /go/src/${PROJECT_NAME} \
   ${BASE_IMAGE} /go/src/${PROJECT_NAME}/etc/script/run.sh "$@"
 
-echo "start mosn-container container."
+echo "start mosn-container container success."
 echo "run 'docker exec -it mosn-container /bin/bash' command enter mosn container."
