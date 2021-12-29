@@ -58,11 +58,11 @@ var MagicTag = []byte{0xda, 0xbb}
 
 type DubboProtocol struct{}
 
-func (proto *DubboProtocol) Name() api.ProtocolName {
+func (proto DubboProtocol) Name() api.ProtocolName {
 	return ProtocolName
 }
 
-func (proto *DubboProtocol) Encode(ctx context.Context, model interface{}) (api.IoBuffer, error) {
+func (proto DubboProtocol) Encode(ctx context.Context, model interface{}) (api.IoBuffer, error) {
 	if frame, ok := model.(*Frame); ok {
 		if frame.Direction == EventRequest {
 			return encodeRequest(ctx, frame)
@@ -73,7 +73,7 @@ func (proto *DubboProtocol) Encode(ctx context.Context, model interface{}) (api.
 	return nil, api.ErrUnknownType
 }
 
-func (proto *DubboProtocol) Decode(ctx context.Context, data api.IoBuffer) (interface{}, error) {
+func (proto DubboProtocol) Decode(ctx context.Context, data api.IoBuffer) (interface{}, error) {
 	if data.Len() >= HeaderLen {
 		// check frame size
 		payLoadLen := binary.BigEndian.Uint32(data.Bytes()[DataLenIdx:(DataLenIdx + DataLenSize)])
@@ -90,12 +90,12 @@ func (proto *DubboProtocol) Decode(ctx context.Context, data api.IoBuffer) (inte
 }
 
 // heartbeater
-func (proto *DubboProtocol) Trigger(ctx context.Context, requestId uint64) api.XFrame {
+func (proto DubboProtocol) Trigger(ctx context.Context, requestId uint64) api.XFrame {
 	// not support
 	return nil
 }
 
-func (proto *DubboProtocol) Reply(ctx context.Context, request api.XFrame) api.XRespFrame {
+func (proto DubboProtocol) Reply(ctx context.Context, request api.XFrame) api.XRespFrame {
 	// TODO make readable
 	return &Frame{
 		Header: Header{
@@ -111,7 +111,7 @@ func (proto *DubboProtocol) Reply(ctx context.Context, request api.XFrame) api.X
 
 // https://dubbo.apache.org/zh/docs/v2.7/dev/implementation/#%E8%BF%9C%E7%A8%8B%E9%80%9A%E8%AE%AF%E7%BB%86%E8%8A%82
 // hijacker
-func (proto *DubboProtocol) Hijack(ctx context.Context, request api.XFrame, statusCode uint32) api.XRespFrame {
+func (proto DubboProtocol) Hijack(ctx context.Context, request api.XFrame, statusCode uint32) api.XRespFrame {
 	dubboStatus, ok := dubboMosnStatusMap[int(statusCode)]
 	if !ok {
 		dubboStatus = dubboStatusInfo{
@@ -135,19 +135,19 @@ func (proto *DubboProtocol) Hijack(ctx context.Context, request api.XFrame, stat
 	}
 }
 
-func (proto *DubboProtocol) Mapping(httpStatusCode uint32) uint32 {
+func (proto DubboProtocol) Mapping(httpStatusCode uint32) uint32 {
 	return httpStatusCode
 }
 
 // PoolMode returns whether pingpong or multiplex
-func (proto *DubboProtocol) PoolMode() api.PoolMode {
+func (proto DubboProtocol) PoolMode() api.PoolMode {
 	return api.Multiplex
 }
 
-func (proto *DubboProtocol) EnableWorkerPool() bool {
+func (proto DubboProtocol) EnableWorkerPool() bool {
 	return true
 }
 
-func (proto *DubboProtocol) GenerateRequestID(streamID *uint64) uint64 {
+func (proto DubboProtocol) GenerateRequestID(streamID *uint64) uint64 {
 	return atomic.AddUint64(streamID, 1)
 }

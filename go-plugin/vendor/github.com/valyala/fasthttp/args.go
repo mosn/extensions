@@ -110,8 +110,7 @@ func (a *Args) String() string {
 
 // QueryString returns query string for the args.
 //
-// The returned value is valid until the Args is reused or released (ReleaseArgs).
-// Do not store references to the returned value. Make copies instead.
+// The returned value is valid until the next call to Args methods.
 func (a *Args) QueryString() []byte {
 	a.buf = a.AppendBytes(a.buf[:0])
 	return a.buf
@@ -242,16 +241,14 @@ func (a *Args) SetBytesKNoValue(key []byte) {
 
 // Peek returns query arg value for the given key.
 //
-// The returned value is valid until the Args is reused or released (ReleaseArgs).
-// Do not store references to the returned value. Make copies instead.
+// Returned value is valid until the next Args call.
 func (a *Args) Peek(key string) []byte {
 	return peekArgStr(a.args, key)
 }
 
 // PeekBytes returns query arg value for the given key.
 //
-// The returned value is valid until the Args is reused or released (ReleaseArgs).
-// Do not store references to the returned value. Make copies instead.
+// Returned value is valid until the next Args call.
 func (a *Args) PeekBytes(key []byte) []byte {
 	return peekArgBytes(a.args, key)
 }

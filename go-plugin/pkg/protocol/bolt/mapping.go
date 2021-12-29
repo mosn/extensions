@@ -28,7 +28,7 @@ import (
 
 type StatusMapping struct{}
 
-func (m *StatusMapping) MappingHeaderStatusCode(ctx context.Context, headers api.HeaderMap) (int, error) {
+func (m StatusMapping) MappingHeaderStatusCode(ctx context.Context, headers api.HeaderMap) (int, error) {
 	cmd, ok := headers.(api.XRespFrame)
 	if !ok {
 		return 0, errors.New("no response status in headers")
