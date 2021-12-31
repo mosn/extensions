@@ -5,7 +5,7 @@
     "src_protocol": "dubbo",
     "dst_protocol": "sp"
   },
-  "macther_config":{
+  "matcher_config":{
     "matcher_type" :"simpleMatcher"
   },
   "rule_info": {
