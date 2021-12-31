@@ -23,10 +23,8 @@ import (
 	"mosn.io/api"
 )
 
-type Matcher struct{}
-
 // predicate dubbo header len and compare magic number
-func (m *Matcher) Matcher(data []byte) api.MatchResult {
+func Matcher(data []byte) api.MatchResult {
 	if len(data) < HeaderLen {
 		return api.MatchAgain
 	}

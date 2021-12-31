@@ -4,4 +4,3 @@ tags
 *.fasthttp.br
 .idea
 .DS_Store
-vendor/
