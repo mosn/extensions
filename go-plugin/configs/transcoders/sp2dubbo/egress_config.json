@@ -24,6 +24,20 @@
         "method": "sub",
         "service": "com.alipay.sofa.ms.service.EchoService",
         "body": {"type": "com.alipay.sofa.ms.service.model.SubReq"}
+      },
+      "reservation-client./reservations/(*)/rest.POST": {
+        "method": "rest",
+        "service": "com.alipay.sofa.ms.service.EchoService",
+        "query": [
+          {"type": "java.lang.String", "key": "message"}
+        ],
+        "http_path_params":[
+          {
+            "type":"java.lang.String",
+            "key":"topic"
+          }
+        ],
+        "body": {"type": "com.alipay.sofa.ms.service.model.SubReq"}
       }
     }
   },

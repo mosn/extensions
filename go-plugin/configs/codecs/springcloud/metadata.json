@@ -1,0 +1,15 @@
+{
+	"name": "springcloud",
+	"kind": "protocol",
+	"framework": "HTTP1",
+	"internal": false,
+	"variables": [{
+		"field": "x-mosn-data-id",
+		"pattern": ["${service}@springcloud"],
+		"required": true
+	}],
+	"dependencies": [{
+		"mosn_api": "v0.0.0-20211119033852-6e898f4d8222",
+		"mosn_pkg": "v0.0.0-20211208031317-7b020e8bcdd4"
+	}]
+}

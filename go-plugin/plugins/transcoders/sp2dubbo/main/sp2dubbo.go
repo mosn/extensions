@@ -6,9 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mosn/extensions/go-plugin/pkg/protocol/dubbo"
-	"github.com/mosn/extensions/go-plugin/pkg/protocol/dubbo/common"
-	"github.com/mosn/extensions/go-plugin/pkg/protocol/dubbo/constants"
-	"github.com/mosn/extensions/go-plugin/pkg/protocol/dubbo/govern_util"
 	"github.com/valyala/fasthttp"
 	"math/rand"
 	"mosn.io/api"
@@ -16,6 +13,7 @@ import (
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
 	"mosn.io/pkg/protocol/http"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -34,16 +32,22 @@ type DubboHttpRequestParams struct {
 }
 
 type paramAdapter struct {
-	Service string   `json:"service"`
-	Method  string   `json:"method"`
-	Version string   `json:"version"`
-	Group   string   `json:"group"`
-	Double  string   `json:"double"`
-	Query   []*query `json:"query"`
-	Body    *body    `json:"body"`
+	Service        string           `json:"service"`
+	Method         string           `json:"method"`
+	Version        string           `json:"version"`
+	Group          string           `json:"group"`
+	Double         string           `json:"double"`
+	Query          []*query         `json:"query"`
+	Body           *body            `json:"body"`
+	HttpPathParams []*httpPathParam `json:"http_path_params"`
 }
 
 type query struct {
+	Type string `json:"type"`
+	Key  string `json:"key"`
+}
+
+type httpPathParam struct {
 	Type string `json:"type"`
 	Key  string `json:"key"`
 }
@@ -68,42 +72,13 @@ func (t *http2dubbo) TranscodingRequest(ctx context.Context, headers api.HeaderM
 		method := string(httpRequest.Method())
 		path := string(httpRequest.RequestURI())
 		items := strings.Split(path, "?")
-		param := conf[service+"."+items[0]+"."+method]
+		param, pathParams := getParamAdapter(catStr(service, ".", items[0], ".", method), conf)
 		queryMap := map[string]string{}
 		if len(items) == 2 {
 			queryMap = getQuery(items[1])
 		}
-		reqBody := DubboHttpRequestParams{}
-		if param != nil {
-			headers.Set("service", param.Service)
-			headers.Set("dubbo", param.Double)
-			headers.Set("method", param.Method)
-			headers.Set("version", param.Version)
-			headers.Set("group", param.Group)
-			params := []dubbo.Parameter{}
-			if param.Body != nil {
-				var by interface{}
-				json.Unmarshal(buf.Bytes(), &by)
-				p := dubbo.Parameter{
-					Type:  param.Body.Type,
-					Value: by,
-				}
-				params = append(params, p)
-			}
-			for _, q := range param.Query {
-				v := queryMap[q.Key]
-				if v != "" {
-					p := dubbo.Parameter{
-						Type:  q.Type,
-						Value: v,
-					}
-					params = append(params, p)
-				}
-			}
-			reqBody.Parameters = params
-		}
 		// 2. assemble target request
-		targetRequest, err := EncodeHttp2Dubbo(ctx, headers, reqBody)
+		targetRequest, err := EncodeHttp2Dubbo(ctx, headers, buildDubboHttpRequestParams(headers, buf, param, pathParams, queryMap))
 		if err != nil {
 			return nil, nil, nil, err
 		}
@@ -165,14 +140,6 @@ func setResponseHeader(ctx context.Context, sourceResponse *dubbo.Frame, targetR
 		}
 		targetResponse.SetStatusCode(statusCode)
 	}
-	if code, _ := sourceResponse.Header.Get("X-Govern-Resp-Code"); code != "" {
-		resCode, err := strconv.Atoi(code)
-		if err != nil {
-			log.DefaultContextLogger.Errorf(ctx, "[http2dubbo transcoder] error for source response header name: %v code: %v, error %v", "X-Govern-Resp-Code", code, err)
-			return fmt.Errorf("[http2dubbo transcoder] error for source response name: %v code: %v, error %v", "X-Govern-Resp-Code", code, err)
-		}
-		targetResponse.SetStatusCode(resCode)
-	}
 	return nil
 }
 
@@ -227,12 +194,6 @@ func setTargetBody(sourceResponse *dubbo.Frame, targetResponse *fasthttp.Respons
 
 //encode http require to dubbo require
 func EncodeHttp2Dubbo(ctx context.Context, headers api.HeaderMap, reqBody DubboHttpRequestParams) (*dubbo.Frame, error) {
-	//process govern filter
-	headers, err := setGovernHead(ctx, headers)
-	if err != nil {
-		return nil, err
-
-	}
 	//header
 	allHeaders := map[string]string{}
 	headers.Range(func(key, value string) bool {
@@ -271,48 +232,6 @@ func EncodeHttp2Dubbo(ctx context.Context, headers api.HeaderMap, reqBody DubboH
 	frame.SetData(buffer.NewIoBufferBytes(payLoadByteFin))
 
 	return frame, nil
-}
-
-func setGovernHead(ctx context.Context, headers api.HeaderMap) (api.HeaderMap, error) {
-	//X-Govern-Service
-	if serviceName, ok := headers.Get(constants.XPROTOCOL_DUBBO_META_INTERFACE); ok {
-		if !strings.Contains(serviceName, "@dubbo") {
-			version, _ := headers.Get(constants.XPROTOCOL_DUBBO_META_VERSION)
-			if version == "0.0.0" {
-				version = ""
-			}
-			group, _ := headers.Get(constants.XPROTOCOL_DUBBO_META_GROUP)
-			id := common.BuildDubboDataId(serviceName, version, group)
-			govern_util.AddGovernValue(nil, headers, govern_util.GOVERN_SERVICE_KEY, id)
-		}
-	} else {
-		log.DefaultContextLogger.Debugf(ctx, "[stream filter][transcoder] cant read %s in headers", constants.XPROTOCOL_DUBBO_META_INTERFACE)
-		return nil, fmt.Errorf("transcoder error: cant read %s in headers ", constants.XPROTOCOL_DUBBO_META_INTERFACE)
-	}
-	//X-Govern-Service-Type
-	govern_util.AddGovernValue(ctx, headers, govern_util.GOVERN_SERVICE_TYPE_KEY, constants.XPROTOCOL_TYPE_DUBBO)
-
-	//X-Govern-Method
-	if method, ok := headers.Get(dubbo.MethodNameHeader); ok {
-		govern_util.AddGovernValue(ctx, headers, dubbo.MethodNameHeader, method)
-	} else {
-		log.DefaultContextLogger.Debugf(ctx, "[stream filter][transcoder] cant read %s in headers", dubbo.MethodNameHeader)
-		return nil, fmt.Errorf("transcoder error: cant read %s in headers ", dubbo.MethodNameHeader)
-	}
-	//X-Govern-Timeout
-	if val, ok := headers.Get("timeout"); ok {
-		govern_util.AddGovernValue(ctx, headers, govern_util.GOVERN_TIMEOUT_KEY, val)
-	}
-	//X-Govern-Source-App
-	if sourceApp, ok := headers.Get(constants.SOFA_RPC_HEADER_CALLER_APP_KEY); ok {
-		govern_util.AddGovernValue(ctx, headers, govern_util.GOVERN_SOURCE_APP_KEY, sourceApp)
-	}
-	//X-Govern-Target-App
-	if targetApp, ok := headers.Get(constants.SOFARPC_ROUTER_HEADER_TARGET_APP_KEY); ok {
-		govern_util.AddGovernValue(ctx, headers, constants.SOFARPC_ROUTER_HEADER_TARGET_APP_KEY, targetApp)
-	}
-
-	return headers, nil
 }
 
 func EncodeWorkLoad(headers api.HeaderMap, reqBody DubboHttpRequestParams) ([]byte, error) {
@@ -404,4 +323,82 @@ func getQuery(queryStr string) map[string]string {
 
 	return queryMap
 
+}
+
+func buildDubboHttpRequestParams(headers api.HeaderMap, buf api.IoBuffer, param *paramAdapter, pathParams []string, queryMap map[string]string) DubboHttpRequestParams {
+	reqBody := DubboHttpRequestParams{}
+	if param != nil {
+		headers.Set("service", param.Service)
+		headers.Set("dubbo", param.Double)
+		headers.Set("method", param.Method)
+		headers.Set("version", param.Version)
+		headers.Set("group", param.Group)
+		params := []dubbo.Parameter{}
+
+		//路径参数转换
+		for i, h := range param.HttpPathParams {
+			if i < len(pathParams) {
+				v := pathParams[i]
+				if v != "" {
+					p := dubbo.Parameter{
+						Type:  h.Type,
+						Value: v,
+					}
+					params = append(params, p)
+				}
+			}
+		}
+
+		//查询参数转换
+		for _, q := range param.Query {
+			v := queryMap[q.Key]
+			if v != "" {
+				p := dubbo.Parameter{
+					Type:  q.Type,
+					Value: v,
+				}
+				params = append(params, p)
+			}
+		}
+
+		//body参数转换
+		if param.Body != nil {
+			var by interface{}
+			json.Unmarshal(buf.Bytes(), &by)
+			p := dubbo.Parameter{
+				Type:  param.Body.Type,
+				Value: by,
+			}
+			params = append(params, p)
+		}
+		reqBody.Parameters = params
+	}
+
+	return reqBody
+}
+
+func catStr(params ...string) string {
+	var buffer bytes.Buffer
+	for _, v := range params {
+		buffer.WriteString(v)
+	}
+	return buffer.String()
+}
+
+func getParamAdapter(uri string, maps map[string]*paramAdapter) (*paramAdapter, []string) {
+
+	for k, v := range maps {
+		flysnowRegexp := regexp.MustCompile(catStr("^", k, "$"))
+		params := flysnowRegexp.FindStringSubmatch(uri)
+
+		if params != nil {
+			if len(params) > 1 {
+				return v, params[1:]
+			} else {
+				return v, nil
+			}
+		}
+	}
+
+	return nil, nil
 }

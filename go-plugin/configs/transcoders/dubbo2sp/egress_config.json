@@ -35,6 +35,18 @@
         "http_method": "POST",
         "http_service": "reservation-service",
         "http_body": {"type": "com.alipay.sofa.ms.service.model.SubReq"}
+      },
+      "com.alipay.sofa.ms.service.EchoService.rest": {
+        "http_path": "/reservations/{topic}/rest",
+        "http_method": "POST",
+        "http_service": "reservation-service",
+        "http_path_params":[
+          {
+            "type":"java.lang.String",
+            "key":"topic"
+          }
+        ],
+        "http_body": {"type": "com.alipay.sofa.ms.service.model.SubReq"}
       }
     }
   },
