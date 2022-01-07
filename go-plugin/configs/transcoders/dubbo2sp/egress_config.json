@@ -5,12 +5,11 @@
     "src_protocol": "dubbo",
     "dst_protocol": "sp"
   },
-  "macther_config":{
+  "matcher_config":{
     "matcher_type" :"simpleMatcher"
   },
   "rule_info": {
-    "upstream_sub_protocol": "sp",
-    "upstream_protocol": "Http1",
+    "upstream_protocol": "sp",
     "description": "dubbo -> spring cloud",
     "config": {
       "com.alipay.sofa.ms.service.EchoService.echo": {

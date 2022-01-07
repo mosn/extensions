@@ -6,8 +6,7 @@
     "dst_protocol": "sp"
   },
   "rule_info": {
-    "upstream_sub_protocol": "sp",
-    "upstream_protocol": "Http1",
+    "upstream_protocol": "sp",
     "description": "xr -> spring cloud"
   },
   "config": {

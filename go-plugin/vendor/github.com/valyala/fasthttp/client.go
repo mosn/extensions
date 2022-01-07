@@ -176,8 +176,6 @@ var defaultClient Client
 // Copying Client by value is prohibited. Create new instance instead.
 //
 // It is safe calling Client methods from concurrently running goroutines.
-//
-// The fields of a Client should not be changed while it is in use.
 type Client struct {
 	noCopy noCopy //nolint:unused,structcheck
 
@@ -542,13 +540,6 @@ func (c *Client) CloseIdleConnections() {
 func (c *Client) mCleaner(m map[string]*HostClient) {
 	mustStop := false
 
-	sleep := c.MaxIdleConnDuration
-	if sleep < time.Second {
-		sleep = time.Second
-	} else if sleep > 10*time.Second {
-		sleep = 10 * time.Second
-	}
-
 	for {
 		c.mLock.Lock()
 		for k, v := range m {
@@ -568,7 +559,7 @@ func (c *Client) mCleaner(m map[string]*HostClient) {
 		if mustStop {
 			break
 		}
-		time.Sleep(sleep)
+		time.Sleep(10 * time.Second)
 	}
 }
 
@@ -950,7 +941,7 @@ var clientURLResponseChPool sync.Pool
 
 func clientPostURL(dst []byte, url string, postArgs *Args, c clientDoer) (statusCode int, body []byte, err error) {
 	req := AcquireRequest()
-	req.Header.SetMethod(MethodPost)
+	req.Header.SetMethodBytes(strPost)
 	req.Header.SetContentTypeBytes(strPostArgsContentType)
 	if postArgs != nil {
 		if _, err := postArgs.WriteTo(req.BodyWriter()); err != nil {
