@@ -67,11 +67,11 @@ import (
 type BoltProtocol struct{}
 
 // types.Protocol
-func (proto *BoltProtocol) Name() api.ProtocolName {
+func (proto BoltProtocol) Name() api.ProtocolName {
 	return ProtocolName
 }
 
-func (proto *BoltProtocol) Encode(ctx context.Context, model interface{}) (api.IoBuffer, error) {
+func (proto BoltProtocol) Encode(ctx context.Context, model interface{}) (api.IoBuffer, error) {
 	switch frame := model.(type) {
 	case *Request:
 		return encodeRequest(ctx, frame)
@@ -83,7 +83,7 @@ func (proto *BoltProtocol) Encode(ctx context.Context, model interface{}) (api.I
 	}
 }
 
-func (proto *BoltProtocol) Decode(ctx context.Context, data api.IoBuffer) (interface{}, error) {
+func (proto BoltProtocol) Decode(ctx context.Context, data api.IoBuffer) (interface{}, error) {
 	if data.Len() >= LessLen {
 		cmdType := data.Bytes()[1]
 
@@ -104,7 +104,7 @@ func (proto *BoltProtocol) Decode(ctx context.Context, data api.IoBuffer) (inter
 }
 
 // Heartbeater
-func (proto *BoltProtocol) Trigger(ctx context.Context, requestId uint64) api.XFrame {
+func (proto BoltProtocol) Trigger(ctx context.Context, requestId uint64) api.XFrame {
 	return &Request{
 		RequestHeader: RequestHeader{
 			Protocol:  ProtocolCode,
@@ -118,7 +118,7 @@ func (proto *BoltProtocol) Trigger(ctx context.Context, requestId uint64) api.XF
 	}
 }
 
-func (proto *BoltProtocol) Reply(ctx context.Context, request api.XFrame) api.XRespFrame {
+func (proto BoltProtocol) Reply(ctx context.Context, request api.XFrame) api.XRespFrame {
 	return &Response{
 		ResponseHeader: ResponseHeader{
 			Protocol:       ProtocolCode,
@@ -133,7 +133,7 @@ func (proto *BoltProtocol) Reply(ctx context.Context, request api.XFrame) api.XR
 }
 
 // Hijacker
-func (proto *BoltProtocol) Hijack(ctx context.Context, request api.XFrame, statusCode uint32) api.XRespFrame {
+func (proto BoltProtocol) Hijack(ctx context.Context, request api.XFrame, statusCode uint32) api.XRespFrame {
 	return &Response{
 		ResponseHeader: ResponseHeader{
 			Protocol:       ProtocolCode,
@@ -147,7 +147,7 @@ func (proto *BoltProtocol) Hijack(ctx context.Context, request api.XFrame, statu
 	}
 }
 
-func (proto *BoltProtocol) Mapping(httpStatusCode uint32) uint32 {
+func (proto BoltProtocol) Mapping(httpStatusCode uint32) uint32 {
 	switch httpStatusCode {
 	case http.StatusOK:
 		return uint32(ResponseStatusSuccess)
@@ -176,14 +176,14 @@ func (proto *BoltProtocol) Mapping(httpStatusCode uint32) uint32 {
 }
 
 // PoolMode returns whether pingpong or multiplex
-func (proto *BoltProtocol) PoolMode() api.PoolMode {
+func (proto BoltProtocol) PoolMode() api.PoolMode {
 	return api.Multiplex
 }
 
-func (proto *BoltProtocol) EnableWorkerPool() bool {
+func (proto BoltProtocol) EnableWorkerPool() bool {
 	return true
 }
 
-func (proto *BoltProtocol) GenerateRequestID(streamID *uint64) uint64 {
+func (proto BoltProtocol) GenerateRequestID(streamID *uint64) uint64 {
 	return atomic.AddUint64(streamID, 1)
 }

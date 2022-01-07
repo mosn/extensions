@@ -21,10 +21,8 @@ import (
 	"mosn.io/api"
 )
 
-type Matcher struct{}
-
 // predicate first byte '0x1'
-func (m *Matcher) Matcher(data []byte) api.MatchResult {
+func Matcher(data []byte) api.MatchResult {
 	length := len(data)
 	if length == 0 {
 		return api.MatchAgain

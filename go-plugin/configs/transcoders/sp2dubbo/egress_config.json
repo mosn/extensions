@@ -5,12 +5,11 @@
     "src_protocol": "sp",
     "dst_protocol": "dubbo"
   },
-  "macther_config":{
+  "matcher_config":{
     "matcher_type" :"simpleMatcher"
   },
   "rule_info": {
-    "upstream_sub_protocol": "dubbo",
-    "upstream_protocol": "X",
+    "upstream_protocol": "dubbo",
     "description": "spring cloud -> dubbo",
     "config": {
       "reservation-client./reservations/echo.GET": {
