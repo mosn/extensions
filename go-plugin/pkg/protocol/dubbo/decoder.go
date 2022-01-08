@@ -116,12 +116,14 @@ func getServiceAwareMeta(ctx context.Context, frame *Frame) (map[string]string, 
 		if err2 != nil {
 			return m, err2
 		}
+		meta = m
 	// dubbo decode by fastson
 	case 6:
 		m, err2 := decodeFastjosn(ctx, frame, meta)
 		if err2 != nil {
 			return m, err2
 		}
+		meta = m
 	default:
 		return meta, nil
 	}

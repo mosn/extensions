@@ -34,7 +34,6 @@ func (e DuplicateFormatFlagsException) Error() string {
 	} else {
 		return e.DetailMessage + " flags=" + e.Flags
 	}
-
 }
 
 // JavaClassName  java fully qualified path
@@ -45,4 +44,9 @@ func (DuplicateFormatFlagsException) JavaClassName() string {
 // NewDuplicateFormatFlagsException is the constructor
 func NewDuplicateFormatFlagsException(detailMessage string) *DuplicateFormatFlagsException {
 	return &DuplicateFormatFlagsException{DetailMessage: detailMessage}
+}
+
+// equals to getStackTrace in java
+func (e DuplicateFormatFlagsException) GetStackTrace() []StackTraceElement {
+	return e.StackTrace
 }

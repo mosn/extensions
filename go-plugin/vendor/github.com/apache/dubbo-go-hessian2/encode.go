@@ -33,19 +33,27 @@ import (
 
 // Encoder struct
 type Encoder struct {
-	classInfoList []classInfo
+	classInfoList []*classInfo
 	buffer        []byte
 	refMap        map[unsafe.Pointer]_refElem
 }
 
 // NewEncoder generate an encoder instance
 func NewEncoder() *Encoder {
-	var buffer = make([]byte, 64)
+	buffer := make([]byte, 64)
 
 	return &Encoder{
 		buffer: buffer[:0],
 		refMap: make(map[unsafe.Pointer]_refElem, 7),
 	}
+}
+
+// Clean clean the Encoder (room) for a new object encoding.
+func (e *Encoder) Clean() {
+	buffer := make([]byte, 64)
+	e.classInfoList = nil
+	e.buffer = buffer[:0]
+	e.refMap = make(map[unsafe.Pointer]_refElem, 7)
 }
 
 // Buffer returns byte buffer
@@ -61,13 +69,13 @@ func (e *Encoder) Append(buf []byte) {
 // Encode If @v can not be encoded, the return value is nil. At present only struct may can not be encoded.
 func (e *Encoder) Encode(v interface{}) error {
 	if v == nil {
-		e.buffer = encNull(e.buffer)
+		e.buffer = EncNull(e.buffer)
 		return nil
 	}
 
 	switch val := v.(type) {
 	case nil:
-		e.buffer = encNull(e.buffer)
+		e.buffer = EncNull(e.buffer)
 		return nil
 
 	case bool:
@@ -105,14 +113,14 @@ func (e *Encoder) Encode(v interface{}) error {
 
 	case time.Time:
 		if ZeroDate == val {
-			e.buffer = encNull(e.buffer)
+			e.buffer = EncNull(e.buffer)
 		} else {
 			e.buffer = encDateInMs(e.buffer, &val)
 			// e.buffer = encDateInMimute(v.(time.Time), e.buffer)
 		}
 
 	case float32:
-		e.buffer = encFloat(e.buffer, float64(val))
+		e.buffer = encFloat32(e.buffer, val)
 
 	case float64:
 		e.buffer = encFloat(e.buffer, val)
@@ -138,7 +146,7 @@ func (e *Encoder) Encode(v interface{}) error {
 			vv := reflect.ValueOf(v)
 			vv = UnpackPtr(vv)
 			if !vv.IsValid() {
-				e.buffer = encNull(e.buffer)
+				e.buffer = EncNull(e.buffer)
 				return nil
 			}
 			if vv.Type().String() == "time.Time" {
@@ -153,8 +161,7 @@ func (e *Encoder) Encode(v interface{}) error {
 				}
 				return e.encObject(p)
 			}
-
-			return perrors.Errorf("struct type not Support! %s[%v] is not a instance of POJO!", t.String(), v)
+			return e.encObject(vv.Interface())
 		case reflect.Slice, reflect.Array:
 			return e.encList(v)
 		case reflect.Map: // the type must be map[string]int

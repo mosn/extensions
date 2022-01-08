@@ -29,8 +29,10 @@ type WriteAbortedException struct {
 
 // NewWriteAbortedException is the constructor
 func NewWriteAbortedException(detailMessage string, detail Throwabler) *WriteAbortedException {
-	return &WriteAbortedException{DetailMessage: detailMessage, StackTrace: nil,
-		Detail: detail}
+	return &WriteAbortedException{
+		DetailMessage: detailMessage, StackTrace: nil,
+		Detail: detail,
+	}
 }
 
 // Error output error message
@@ -41,4 +43,9 @@ func (e WriteAbortedException) Error() string {
 // JavaClassName  java fully qualified path
 func (WriteAbortedException) JavaClassName() string {
 	return "java.io.WriteAbortedException"
+}
+
+// equals to getStackTrace in java
+func (e WriteAbortedException) GetStackTrace() []StackTraceElement {
+	return e.StackTrace
 }

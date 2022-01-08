@@ -31,8 +31,10 @@ type InvalidClassException struct {
 
 // NewInvalidClassException is the constructor
 func NewInvalidClassException(classname string, detailMessage string) *InvalidClassException {
-	return &InvalidClassException{DetailMessage: detailMessage, StackTrace: []StackTraceElement{},
-		Classname: classname}
+	return &InvalidClassException{
+		DetailMessage: detailMessage, StackTrace: []StackTraceElement{},
+		Classname: classname,
+	}
 }
 
 // Error output error message
@@ -41,10 +43,14 @@ func (e InvalidClassException) Error() string {
 		return e.DetailMessage
 	}
 	return fmt.Sprintf("%+v; %+v", e.Classname, e.DetailMessage)
-
 }
 
 // JavaClassName  java fully qualified path
 func (InvalidClassException) JavaClassName() string {
 	return "java.io.InvalidClassException"
+}
+
+// equals to getStackTrace in java
+func (e InvalidClassException) GetStackTrace() []StackTraceElement {
+	return e.StackTrace
 }

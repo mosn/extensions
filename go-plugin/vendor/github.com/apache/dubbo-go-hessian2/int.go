@@ -66,7 +66,7 @@ func (d *Decoder) decInt32(flag int32) (int32, error) {
 	if flag != TAG_READ {
 		tag = byte(flag)
 	} else {
-		tag, _ = d.readByte()
+		tag, _ = d.ReadByte()
 	}
 
 	switch {
@@ -110,7 +110,7 @@ func (d *Decoder) decInt32(flag int32) (int32, error) {
 func (d *Encoder) encTypeInt32(b []byte, p interface{}) ([]byte, error) {
 	value := reflect.ValueOf(p)
 	if PackPtr(value).IsNil() {
-		return encNull(b), nil
+		return EncNull(b), nil
 	}
 	value = UnpackPtrValue(value)
 	if value.Kind() != reflect.Int32 {

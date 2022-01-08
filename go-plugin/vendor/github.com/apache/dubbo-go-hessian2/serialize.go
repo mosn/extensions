@@ -37,23 +37,23 @@ func init() {
 
 type Serializer interface {
 	EncObject(*Encoder, POJO) error
-	DecObject(*Decoder, reflect.Type, classInfo) (interface{}, error)
+	DecObject(*Decoder, reflect.Type, *classInfo) (interface{}, error)
 }
 
 var serializerMap = make(map[string]Serializer, 16)
 
-func SetSerializer(key string, codec Serializer) {
-	serializerMap[key] = codec
+func SetSerializer(javaClassName string, codec Serializer) {
+	serializerMap[javaClassName] = codec
 }
 
-func GetSerializer(key string) (Serializer, bool) {
-	codec, ok := serializerMap[key]
+func GetSerializer(javaClassName string) (Serializer, bool) {
+	codec, ok := serializerMap[javaClassName]
 	return codec, ok
 }
 
 type IntegerSerializer struct{}
 
-func (IntegerSerializer) DecObject(d *Decoder, typ reflect.Type, cls classInfo) (interface{}, error) {
+func (IntegerSerializer) DecObject(d *Decoder, typ reflect.Type, cls *classInfo) (interface{}, error) {
 	bigInt, err := d.decInstance(typ, cls)
 	if err != nil {
 		return nil, err
@@ -88,7 +88,7 @@ func (DecimalSerializer) EncObject(e *Encoder, v POJO) error {
 	return e.encObject(decimal)
 }
 
-func (DecimalSerializer) DecObject(d *Decoder, typ reflect.Type, cls classInfo) (interface{}, error) {
+func (DecimalSerializer) DecObject(d *Decoder, typ reflect.Type, cls *classInfo) (interface{}, error) {
 	dec, err := d.decInstance(typ, cls)
 	if err != nil {
 		return nil, err
