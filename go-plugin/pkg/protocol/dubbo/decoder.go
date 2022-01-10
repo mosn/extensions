@@ -110,18 +110,12 @@ func decodeFrame(ctx context.Context, data api.IoBuffer) (cmd interface{}, err e
 func getServiceAwareMeta(ctx context.Context, frame *Frame) (map[string]string, error) {
 	meta := make(map[string]string, 8)
 	switch frame.SerializationId {
-	//dubbo encode by Hessian
 	case 2:
-		m, err2 := decodeHessian(ctx, frame, meta)
-		if err2 != nil {
-			return m, err2
-		}
-	// dubbo decode by fastson
+		//dubbo encode by Hessian
+		return decodeHessian(ctx, frame, meta)
 	case 6:
-		m, err2 := decodeFastjosn(ctx, frame, meta)
-		if err2 != nil {
-			return m, err2
-		}
+		// dubbo decode by fastson
+		return decodeFastjosn(ctx, frame, meta)
 	default:
 		return meta, nil
 	}
@@ -129,7 +123,6 @@ func getServiceAwareMeta(ctx context.Context, frame *Frame) (map[string]string, 
 }
 
 func decodeHessian(ctx context.Context, frame *Frame, meta map[string]string) (map[string]string, error) {
-
 	meta = make(map[string]string, 8)
 	if frame.SerializationId != 2 {
 		// not hessian , do not support

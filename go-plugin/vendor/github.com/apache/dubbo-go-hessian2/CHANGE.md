@@ -1,5 +1,77 @@
 # Release Notes
 
+## v1.9.2
+
+### New Features
+- support java.util.Locale. [#264](https://github.com/apache/dubbo-go-hessian2/pull/264)
+
+## v1.9.1
+
+### Bugfixes
+- fix repeatedly adding list type in type map. [#263](https://github.com/apache/dubbo-go-hessian2/pull/263)
+
+## v1.9.0
+
+### New Features
+- support java UUID object. [#256](https://github.com/apache/dubbo-go-hessian2/pull/256)
+
+### Bugfixes
+- fix map decode error. [#261](https://github.com/apache/dubbo-go-hessian2/pull/261)
+
+## v1.8.2
+
+### Bugfixes
+- fix insufficient bytes for string encoding buffers. [#255](https://github.com/apache/dubbo-go-hessian2/pull/255)
+
+## v1.8.1
+
+### Bugfixes
+- fix get wrong javaclassname for POJO struct. [#247](https://github.com/apache/dubbo-go-hessian2/pull/247)
+- fix not enough buf error when decode date. [#249](https://github.com/apache/dubbo-go-hessian2/pull/249)
+- fix emoji decoding error. [#254](https://github.com/apache/dubbo-go-hessian2/pull/254)
+
+## v1.8.0
+
+### New Features
+- support clean encoder/decoder, discard decode buffer. [#242](https://github.com/apache/dubbo-go-hessian2/pull/242)
+- support encode no pojo object. [#243](https://github.com/apache/dubbo-go-hessian2/pull/243)
+
+### Enhancement
+- change value reference to ptr to improve performance. [#244](https://github.com/apache/dubbo-go-hessian2/pull/244)
+
+### Bugfixes
+- fix issue that cannot decode java generic type. [#239](https://github.com/apache/dubbo-go-hessian2/pull/239)
+
+## v1.7.0
+
+### New Features
+- add GetStackTrace method into Throwabler and its implements. [#207](https://github.com/apache/dubbo-go-hessian2/pull/207)
+- catch user defined exceptions. [#208](https://github.com/apache/dubbo-go-hessian2/pull/208)
+- support java8 time object. [#212](https://github.com/apache/dubbo-go-hessian2/pull/212), [#221](https://github.com/apache/dubbo-go-hessian2/pull/221)
+- support test golang encoding data in java. [#213](https://github.com/apache/dubbo-go-hessian2/pull/213)
+- support java.sql.Time & java.sql.Date. [#219](https://github.com/apache/dubbo-go-hessian2/pull/219)
+
+### Enhancement
+- Export function EncNull. [#225](https://github.com/apache/dubbo-go-hessian2/pull/225)
+
+### Bugfixes
+- fix enum encode error in request. [#203](https://github.com/apache/dubbo-go-hessian2/pull/203)
+- fix []byte field decoding issue. [#216](https://github.com/apache/dubbo-go-hessian2/pull/216)
+- fix decoding error for map in map. [#229](https://github.com/apache/dubbo-go-hessian2/pull/229)
+
+## v1.6.0
+
+### New Features
+- ignore non-exist fields when decoding. [#201](https://github.com/apache/dubbo-go-hessian2/pull/201)
+
+### Enhancement
+- add cache in reflection to improve performance. [#179](https://github.com/apache/dubbo-go-hessian2/pull/179)
+- string decode performance improvement. [#188](https://github.com/apache/dubbo-go-hessian2/pull/188)
+
+### Bugfixes
+- fix attachment lost for nil value. [#191](https://github.com/apache/dubbo-go-hessian2/pull/191)
+- fix float32 accuracy issue. [#196](https://github.com/apache/dubbo-go-hessian2/pull/196)
+
 ## v1.5.0
 
 ### New Features
