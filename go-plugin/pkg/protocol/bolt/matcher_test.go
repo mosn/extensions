@@ -26,8 +26,7 @@ func TestMatcher(t *testing.T) {
 		},
 	}
 
-	m := &Matcher{}
 	for _, cas := range testCases {
-		assert.Equal(t, m.Matcher(cas.match), cas.MatchResult)
+		assert.Equal(t, Matcher(cas.match), cas.MatchResult)
 	}
 }

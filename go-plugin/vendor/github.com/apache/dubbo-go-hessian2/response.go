@@ -43,7 +43,7 @@ type Response struct {
 // NewResponse create a new Response
 func NewResponse(rspObj interface{}, exception error, attachments map[string]string) *Response {
 	if attachments == nil {
-		attachments = make(map[string]string)
+		attachments = make(map[string]string, 8)
 	}
 	return &Response{
 		RspObj:      rspObj,
@@ -66,9 +66,7 @@ func EnsureResponse(body interface{}) *Response {
 // https://github.com/apache/dubbo/blob/dubbo-2.7.1/dubbo-remoting/dubbo-remoting-api/src/main/java/org/apache/dubbo/remoting/exchange/codec/ExchangeCodec.java#L256
 // hessian encode response
 func packResponse(header DubboHeader, ret interface{}) ([]byte, error) {
-	var (
-		byteArray []byte
-	)
+	var byteArray []byte
 
 	response := EnsureResponse(ret)
 
@@ -140,7 +138,7 @@ func packResponse(header DubboHeader, ret interface{}) ([]byte, error) {
 	}
 
 	byteArray = encoder.Buffer()
-	byteArray = encNull(byteArray) // if not, "java client" will throw exception  "unexpected end of file"
+	byteArray = EncNull(byteArray) // if not, "java client" will throw exception  "unexpected end of file"
 	pkgLen := len(byteArray)
 	if pkgLen > int(DEFAULT_LEN) { // 8M
 		return nil, perrors.Errorf("Data length %d too large, max payload %d", pkgLen, DEFAULT_LEN)
@@ -148,7 +146,6 @@ func packResponse(header DubboHeader, ret interface{}) ([]byte, error) {
 	// byteArray{body length}
 	binary.BigEndian.PutUint32(byteArray[12:], uint32(pkgLen-HEADER_LENGTH))
 	return byteArray, nil
-
 }
 
 // hessian decode response body
@@ -339,7 +336,7 @@ var versionInt = make(map[string]int)
 // https://github.com/apache/dubbo/blob/dubbo-2.7.1/dubbo-common/src/main/java/org/apache/dubbo/common/Version.java#L96
 // isSupportResponseAttachment is for compatibility among some dubbo version
 func isSupportResponseAttachment(version string) bool {
-	if version == "" {
+	if len(version) == 0 {
 		return false
 	}
 
@@ -358,7 +355,10 @@ func isSupportResponseAttachment(version string) bool {
 }
 
 func version2Int(version string) int {
-	var v = 0
+	if len(version) == 0 {
+		return 0
+	}
+	v := 0
 	varr := strings.Split(version, ".")
 	length := len(varr)
 	for key, value := range varr {

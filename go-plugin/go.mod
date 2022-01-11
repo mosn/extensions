@@ -12,8 +12,10 @@ require (
 )
 
 replace (
-	github.com/apache/dubbo-go-hessian2 => github.com/apache/dubbo-go-hessian2 v1.4.1-0.20200516085443-fa6429e4481d
-	github.com/rcrowley/go-metrics => github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0
-	mosn.io/api => github.com/YIDWang/api v0.0.0-20211119033852-6e898f4d8222
-	mosn.io/pkg => mosn.io/pkg v0.0.0-20211208031317-7b020e8bcdd4
+	github.com/apache/dubbo-go-hessian2 => github.com/apache/dubbo-go-hessian2 v1.9.2
+	github.com/klauspost/compress => github.com/klauspost/compress v1.13.5
+	github.com/rcrowley/go-metrics => github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
+	github.com/valyala/fasthttp => github.com/valyala/fasthttp v1.28.0
+	mosn.io/api => mosn.io/api v0.0.0-20211217011300-b851d129be01
+	mosn.io/pkg => mosn.io/pkg v0.0.0-20211217101631-d914102d1baf
 )

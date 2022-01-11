@@ -30,6 +30,10 @@ import (
 	perrors "github.com/pkg/errors"
 )
 
+import (
+	"github.com/apache/dubbo-go-hessian2/java_exception"
+)
+
 var (
 	listTypeNameMapper = &sync.Map{}
 	listTypeMapper     = map[string]reflect.Type{
@@ -46,6 +50,8 @@ var (
 		"date":             reflect.TypeOf(time.Time{}),
 		"object":           reflect.TypeOf([]Object{}).Elem(),
 		"java.lang.Object": reflect.TypeOf([]Object{}).Elem(),
+		// exception field StackTraceElement
+		"java.lang.StackTraceElement": reflect.TypeOf([]*java_exception.StackTraceElement{}).Elem(),
 	}
 )
 
@@ -109,10 +115,11 @@ func getListType(javalistname string) reflect.Type {
 
 	if sliceTy == nil {
 		tpStructInfo, _ := getStructInfo(javaname)
-		tp := tpStructInfo.typ
-		if tp == nil {
+		if tpStructInfo == nil || tpStructInfo.typ == nil {
 			return nil
 		}
+
+		tp := tpStructInfo.typ
 		if tp.Kind() != reflect.Ptr {
 			tp = reflect.New(tp).Type()
 		}
@@ -142,9 +149,7 @@ func (e *Encoder) encList(v interface{}) error {
 // ::= 'V' type int value*   # fixed-length list
 // ::= [x70-77] type value*  # fixed-length typed list
 func (e *Encoder) writeTypedList(v interface{}) error {
-	var (
-		err error
-	)
+	var err error
 
 	value := reflect.ValueOf(v)
 
@@ -156,7 +161,7 @@ func (e *Encoder) writeTypedList(v interface{}) error {
 
 	value = UnpackPtrValue(value)
 	totype := UnpackPtrType(value.Type().Elem()).String()
-	var typeName = getListTypeName(totype)
+	typeName := getListTypeName(totype)
 	if typeName == "" {
 		return perrors.New("no this type name: " + totype)
 	}
@@ -179,9 +184,7 @@ func (e *Encoder) writeTypedList(v interface{}) error {
 // ::= x58 int value*        # fixed-length untyped list
 // ::= [x78-7f] value*       # fixed-length untyped list
 func (e *Encoder) writeUntypedList(v interface{}) error {
-	var (
-		err error
-	)
+	var err error
 
 	value := reflect.ValueOf(v)
 
@@ -254,7 +257,7 @@ func untypedListTag(tag byte) bool {
 	return tag == BC_LIST_FIXED_UNTYPED || tag == BC_LIST_VARIABLE_UNTYPED || listFixedUntypedLenTag(tag)
 }
 
-//decList read list
+// decList read list
 func (d *Decoder) decList(flag int32) (interface{}, error) {
 	var (
 		err error
@@ -264,7 +267,7 @@ func (d *Decoder) decList(flag int32) (interface{}, error) {
 	if flag != TAG_READ {
 		tag = byte(flag)
 	} else {
-		tag, err = d.readByte()
+		tag, err = d.ReadByte()
 		if err != nil {
 			return nil, perrors.WithStack(err)
 		}
@@ -279,6 +282,8 @@ func (d *Decoder) decList(flag int32) (interface{}, error) {
 		return d.readTypedList(tag)
 	case untypedListTag(tag):
 		return d.readUntypedList(tag)
+	case binaryTag(tag):
+		return d.decBinary(int32(tag))
 	default:
 		return nil, perrors.Errorf("error list tag: 0x%x", tag)
 	}
@@ -297,7 +302,7 @@ func (d *Decoder) readTypedList(tag byte) (interface{}, error) {
 
 	isVariableArr := tag == BC_LIST_VARIABLE
 
-	length := -1
+	var length int
 	if listFixedTypedLenTag(tag) {
 		length = int(tag - _listFixedTypedLenTagMin)
 	} else if tag == BC_LIST_FIXED {
@@ -327,20 +332,28 @@ func (d *Decoder) readTypedListValue(length int, listTyp string, isVariableArr b
 		aryValue reflect.Value
 		arrType  reflect.Type
 	)
+
 	t, err := strconv.Atoi(listTyp)
 	if err == nil {
+		// find the ref list type
 		arrType = d.typeRefs.Get(t)
+		if arrType == nil {
+			return nil, perrors.Errorf("can't find ref list type at index %d", t)
+		}
+		aryValue = reflect.MakeSlice(arrType, length, length)
 	} else {
+		// try to find the registered list type
 		arrType = getListType(listTyp)
+		if arrType != nil {
+			aryValue = reflect.MakeSlice(arrType, length, length)
+			d.typeRefs.appendTypeRefs(listTyp, arrType)
+		} else {
+			// using default generic list type if not found registered
+			aryValue = reflect.ValueOf(make([]interface{}, length, length))
+			d.typeRefs.appendTypeRefs(listTyp, aryValue.Type())
+		}
 	}
 
-	if arrType != nil {
-		aryValue = reflect.MakeSlice(arrType, length, length)
-		d.typeRefs.appendTypeRefs(arrType.String(), arrType)
-	} else {
-		aryValue = reflect.ValueOf(make([]interface{}, length, length))
-		d.typeRefs.appendTypeRefs(strings.Replace(listTyp, "[", "", -1), aryValue.Type())
-	}
 	holder := d.appendRefs(aryValue)
 	for j := 0; j < length || isVariableArr; j++ {
 		it, err := d.DecodeValue()
@@ -370,7 +383,7 @@ func (d *Decoder) readTypedListValue(length int, listTyp string, isVariableArr b
 	return holder, nil
 }
 
-//readUntypedList read untyped list
+// readUntypedList read untyped list
 // Include 3 formats:
 //      ::= x57 value* 'Z'        # variable-length untyped list
 //      ::= x58 int value*        # fixed-length untyped list
