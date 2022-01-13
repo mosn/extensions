@@ -15,10 +15,11 @@ MAPPING_PORTS="${DEBUG_PORTS} ${LISTENER_PORTS} ${EXPORT_PORTS} ${BIZ_PORTS}"
 
 sidecar=$(docker ps -a -q -f name=mosn-container)
 if [[ -n "$sidecar" ]]; then
+  echo "found mosn-container is running already and terminating..."
   docker stop mosn-container >/dev/null
   docker rm -f mosn-container >/dev/null
   rm -rf $(go env GOPATH)/src/${PROJECT_NAME}/logs
-  echo "terminate running mosn-container success."
+  echo "terminated ok"
 fi
 
 # export local ip for mosn
@@ -32,7 +33,7 @@ docker run -u admin \
   -v $(go env GOPATH)/src/${PROJECT_NAME}:/go/src/${PROJECT_NAME} \
   -v $(go env GOPATH)/src/${PROJECT_NAME}/logs:/home/admin/logs \
   -v $(go env GOPATH)/src/${SIDECAR_GITLAB_PROJECT_NAME}:/go/src/${SIDECAR_GITLAB_PROJECT_NAME} \
-  -itd --name mosn-container --env-file env_conf ${MAPPING_PORTS} \
+  -itd --name mosn-container --env-file $(go env GOPATH)/src/${PROJECT_NAME}/etc/ant/env_conf ${MAPPING_PORTS} \
   -w /go/src/${PROJECT_NAME} \
   ${BASE_IMAGE} /go/src/${PROJECT_NAME}/etc/ant/run.sh "$@"
 

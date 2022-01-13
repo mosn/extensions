@@ -17,10 +17,10 @@
         {
           "type": "proxy",
           "config": {
-            "downstream_protocol": "Http1",
+            "downstream_protocol": "sp",
             "name": "proxy_config",
             "router_config_name": "egress_sp_router",
-            "upstream_protocol": "Http1"
+            "upstream_protocol": "sp"
           }
         },
         {
