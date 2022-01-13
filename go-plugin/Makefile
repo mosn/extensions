@@ -147,7 +147,13 @@ ant:
 	-w /go/src/${SIDECAR_GITLAB_PROJECT_NAME} -it ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile.sh
 
+start:
+	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/ant/start.sh
+
+stop:
+	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/ant/stop.sh
+
 clean:
 	@rm -rf build/codecs build/stream_filters build/transcoders
 
-.PHONY: codec clean
+.PHONY: codec clean start stop
