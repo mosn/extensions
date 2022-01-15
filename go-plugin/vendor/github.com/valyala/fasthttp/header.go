@@ -271,7 +271,11 @@ func (h *RequestHeader) SetContentLength(contentLength int) {
 func (h *ResponseHeader) isCompressibleContentType() bool {
 	contentType := h.ContentType()
 	return bytes.HasPrefix(contentType, strTextSlash) ||
-		bytes.HasPrefix(contentType, strApplicationSlash)
+		bytes.HasPrefix(contentType, strApplicationSlash) ||
+		bytes.HasPrefix(contentType, strImageSVG) ||
+		bytes.HasPrefix(contentType, strImageIcon) ||
+		bytes.HasPrefix(contentType, strFontSlash) ||
+		bytes.HasPrefix(contentType, strMultipartSlash)
 }
 
 // ContentType returns Content-Type header value.
@@ -443,7 +447,7 @@ func (h *RequestHeader) SetRefererBytes(referer []byte) {
 // Method returns HTTP request method.
 func (h *RequestHeader) Method() []byte {
 	if len(h.method) == 0 {
-		return strGet
+		return []byte(MethodGet)
 	}
 	return h.method
 }
@@ -503,47 +507,47 @@ func (h *RequestHeader) SetRequestURIBytes(requestURI []byte) {
 
 // IsGet returns true if request method is GET.
 func (h *RequestHeader) IsGet() bool {
-	return bytes.Equal(h.Method(), strGet)
+	return string(h.Method()) == MethodGet
 }
 
 // IsPost returns true if request method is POST.
 func (h *RequestHeader) IsPost() bool {
-	return bytes.Equal(h.Method(), strPost)
+	return string(h.Method()) == MethodPost
 }
 
 // IsPut returns true if request method is PUT.
 func (h *RequestHeader) IsPut() bool {
-	return bytes.Equal(h.Method(), strPut)
+	return string(h.Method()) == MethodPut
 }
 
 // IsHead returns true if request method is HEAD.
 func (h *RequestHeader) IsHead() bool {
-	return bytes.Equal(h.Method(), strHead)
+	return string(h.Method()) == MethodHead
 }
 
 // IsDelete returns true if request method is DELETE.
 func (h *RequestHeader) IsDelete() bool {
-	return bytes.Equal(h.Method(), strDelete)
+	return string(h.Method()) == MethodDelete
 }
 
 // IsConnect returns true if request method is CONNECT.
 func (h *RequestHeader) IsConnect() bool {
-	return bytes.Equal(h.Method(), strConnect)
+	return string(h.Method()) == MethodConnect
 }
 
 // IsOptions returns true if request method is OPTIONS.
 func (h *RequestHeader) IsOptions() bool {
-	return bytes.Equal(h.Method(), strOptions)
+	return string(h.Method()) == MethodOptions
 }
 
 // IsTrace returns true if request method is TRACE.
 func (h *RequestHeader) IsTrace() bool {
-	return bytes.Equal(h.Method(), strTrace)
+	return string(h.Method()) == MethodTrace
 }
 
 // IsPatch returns true if request method is PATCH.
 func (h *RequestHeader) IsPatch() bool {
-	return bytes.Equal(h.Method(), strPatch)
+	return string(h.Method()) == MethodPatch
 }
 
 // IsHTTP11 returns true if the request is HTTP/1.1.
@@ -1302,8 +1306,9 @@ func (h *RequestHeader) SetCanonical(key, value []byte) {
 
 // Peek returns header value for the given key.
 //
-// Returned value is valid until the next call to ResponseHeader.
-// Do not store references to returned value. Make copies instead.
+// The returned value is valid until the response is released,
+// either though ReleaseResponse or your request handler returning.
+// Do not store references to the returned value. Make copies instead.
 func (h *ResponseHeader) Peek(key string) []byte {
 	k := getHeaderKeyBytes(&h.bufKV, key, h.disableNormalizing)
 	return h.peek(k)
@@ -1311,7 +1316,8 @@ func (h *ResponseHeader) Peek(key string) []byte {
 
 // PeekBytes returns header value for the given key.
 //
-// Returned value is valid until the next call to ResponseHeader.
+// The returned value is valid until the response is released,
+// either though ReleaseResponse or your request handler returning.
 // Do not store references to returned value. Make copies instead.
 func (h *ResponseHeader) PeekBytes(key []byte) []byte {
 	h.bufKV.key = append(h.bufKV.key[:0], key...)
@@ -1321,7 +1327,8 @@ func (h *ResponseHeader) PeekBytes(key []byte) []byte {
 
 // Peek returns header value for the given key.
 //
-// Returned value is valid until the next call to RequestHeader.
+// The returned value is valid until the request is released,
+// either though ReleaseRequest or your request handler returning.
 // Do not store references to returned value. Make copies instead.
 func (h *RequestHeader) Peek(key string) []byte {
 	k := getHeaderKeyBytes(&h.bufKV, key, h.disableNormalizing)
@@ -1330,7 +1337,8 @@ func (h *RequestHeader) Peek(key string) []byte {
 
 // PeekBytes returns header value for the given key.
 //
-// Returned value is valid until the next call to RequestHeader.
+// The returned value is valid until the request is released,
+// either though ReleaseRequest or your request handler returning.
 // Do not store references to returned value. Make copies instead.
 func (h *RequestHeader) PeekBytes(key []byte) []byte {
 	h.bufKV.key = append(h.bufKV.key[:0], key...)
@@ -1611,7 +1619,9 @@ func (h *ResponseHeader) WriteTo(w io.Writer) (int64, error) {
 
 // Header returns response header representation.
 //
-// The returned value is valid until the next call to ResponseHeader methods.
+// The returned value is valid until the request is released,
+// either though ReleaseRequest or your request handler returning.
+// Do not store references to returned value. Make copies instead.
 func (h *ResponseHeader) Header() []byte {
 	h.bufKV.value = h.AppendBytes(h.bufKV.value[:0])
 	return h.bufKV.value
@@ -1693,7 +1703,9 @@ func (h *RequestHeader) WriteTo(w io.Writer) (int64, error) {
 
 // Header returns request header representation.
 //
-// The returned representation is valid until the next call to RequestHeader methods.
+// The returned value is valid until the request is released,
+// either though ReleaseRequest or your request handler returning.
+// Do not store references to returned value. Make copies instead.
 func (h *RequestHeader) Header() []byte {
 	h.bufKV.value = h.AppendBytes(h.bufKV.value[:0])
 	return h.bufKV.value
