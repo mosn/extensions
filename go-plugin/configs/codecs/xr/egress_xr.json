@@ -38,7 +38,7 @@
   ],
   "stream_filters": [
     {
-      "type": "stream_strategy_filter"
+      "type": "goven_config"
     },
     {
       "type": "transcoder"
