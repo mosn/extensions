@@ -32,7 +32,7 @@ import (
  * Request command protocol for v1
  * 0     1     2           4           6           8          10           12          14         16
  * +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
- * |proto| type| cmdcode   |ver2 |   requestID           |codec|        timeout        |  classLen |
+ * |proto| type| cmd code  |ver2 |   requestID           |codec|        timeout        |  classLen |
  * +-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+
  * |headerLen  | contentLen            |                             ... ...                       |
  * +-----------+-----------+-----------+                                                                                               +
@@ -43,7 +43,7 @@ import (
  *
  * proto: code for protocol
  * type: request/response/request oneway
- * cmdcode: code for remoting command
+ * cmd code: code for remoting command
  * ver2:version for remoting command
  * requestID: id of request
  * codec: code for codec
@@ -53,7 +53,7 @@ import (
  * Response command protocol for v1
  * 0     1     2     3     4           6           8          10           12          14         16
  * +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
- * |proto| type| cmdcode   |ver2 |   requestID           |codec|respstatus |  classLen |headerLen  |
+ * |proto| type| cmd code  |ver2 |   requestID           |codec|resp status|  classLen |headerLen  |
  * +-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+
  * | contentLen            |                  ... ...                                              |
  * +-----------------------+                                                                       +
@@ -61,7 +61,7 @@ import (
  * +                                                                                               +
  * |                               ... ...                                                         |
  * +-----------------------------------------------------------------------------------------------+
- * respstatus: response status
+ * resp status: response status
  */
 
 type BoltProtocol struct{}
