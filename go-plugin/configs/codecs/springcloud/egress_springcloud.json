@@ -1,7 +1,7 @@
 {
-  "name": "ingress_sp",
-  "type": "ingress",
-  "address": "0.0.0.0:13080",
+  "name": "egress_springcloud",
+  "type": "egress",
+  "address": "0.0.0.0:13088",
   "bind_port": true,
   "access_logs": [
     {
@@ -17,17 +17,17 @@
         {
           "type": "proxy",
           "config": {
-            "downstream_protocol": "sp",
+            "downstream_protocol": "springcloud",
             "name": "proxy_config",
-            "router_config_name": "ingress_sp_router",
-            "upstream_protocol": "sp"
+            "router_config_name": "egress_springcloud_router",
+            "upstream_protocol": "springcloud"
           }
         },
         {
           "type": "connection_manager",
           "config": {
-            "router_config_name": "ingress_sp_router",
-            "router_configs": "./mosn/conf/routers/ingress_sp_router/"
+            "router_config_name": "egress_springcloud_router",
+            "router_configs": "./mosn/conf/routers/egress_springcloud_router/"
           }
         }
       ]
