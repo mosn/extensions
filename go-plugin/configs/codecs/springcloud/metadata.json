@@ -1,11 +1,11 @@
 {
-	"name": "sp",
+	"name": "springcloud",
 	"kind": "protocol",
 	"framework": "HTTP1",
 	"internal": false,
 	"variables": [{
 		"field": "x-mosn-data-id",
-		"pattern": ["${service}@sp"],
+		"pattern": ["${X-TARGET-APP}@springcloud"],
 		"required": true
 	}],
 	"dependencies": [{
