@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/mosn/extensions/go-plugin/pkg/protocol/xr"
 	"mosn.io/api"
 )
@@ -20,10 +22,6 @@ func (r Codec) ProtocolName() api.ProtocolName {
 	return r.proto.Name()
 }
 
-func (r Codec) XProtocol() api.XProtocol {
-	return &r.proto
-}
-
 func (r Codec) ProtocolMatch() api.ProtocolMatch {
 	return r.xrMatcher.XrProtocolMatcher
 }
@@ -32,15 +30,9 @@ func (r Codec) HTTPMapping() api.HTTPMapping {
 	return &r.xrHttpStatusMapping
 }
 
-// NewProtocolFactory create protocol per stream connection
-func (r Codec) NewProtocolFactory() api.XProtocolFactory {
-	return &r
-}
-
-func (r Codec) NewXProtocol() api.XProtocol {
+func (r Codec) NewXProtocol(ctx context.Context) api.XProtocol {
 	return &xr.Proto{}
 }
 
 // compiler check
-var _ api.XProtocolFactory = &Codec{}
 var _ api.XProtocolCodec = &Codec{}
