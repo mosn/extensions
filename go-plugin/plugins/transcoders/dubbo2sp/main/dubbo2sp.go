@@ -104,7 +104,7 @@ func (t *dubbo2http) TranscodingRequest(ctx context.Context, headers api.HeaderM
 	})
 	service, _ := sourceHeader.Get("service")
 	method, _ := sourceHeader.Get("method")
-	param := conf[catStr(service, method)]
+	param := conf[catStr(service, ".", method)]
 
 	querys := map[string]string{}
 	var byteData []byte
