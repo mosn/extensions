@@ -1,7 +1,7 @@
 {
   "name": "egress_springcloud",
   "type": "egress",
-  "address": "0.0.0.0:10088",
+  "address": "0.0.0.0:13088",
   "bind_port": true,
   "access_logs": [
     {
@@ -17,10 +17,10 @@
         {
           "type": "proxy",
           "config": {
-            "downstream_protocol": "Http1",
+            "downstream_protocol": "springcloud",
             "name": "proxy_config",
             "router_config_name": "egress_springcloud_router",
-            "upstream_protocol": "Http1"
+            "upstream_protocol": "springcloud"
           }
         },
         {
@@ -35,7 +35,7 @@
   ],
   "stream_filters": [
     {
-      "type": "stream_strategy_filter"
+      "type": "govern_config"
     },
     {
       "type": "transcoder"

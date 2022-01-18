@@ -25,4 +25,8 @@ CGO_ENABLED=1 go build -mod=readonly -gcflags "all=-N -l" \
   -ldflags "-B 0x$(head -c20 /dev/urandom | od -An -tx1 | tr -d ' \n') -X main.Version=${MAJOR_VERSION} -X main.GitVersion=${GIT_VERSION}" \
   -v -o mosn "${SIDECAR_PROJECT}/cmd/mosn/main"
 
-mv mosn "/go/src/${PLUGIN_PROJECT}/build/sidecar/binary/mosn"
+if [ -f mosn ]; then
+  md5sum -b mosn | cut -d' ' -f1 >mosn-${MAJOR_VERSION}-${GIT_VERSION}.md5
+  mv mosn-${MAJOR_VERSION}-${GIT_VERSION}.md5 "/go/src/${PLUGIN_PROJECT}/build/sidecar/binary/mosn-${MAJOR_VERSION}-${GIT_VERSION}.md5"
+  mv mosn "/go/src/${PLUGIN_PROJECT}/build/sidecar/binary/mosn"
+fi

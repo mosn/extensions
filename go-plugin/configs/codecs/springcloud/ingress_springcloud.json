@@ -1,7 +1,7 @@
 {
   "name": "ingress_springcloud",
   "type": "ingress",
-  "address": "0.0.0.0:10080",
+  "address": "0.0.0.0:13080",
   "bind_port": true,
   "access_logs": [
     {
@@ -17,10 +17,10 @@
         {
           "type": "proxy",
           "config": {
-            "downstream_protocol": "Http1",
+            "downstream_protocol": "springcloud",
             "name": "proxy_config",
             "router_config_name": "ingress_springcloud_router",
-            "upstream_protocol": "Http1"
+            "upstream_protocol": "springcloud"
           }
         },
         {
@@ -35,7 +35,7 @@
   ],
   "stream_filters": [
     {
-      "type": "stream_strategy_filter"
+      "type": "govern_config"
     },
     {
       "type": "transcoder"

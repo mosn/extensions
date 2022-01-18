@@ -147,7 +147,21 @@ ant:
 	-w /go/src/${SIDECAR_GITLAB_PROJECT_NAME} -it ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile.sh
 
+pkg-ant:
+	docker run --rm \
+	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
+	-v $(shell go env GOPATH):/go \
+	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
+	bash /go/src/${PROJECT_NAME}/etc/script/package-ant.sh
+
+start:
+	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/ant/start.sh
+
+stop:
+	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/ant/stop.sh
+
 clean:
 	@rm -rf build/codecs build/stream_filters build/transcoders
 
-.PHONY: codec clean
+.PHONY: codec clean start stop
