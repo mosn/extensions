@@ -387,6 +387,11 @@ func catStr(params ...string) string {
 
 func getParamAdapter(uri string, maps map[string]*paramAdapter) (*paramAdapter, []string) {
 
+	param := maps[uri]
+	if param != nil {
+		return param, nil
+	}
+
 	for k, v := range maps {
 		flysnowRegexp := regexp.MustCompile(catStr("^", k, "$"))
 		params := flysnowRegexp.FindStringSubmatch(uri)
