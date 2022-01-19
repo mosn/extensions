@@ -1,8 +1,8 @@
 {
-  "type": "sp2dubbo",
+  "type": "springcloud2dubbo",
   "go_plugin_config": {
-    "so_path": "./transcoder-sp2dubbo.so",
-    "src_protocol": "sp",
+    "so_path": "./transcoder-springcloud2dubbo.so",
+    "src_protocol": "springcloud",
     "dst_protocol": "dubbo"
   },
   "matcher_config":{
@@ -23,6 +23,16 @@
         "method": "sub",
         "service": "com.alipay.sofa.ms.service.EchoService",
         "body": {"type": "com.alipay.sofa.ms.service.model.SubReq"}
+      },
+      "reservation-client./reservations/(.*)/echo.POST": {
+        "method": "echo",
+        "service": "com.alipay.sofa.ms.service.EchoService",
+        "http_path_params":[
+          {
+            "type":"java.lang.String",
+            "key":"message"
+          }
+        ]
       }
     }
   },
