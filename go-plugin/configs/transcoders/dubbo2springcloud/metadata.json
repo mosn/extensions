@@ -1,0 +1,8 @@
+{
+	"name" : "dubbo2springcloud",
+	"kind": "transcoder",
+	"dependencies": [{
+		"mosn_api": "v0.0.0-20211119033852-6e898f4d8222",
+		"mosn_pkg": "v0.0.0-20211208031317-7b020e8bcdd4"
+	}]
+}

@@ -30,6 +30,7 @@ import (
 	"mosn.io/pkg/log"
 	"mosn.io/pkg/protocol/http"
 	"strconv"
+	"strings"
 )
 
 const HTTP_DUBBO_REQUEST_ID_NAME = "Dubbo-Request-Id"
@@ -45,11 +46,12 @@ type DubboHttpResponseBody struct {
 //"http_method": "POST",
 //"http_service": "reservation-service"
 type paramAdapter struct {
-	HttpPath    string   `json:"http_path"`
-	HttpMethod  string   `json:"http_method"`
-	HttpService string   `json:"http_service"`
-	HttpQuery   []*query `json:"http_query"`
-	HttpBody    *body    `json:"http_body"`
+	HttpPath       string           `json:"http_path"`
+	HttpMethod     string           `json:"http_method"`
+	HttpService    string           `json:"http_service"`
+	HttpQuery      []*query         `json:"http_query"`
+	HttpBody       *body            `json:"http_body"`
+	HttpPathParams []*httpPathParam `json:"http_path_params"`
 }
 
 type query struct {
@@ -59,6 +61,11 @@ type query struct {
 
 type body struct {
 	Type string `json:"type"`
+}
+
+type httpPathParam struct {
+	Type string `json:"type"`
+	Key  string `json:"key"`
 }
 
 var conf = map[string]*paramAdapter{}
@@ -97,25 +104,32 @@ func (t *dubbo2http) TranscodingRequest(ctx context.Context, headers api.HeaderM
 	})
 	service, _ := sourceHeader.Get("service")
 	method, _ := sourceHeader.Get("method")
-	param := conf[service+"."+method]
+	param := conf[catStr(service, ".", method)]
 
 	querys := map[string]string{}
 	var byteData []byte
 	if param != nil {
 		reqHeaderImpl.Set("x-mosn-method", param.HttpMethod)
 		reqHeaderImpl.Set("service", param.HttpService)
+		path := param.HttpPath
 		if params, ok := content["parameters"].([]dubbo.Parameter); ok {
+			i := 0
 			for _, p := range params {
-				if param.HttpBody != nil && p.Type == param.HttpBody.Type {
-					byteData, _ = json.Marshal(p.Value)
+				for _, h := range param.HttpPathParams {
+					if p.Type == h.Type && i < len(param.HttpPathParams) {
+						strings.Replace(path, catStr("{", h.Key, "}"), Strval(p.Value), 1)
+						i--
+						break
+					}
 				}
 				for _, q := range param.HttpQuery {
-					if p.Type == q.Type {
-						if querys[q.Key] == "" {
-							querys[q.Key] = Strval(p.Value)
-							break
-						}
+					if p.Type == q.Type && querys[q.Key] == "" {
+						querys[q.Key] = Strval(p.Value)
+						break
 					}
+				}
+				if param.HttpBody != nil && p.Type == param.HttpBody.Type {
+					byteData, _ = json.Marshal(p.Value)
 				}
 			}
 
@@ -123,10 +137,9 @@ func (t *dubbo2http) TranscodingRequest(ctx context.Context, headers api.HeaderM
 
 		queryStr := ""
 		for k, v := range querys {
-			queryStr = queryStr + "&" + k + "=" + v
+			queryStr = catStr(queryStr, "&", k, "=", v)
 		}
 
-		path := param.HttpPath
 		if queryStr != "" {
 			reqHeaderImpl.Set("x-mosn-querystring", queryStr[1:])
 		}
@@ -353,4 +366,12 @@ func Strval(value interface{}) string {
 	}
 
 	return key
+}
+
+func catStr(params ...string) string {
+	var buffer bytes.Buffer
+	for _, v := range params {
+		buffer.WriteString(v)
+	}
+	return buffer.String()
 }

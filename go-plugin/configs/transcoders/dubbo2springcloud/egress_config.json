@@ -1,15 +1,15 @@
 {
-  "type": "dubbo2sp",
+  "type": "dubbo2springcloud",
   "go_plugin_config": {
-    "so_path": "./transcoder-dubbo2sp.so",
+    "so_path": "./transcoder-dubbo2springcloud.so",
     "src_protocol": "dubbo",
-    "dst_protocol": "sp"
+    "dst_protocol": "springcloud"
   },
   "matcher_config":{
     "matcher_type" :"simpleMatcher"
   },
   "rule_info": {
-    "upstream_protocol": "sp",
+    "upstream_protocol": "springcloud",
     "description": "dubbo -> spring cloud",
     "config": {
       "com.alipay.sofa.ms.service.EchoService.echo": {
@@ -33,6 +33,18 @@
         "http_path": "/reservations/sub",
         "http_method": "POST",
         "http_service": "reservation-service",
+        "http_body": {"type": "com.alipay.sofa.ms.service.model.SubReq"}
+      },
+      "com.alipay.sofa.ms.service.EchoService.rest": {
+        "http_path": "/reservations/{message}/rest",
+        "http_method": "POST",
+        "http_service": "reservation-service",
+        "http_path_params":[
+          {
+            "type":"java.lang.String",
+            "key":"message"
+          }
+        ],
         "http_body": {"type": "com.alipay.sofa.ms.service.model.SubReq"}
       }
     }
