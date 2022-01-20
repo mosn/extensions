@@ -56,7 +56,7 @@
 
 #### [2.2.6 启动dubbo应用服务](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.2dubbo.md#226-%E5%90%AF%E5%8A%A8dubbo%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1)
 
-2.3 传统xml协议标准接入实战
+2.3 传统xml协议标准接入实战 @诣极
 
 ### [2.4 轻松实现http协议扩展](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.4springcloud.md)
 
@@ -72,19 +72,17 @@
 
 #### [2.4.6 获取http服务标识](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.4springcloud.md#246-%E8%8E%B7%E5%8F%96http%E6%9C%8D%E5%8A%A1%E6%A0%87%E8%AF%86)
 
+2.5 拦截器 @诣极
 
+2.5.1 动手实现http简易鉴权拦截器 @诣极
 
-2.5 拦截器
+2.6 协议转换插件 @檀少
 
-2.5.1 动手实现http简易鉴权拦截器
+2.6.1 标准dubbo和spring cloud协议互转实践 @檀少
 
-2.6 协议转换插件
+2.6.2 标准bolt和spring cloud协议互转实践 @省善
 
-2.6.1 标准dubbo和spring cloud协议互转实践
-
-2.6.2 标准bolt和spring cloud协议互转实践
-
-2.6.3 传统xml和spring cloud协议互转实践
+2.6.3 传统xml和spring cloud协议互转实践 @檀少
 
 2.7 mesh治理能力
 
@@ -93,6 +91,8 @@
 2.7.1.1 标准dubbo接入服务限流能力
 
 2.7.1.2 传统xml协议接入服务限流能力
+
+2.7.1.3 标准springcloud接入服务限流能力
 
 2.7.2 服务熔断能力
 

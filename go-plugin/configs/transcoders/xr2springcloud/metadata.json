@@ -1,5 +1,5 @@
 {
-	"name" : "xr2sp",
+	"name" : "xr2springcloud",
 	"kind": "transcoder",
 	"dependencies": [{
 		"mosn_api": "v0.0.0-20211217011300-b851d129be01",

@@ -1,12 +1,12 @@
 {
-  "type": "xr2sp",
+  "type": "xr2springcloud",
   "go_plugin_config": {
-    "so_path": "./transcoder-xr2sp.so",
+    "so_path": "./transcoder-xr2springcloud.so",
     "src_protocol": "xr",
-    "dst_protocol": "sp"
+    "dst_protocol": "springcloud"
   },
   "rule_info": {
-    "upstream_protocol": "sp",
+    "upstream_protocol": "springcloud",
     "description": "xr -> spring cloud"
   },
   "config": {
