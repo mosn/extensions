@@ -1,15 +1,15 @@
 {
-  "type":"bolt2sp",
+  "type":"bolt2springcloud",
   "go_plugin_config": {
-    "so_path":"./bolt2sp.so",  
+    "so_path":"./bolt2springcloud.so",
     "src_protocol":"bolt",    
-    "dst_protocol":"sp"     
+    "dst_protocol":"springcloud"
   },
   "matcher_config":{
        "matcher_type" :"simpleMatcher"
   },
   "rule_info":{
-    "upstream_protocol":"sp",
+    "upstream_protocol":"springcloud",
     "description":"hello",
     "config": {
         "class":"com.alipay.sofa.rpc.core.response.SofaResponse",
