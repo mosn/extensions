@@ -58,7 +58,21 @@
 
 2.3 传统xml协议标准接入实战
 
-2.4 轻松实现http协议扩展
+### [2.4 轻松实现http协议扩展](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.4springcloud.md)
+
+#### [2.4.1 编解码实现](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.4springcloud.md#241-%E7%BC%96%E8%A7%A3%E7%A0%81%E5%AE%9E%E7%8E%B0)
+
+#### [2.4.2 编解码对象](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.4springcloud.md#242-%E7%BC%96%E8%A7%A3%E7%A0%81%E5%AF%B9%E8%B1%A1)
+
+#### [2.4.3 协议Codec](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.4springcloud.md#243-%E5%8D%8F%E8%AE%AEcodec)
+
+#### [2.4.4 启动springcloud应用服务](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.4springcloud.md#244-%E5%90%AF%E5%8A%A8springcloud%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1)
+
+#### [2.4.5 再谈http协议扩展](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.4springcloud.md#245-%E5%86%8D%E8%B0%88http%E5%8D%8F%E8%AE%AE%E6%89%A9%E5%B1%95)
+
+#### [2.4.6 获取http服务标识](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.4springcloud.md#246-%E8%8E%B7%E5%8F%96http%E6%9C%8D%E5%8A%A1%E6%A0%87%E8%AF%86)
+
+
 
 2.5 拦截器
 
