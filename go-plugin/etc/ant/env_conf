@@ -23,3 +23,4 @@ MOSN_PUB_IP_ENV=PUB_BOLT_LOCAL_IP
 MOSN_PUB_LOCAL_IP_ENV=PUB_BOLT_LOCAL_IP
 PUB_BOLT_LOCAL_IP
 PLUGINS_ACTIVE=[{"kind":"protocol","plugins":[{"name":"dubbo","version":"default"},{"name":"bolt","version":"default"}]}]
+DEV_MATCHER_ENABLE=true

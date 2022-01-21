@@ -1,0 +1,9 @@
+{
+  "type": "springcloud_header",
+  "go_plugin_config": {
+    "so_path": "./stream_filter-springcloud_header.so"
+  },
+  "config": {
+    "before": "govern_config"
+  }
+}
