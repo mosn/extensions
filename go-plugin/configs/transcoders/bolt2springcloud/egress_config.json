@@ -6,7 +6,20 @@
     "dst_protocol":"springcloud"
   },
   "matcher_config":{
-       "matcher_type" :"simpleMatcher"
+      "matcher_type": "mulit_matcher",
+      "config": {
+          "name": "bolt2springcloud",
+          "variables": [
+              {
+                  "name": "service",
+                  "values": [
+                      "com.alipay.sofa.ms.service.SofaEchoService:1.0"
+                  ],
+                  "operator": "and",
+                  "regex": false
+              }
+          ]
+      }
   },
   "rule_info":{
     "upstream_protocol":"springcloud",
@@ -15,15 +28,10 @@
         "class":"com.alipay.sofa.rpc.core.response.SofaResponse",
         "service":"com.alipay.sofa.ms.service.SofaEchoService:1.0",
         "com.alipay.sofa.ms.service.SofaEchoService:1.0":{
-            "Test":{
-                "x-mosn-path":"/test/",
-                "x-mosn-host":"",
-                "x-mosn-method":""
-            },
             "echo":{
-                "x-mosn-path":"/echo/",
+                "x-mosn-path":"/reservations/hello",
                 "x-mosn-host":"",
-                "x-mosn-method":""
+                "x-mosn-method":"GET"
             }
         }
     }

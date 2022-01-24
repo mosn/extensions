@@ -13,14 +13,15 @@ import (
 )
 
 const (
-	DefaultClass   = "com.alipay.sofa.rpc.core.response.SofaResponse"
-	DefaultPath    = "/"
-	ClassName      = "class"
-	ServiceName    = "service"
-	BoltMethodName = "sofa_head_method_name"
-	MosnPath       = "x-mosn-path"
-	MosnMethod     = "x-mosn-method"
-	MosnHost       = "x-mosn-host"
+	DefaultClass    = "com.alipay.sofa.rpc.core.response.SofaResponse"
+	DefaultPath     = "/"
+	ClassName       = "class"
+	ServiceName     = "service"
+	HttpServiceName = "X-TARGET-APP"
+	BoltMethodName  = "sofa_head_method_name"
+	MosnPath        = "x-mosn-path"
+	MosnMethod      = "x-mosn-method"
+	MosnHost        = "x-mosn-host"
 )
 
 var (
@@ -102,7 +103,7 @@ func (t *bolt2sp) updateHttpService(httpHeaders *fasthttp.Request) error {
 	if !ok {
 		return ErrEmptyService
 	}
-	httpHeaders.Header.Set(ServiceName, value)
+	httpHeaders.Header.Set(HttpServiceName, value)
 	return nil
 }
 

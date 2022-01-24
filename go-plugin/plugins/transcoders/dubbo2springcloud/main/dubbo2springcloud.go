@@ -22,6 +22,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/mosn/extensions/go-plugin/pkg/protocol/dubbo"
 	"github.com/valyala/fasthttp"
 	"mosn.io/api"
@@ -29,8 +32,6 @@ import (
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
 	"mosn.io/pkg/protocol/http"
-	"strconv"
-	"strings"
 )
 
 const HTTP_DUBBO_REQUEST_ID_NAME = "Dubbo-Request-Id"
@@ -110,7 +111,7 @@ func (t *dubbo2http) TranscodingRequest(ctx context.Context, headers api.HeaderM
 	var byteData []byte
 	if param != nil {
 		reqHeaderImpl.Set("x-mosn-method", param.HttpMethod)
-		reqHeaderImpl.Set("service", param.HttpService)
+		reqHeaderImpl.Set("X-TARGET-APP", param.HttpService)
 		path := param.HttpPath
 		if params, ok := content["parameters"].([]dubbo.Parameter); ok {
 			i := 0
