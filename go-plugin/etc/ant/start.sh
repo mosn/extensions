@@ -23,7 +23,7 @@ if [[ -n "$sidecar" ]]; then
 fi
 
 # export local ip for mosn
-export PUB_BOLT_LOCAL_IP=$(ifconfig -a | grep inet | grep -v 127.0.0.1 | grep -v inet6 | grep -v "inet 0" | awk '{print $2}' | tr -d "addr:")
+export PUB_BOLT_LOCAL_IP=$(ifconfig -a | grep inet | grep -v 127.0.0.1 | grep -v inet6 | grep -v "inet 0" | grep -v "\-\-" | awk '{print $2}' | tr -d "addr:")
 echo "host address: ${PUB_BOLT_LOCAL_IP}"
 
 docker run -u admin \

@@ -42,18 +42,18 @@ const (
 )
 
 // StreamId query mapping stream id
-func (proto *Proto) StreamId(ctx context.Context, key string) (val uint64, found bool) {
+func (proto *XrProtocol) StreamId(ctx context.Context, key string) (val uint64, found bool) {
 	val, found = proto.streams.Get(key)
 	return
 }
 
 // PutStreamId put mapping stream id
-func (proto *Proto) PutStreamId(ctx context.Context, key string, val uint64) (err error) {
+func (proto *XrProtocol) PutStreamId(ctx context.Context, key string, val uint64) (err error) {
 	err = proto.streams.Put(key, val)
 	return err
 }
 
-func (proto *Proto) RemoveStreamId(ctx context.Context, key string) {
+func (proto *XrProtocol) RemoveStreamId(ctx context.Context, key string) {
 	proto.streams.Remove(key)
 	return
 }

@@ -30,7 +30,7 @@ import (
 	"strings"
 )
 
-func (proto *Proto) encodeRequest(ctx context.Context, request *Request) (api.IoBuffer, error) {
+func (proto *XrProtocol) encodeRequest(ctx context.Context, request *Request) (api.IoBuffer, error) {
 
 	packetLen := 8 /** fixed 8 byte length */ + request.Payload.Len()
 	buf := buffer.GetIoBuffer(packetLen)
@@ -62,7 +62,7 @@ func (proto *Proto) encodeRequest(ctx context.Context, request *Request) (api.Io
 	return buf, nil
 }
 
-func (proto *Proto) encodeResponse(ctx context.Context, response *Response) (api.IoBuffer, error) {
+func (proto *XrProtocol) encodeResponse(ctx context.Context, response *Response) (api.IoBuffer, error) {
 
 	packetLen := 8 /** fixed 8 byte length */ + response.Payload.Len()
 	buf := buffer.GetIoBuffer(packetLen)
@@ -90,7 +90,7 @@ func (proto *Proto) encodeResponse(ctx context.Context, response *Response) (api
 
 // prefixOfZero Appends '0' character until 8 bytes are satisfied
 // eg: 000064, length 64, append prefix 0000
-func (proto *Proto) prefixOfZero(buf buffer.IoBuffer, payloadLen int) {
+func (proto *XrProtocol) prefixOfZero(buf buffer.IoBuffer, payloadLen int) {
 	rayLen := strconv.Itoa(payloadLen)
 	if count := 8 - len(rayLen); count > 0 {
 		for i := 0; i < count; i++ {

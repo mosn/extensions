@@ -13,7 +13,7 @@ func LoadCodec() api.XProtocolCodec {
 }
 
 type Codec struct {
-	proto               xr.Proto
+	proto               xr.XrProtocol
 	xrMatcher           xr.Matcher
 	xrHttpStatusMapping xr.StatusMapping
 }
@@ -31,7 +31,7 @@ func (r Codec) HTTPMapping() api.HTTPMapping {
 }
 
 func (r Codec) NewXProtocol(ctx context.Context) api.XProtocol {
-	return &xr.Proto{}
+	return &xr.XrProtocol{}
 }
 
 // compiler check

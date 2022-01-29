@@ -28,7 +28,7 @@ import (
 	"strings"
 )
 
-func (proto *Proto) decodeRequest(ctx context.Context, buf api.IoBuffer, header *common.Header) (interface{}, error) {
+func (proto *XrProtocol) decodeRequest(ctx context.Context, buf api.IoBuffer, header *common.Header) (interface{}, error) {
 	bufLen := buf.Len()
 	data := buf.Bytes()
 
@@ -75,7 +75,7 @@ func (proto *Proto) decodeRequest(ctx context.Context, buf api.IoBuffer, header 
 	return request, nil
 }
 
-func (proto *Proto) decodeResponse(ctx context.Context, buf api.IoBuffer, header *common.Header) (interface{}, error) {
+func (proto *XrProtocol) decodeResponse(ctx context.Context, buf api.IoBuffer, header *common.Header) (interface{}, error) {
 	bufLen := buf.Len()
 	data := buf.Bytes()
 
