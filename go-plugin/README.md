@@ -56,7 +56,19 @@
 
 #### [2.2.6 启动dubbo应用服务](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.2dubbo.md#226-%E5%90%AF%E5%8A%A8dubbo%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1)
 
-2.3 传统xml协议标准接入实战 @诣极
+### [2.3 传统xml协议标准接入实战](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.3xml.md) 
+
+#### [2.3.1 编解码实现](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.3xml.md#231-%E7%BC%96%E8%A7%A3%E7%A0%81%E5%AE%9E%E7%8E%B0) 
+
+#### [2.3.2 编解码对象](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.3xml.md#232-%E7%BC%96%E8%A7%A3%E7%A0%81%E5%AF%B9%E8%B1%A1) 
+
+#### [2.3.3 心跳处理](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.3xml.md#233-%E5%BF%83%E8%B7%B3%E5%A4%84%E7%90%86) 
+
+#### [2.3.4 请求劫持](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.3xml.md#234-%E8%AF%B7%E6%B1%82%E5%8A%AB%E6%8C%81) 
+
+#### [2.3.5 协议Codec](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.3xml.md#235-%E5%8D%8F%E8%AE%AEcodec) 
+
+#### [2.3.6 启动xr应用服务](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.3xml.md#236-%E5%90%AF%E5%8A%A8xr%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1) 
 
 ### [2.4 轻松实现http协议扩展](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.4springcloud.md)
 
@@ -80,7 +92,7 @@
 
 2.6.1 标准dubbo和spring cloud协议互转实践 @檀少
 
-2.6.2 标准bolt和spring cloud协议互转实践 @省善
+#### [2.6.2 标准bolt和spring cloud协议互转实践](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.6.2bolt2springcloud.md) 
 
 2.6.3 传统xml和spring cloud协议互转实践 @檀少
 
