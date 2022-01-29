@@ -32,7 +32,7 @@ import (
 	"sync/atomic"
 )
 
-// Proto protocol format: 8 byte length + string body
+// XrProtocol protocol format: 8 byte length + string body
 // <Service>
 //    <Header>
 //		 <key> ... </key>
@@ -72,15 +72,15 @@ import (
 //    </Body>
 //  </Service>
 
-type Proto struct {
+type XrProtocol struct {
 	streams safe.IntMap
 }
 
-func (proto *Proto) Name() api.ProtocolName {
+func (proto *XrProtocol) Name() api.ProtocolName {
 	return Xr
 }
 
-func (proto *Proto) Encode(ctx context.Context, model interface{}) (api.IoBuffer, error) {
+func (proto *XrProtocol) Encode(ctx context.Context, model interface{}) (api.IoBuffer, error) {
 	switch frame := model.(type) {
 	case *Request:
 		return proto.encodeRequest(ctx, frame)
@@ -92,7 +92,7 @@ func (proto *Proto) Encode(ctx context.Context, model interface{}) (api.IoBuffer
 	}
 }
 
-func (proto *Proto) Decode(ctx context.Context, buf api.IoBuffer) (interface{}, error) {
+func (proto *XrProtocol) Decode(ctx context.Context, buf api.IoBuffer) (interface{}, error) {
 
 	bLen := buf.Len()
 	data := buf.Bytes()
@@ -134,41 +134,41 @@ func (proto *Proto) Decode(ctx context.Context, buf api.IoBuffer) (interface{}, 
 }
 
 // Trigger heartbeat detect.
-func (proto *Proto) Trigger(context context.Context, requestId uint64) api.XFrame {
+func (proto *XrProtocol) Trigger(context context.Context, requestId uint64) api.XFrame {
 	return nil
 }
 
-func (proto *Proto) Reply(context context.Context, request api.XFrame) api.XRespFrame {
+func (proto *XrProtocol) Reply(context context.Context, request api.XFrame) api.XRespFrame {
 	return nil
 }
 
 // Hijack hijack request, maybe timeout
-func (proto *Proto) Hijack(context context.Context, request api.XFrame, statusCode uint32) api.XRespFrame {
+func (proto *XrProtocol) Hijack(context context.Context, request api.XFrame, statusCode uint32) api.XRespFrame {
 	resp := proto.hijackResponse(request, statusCode)
 
 	return resp
 
 }
 
-func (proto *Proto) Mapping(httpStatusCode uint32) uint32 {
+func (proto *XrProtocol) Mapping(httpStatusCode uint32) uint32 {
 	return httpStatusCode
 }
 
 // PoolMode returns whether ping-pong or multiplex
-func (proto *Proto) PoolMode() api.PoolMode {
+func (proto *XrProtocol) PoolMode() api.PoolMode {
 	return api.Multiplex
 }
 
-func (proto *Proto) EnableWorkerPool() bool {
+func (proto *XrProtocol) EnableWorkerPool() bool {
 	return true
 }
 
-func (proto *Proto) GenerateRequestID(streamID *uint64) uint64 {
+func (proto *XrProtocol) GenerateRequestID(streamID *uint64) uint64 {
 	return atomic.AddUint64(streamID, 1)
 }
 
 // hijackResponse build hijack response
-func (proto *Proto) hijackResponse(request api.XFrame, statusCode uint32) *Response {
+func (proto *XrProtocol) hijackResponse(request api.XFrame, statusCode uint32) *Response {
 	req := request.(*Request)
 	body := req.Payload.String()
 
