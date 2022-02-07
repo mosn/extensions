@@ -84,9 +84,11 @@
 
 #### [2.4.6 获取http服务标识](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.4springcloud.md#246-%E8%8E%B7%E5%8F%96http%E6%9C%8D%E5%8A%A1%E6%A0%87%E8%AF%86)
 
-2.5 拦截器 @诣极
+### [2.5 拦截器](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.5filter.md) 
 
-2.5.1 动手实现http简易鉴权拦截器 @诣极
+#### [2.5.1 动手实现http简易鉴权拦截器](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.5filter.md#251-%E5%8A%A8%E6%89%8B%E5%AE%9E%E7%8E%B0http%E7%AE%80%E6%98%93%E9%89%B4%E6%9D%83%E6%8B%A6%E6%88%AA%E5%99%A8) 
+
+#### [2.5.2 启动springcloud应用服务](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.5filter.md#252-%E5%90%AF%E5%8A%A8springcloud%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1)  
 
 2.6 协议转换插件 @檀少
 
