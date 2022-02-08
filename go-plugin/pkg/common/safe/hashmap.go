@@ -34,6 +34,7 @@ func (m *IntMap) Get(key string) (val uint64, found bool) {
 
 	m.lock.RLock()
 	if len(m.table) <= 0 {
+		m.lock.RUnlock() // release read lock.
 		return 0, false
 	}
 
