@@ -4,11 +4,6 @@
   "address": "0.0.0.0:12200",
   "bind_port": true,
   "inspector": true,
-  "access_logs": [
-    {
-      "log_path": "./logs/mosn/access_ingress.log"
-    }
-  ],
   "filter_chains": [
     {
       "filters": [
@@ -57,6 +52,12 @@
       "type": "cloud_metrics"
     },
     {
+      "type": "fault_inject",
+      "config": {
+        "direction": "inbound"
+      }
+    },
+    {
       "type": "tls_trace"
     },
     {
@@ -74,17 +75,16 @@
       }
     },
     {
+      "type": "fault_tolerance_send"
+    },
+    {
+      "type": "fault_tolerance_choose"
+    },
+    {
       "type": "verify-identity",
       "config": {
         "mist_port": 12311,
         "key_sync_interval": 10
-      }
-    },
-    {
-      "type": "rbac",
-      "config": {
-        "rbac_log_path": "/home/admin/logs/mosn/rbac.log",
-        "dynamic_resource_type": "drm"
       }
     },
     {
@@ -95,13 +95,6 @@
       "config": {
         "log_dir_path": "/home/admin/logs/awatch-go/",
         "disk_inject_path": "/home/admin/logs/.chaos/"
-      }
-    },
-    {
-      "type": "mirror",
-      "config": {
-        "mirror_log_path": "/home/admin/logs/mosn/mirror.log",
-        "mirror_control_type": "drm"
       }
     },
     {
