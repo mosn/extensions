@@ -47,9 +47,6 @@
       "type": "tamperproofing"
     },
     {
-      "type": "rpc_service_tracer"
-    },
-    {
       "type": "cloud_metrics"
     },
     {
