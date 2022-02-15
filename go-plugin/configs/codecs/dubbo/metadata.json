@@ -11,7 +11,7 @@
 		{
 			"field": "x-mosn-method",
 			"pattern": ["${method}"],
-			"required": true
+			"required": false
 		},
 		{
 			"field": "x-mosn-caller-app",

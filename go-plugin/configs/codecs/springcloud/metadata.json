@@ -11,7 +11,7 @@
 		{
 			"field": "x-mosn-method",
 			"pattern": ["${x-mosn-method}"],
-			"required": true
+			"required": false
 		},
 		{
 			"field": "x-mosn-caller-app",
@@ -21,7 +21,7 @@
 		{
 			"field": "x-mosn-target-app",
 			"pattern": ["${X-TARGET-APP}"],
-			"required": true
+			"required": false
 		}
 	],
 	"dependencies": [{
