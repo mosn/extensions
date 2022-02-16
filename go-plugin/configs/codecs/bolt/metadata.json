@@ -11,17 +11,17 @@
 		{
 			"field": "x-mosn-method",
 			"pattern": ["${sofa_head_method_name}", "${MethodName}"],
-			"required": true
+			"required": false
 		},
 		{
 			"field": "x-mosn-caller-app",
 			"pattern": ["${rpc_trace_context.sofaCallerApp}", "${X-CALLER-APP}", "${app}"],
-			"required": true
+			"required": false
 		},
 		{
 			"field": "x-mosn-target-app",
 			"pattern": ["${sofa_head_target_app}"],
-			"required": true
+			"required": false
 		}
 	],
 	"dependencies": [{

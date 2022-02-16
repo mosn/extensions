@@ -5,7 +5,7 @@
   "bind_port": true,
   "access_logs": [
     {
-      "log_path": "./logs/mosn/egress.log"
+      "log_path": "./logs/mosn/access_egress.log"
     }
   ],
   "filter_chains": [
@@ -42,9 +42,6 @@
     },
     {
       "type": "tamperproofing"
-    },
-    {
-      "type": "rpc_service_tracer"
     },
     {
       "type": "cloud_metrics"

@@ -4,10 +4,26 @@
 	"framework": "HTTP1",
 	"internal": false,
 	"variables": [{
-		"field": "x-mosn-data-id",
-		"pattern": ["${X-TARGET-APP}@springcloud"],
-		"required": true
-	}],
+			"field": "x-mosn-data-id",
+			"pattern": ["${X-TARGET-APP}@springcloud"],
+			"required": true
+		},
+		{
+			"field": "x-mosn-method",
+			"pattern": ["${x-mosn-method}"],
+			"required": false
+		},
+		{
+			"field": "x-mosn-caller-app",
+			"pattern": ["${X-CALLER-APP}"],
+			"required": false
+		},
+		{
+			"field": "x-mosn-target-app",
+			"pattern": ["${X-TARGET-APP}"],
+			"required": false
+		}
+	],
 	"dependencies": [{
 		"mosn_api": "v0.0.0-20211217011300-b851d129be01",
 		"mosn_pkg": "v0.0.0-20211217101631-d914102d1baf"
