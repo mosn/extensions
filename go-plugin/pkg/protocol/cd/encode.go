@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-package xr
+package cd
 
 import (
 	"bytes"
 	"context"
 	"encoding/xml"
 	"github.com/mosn/extensions/go-plugin/pkg/common"
-	"io"
 	"mosn.io/api"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
@@ -30,19 +29,19 @@ import (
 	"strings"
 )
 
-func (proto *XrProtocol) encodeRequest(ctx context.Context, request *Request) (api.IoBuffer, error) {
+func (proto *Protocol) encodeRequest(ctx context.Context, request *Request) (api.IoBuffer, error) {
 
-	packetLen := 8 /** fixed 8 byte length */ + request.Payload.Len()
+	packetLen := 10 /** fixed 10 byte length */ + request.Payload.Len()
 	buf := buffer.GetIoBuffer(packetLen)
 
-	// 1. write 8 byte length + body
+	// 1. write 10 byte length + body
 	proto.prefixOfZero(buf, request.Payload.Len())
 
 	if request.Payload.Len() > 0 {
 		if request.RequestId == "" {
 			// try query business id from payload.
 			payload := request.Payload.Bytes()
-			request.RequestId = fetchId(payload[8 : 8+len(payload)])
+			request.RequestId = fetchId(payload)
 		}
 
 		// 2. write payload bytes
@@ -55,24 +54,24 @@ func (proto *XrProtocol) encodeRequest(ctx context.Context, request *Request) (a
 		proto.PutStreamId(ctx, request.RequestId, request.SteamId.(uint64))
 		// record debug mapping stream info.
 		if log.DefaultLogger.GetLogLevel() >= log.DEBUG {
-			log.DefaultLogger.Debugf("xr proto mapping streamId: %d -> %d", request.RequestId, request.SteamId.(uint64))
+			log.DefaultLogger.Debugf("cd proto mapping streamId: %d -> %d", request.RequestId, request.SteamId.(uint64))
 		}
 	}
 
 	return buf, nil
 }
 
-func (proto *XrProtocol) encodeResponse(ctx context.Context, response *Response) (api.IoBuffer, error) {
+func (proto *Protocol) encodeResponse(ctx context.Context, response *Response) (api.IoBuffer, error) {
 
-	packetLen := 8 /** fixed 8 byte length */ + response.Payload.Len()
+	packetLen := 10 /** fixed 10 byte length */ + response.Payload.Len()
 	buf := buffer.GetIoBuffer(packetLen)
 
-	// 1. write 8 byte length + body
+	// 1. write 10 byte length + body
 	proto.prefixOfZero(buf, response.Payload.Len())
 	if response.Payload.Len() > 0 {
 		if response.RequestId == "" {
 			payload := response.Payload.Bytes()
-			response.RequestId = fetchId(payload[8 : 8+len(payload)])
+			response.RequestId = fetchId(payload)
 		}
 
 		// 2. write payload bytes
@@ -88,11 +87,11 @@ func (proto *XrProtocol) encodeResponse(ctx context.Context, response *Response)
 	return buf, nil
 }
 
-// prefixOfZero Appends '0' character until 8 bytes are satisfied
-// eg: 000064, length 64, append prefix 0000
-func (proto *XrProtocol) prefixOfZero(buf buffer.IoBuffer, payloadLen int) {
+// prefixOfZero Appends '0' character until 10 bytes are satisfied
+// eg: 0000000064, length 64, append prefix 00000000
+func (proto *Protocol) prefixOfZero(buf buffer.IoBuffer, payloadLen int) {
 	rayLen := strconv.Itoa(payloadLen)
-	if count := 8 - len(rayLen); count > 0 {
+	if count := 10 - len(rayLen); count > 0 {
 		for i := 0; i < count; i++ {
 			buf.WriteString("0")
 		}
@@ -112,21 +111,57 @@ func injectHeaders(data []byte, h *common.Header) error {
 		return nil
 	}
 
-	header, err := parseXmlHeader(data)
+	v, err := parseXmlHeader(data)
 	if err != nil {
+		log.DefaultLogger.Errorf("failed to resolve cd proto header, err %v, data: %s", err, string(data))
 		return err
 	}
 
-	channelId := header[channelIdKey]
-	extRef := header[externalReferenceKey]
-	code := header[serviceCodeKey]
-	flag := header[requestTypeKey]
+	var (
+		code  string
+		scene string
+		reqId string
+		flag  = requestFlag
+	)
 
-	// inject request id: channelId + extRef
-	h.Set(requestIdKey, channelId+extRef)
+	if len(v.WrapData) > 0 {
+		for _, d := range v.WrapData {
+			if d.Field != nil { // plain field
+				switch d.Name {
+				case "SERVICE_CODE":
+					code = d.Field.Value
+				case "SERVICE_SCENE":
+					scene = d.Field.Value
+				case "SERVICE_REQUEST_ID": // todo need to be modified.
+					reqId = d.Field.Value
+				}
+			} else if d.ArrayField != nil {
+				for _, f := range *d.ArrayField {
+					if f.Field != nil {
+						// struct field
+						switch f.Name {
+						case "RET":
+							flag = responseFlag
+						}
+					}
+				}
+			}
+		}
+	} else {
+		// should never happen
+		log.DefaultLogger.Warnf("resolved empty cd proto header, data: %s", string(data))
+	}
 
-	// inject service id
-	h.Set(serviceCodeKey, code)
+	// check request id must exist
+	if reqId == "" {
+		log.DefaultLogger.Warnf("cd proto header req id must exist, data: %s", string(data))
+	}
+
+	// inject request id
+	h.Set(requestIdKey, reqId)
+
+	// inject service id: code + scene
+	h.Set(serviceCodeKey, code+scene)
 
 	// inject other head if required.
 	h.Set(requestTypeKey, flag)
@@ -138,10 +173,10 @@ func injectHeaders(data []byte, h *common.Header) error {
 }
 
 // parseXmlHeader decode xml header
-func parseXmlHeader(data []byte) (XmlHeader, error) {
+func parseXmlHeader(data []byte) (*SystemHeader, error) {
 	xmlBody := string(data)
 	index := strings.Index(xmlBody, startHeader)
-	header := XmlHeader{}
+	header := &SystemHeader{}
 	// parse header key value
 	if index >= 0 {
 		headerEndIndex := strings.Index(xmlBody, endHeader)
@@ -154,48 +189,4 @@ func parseXmlHeader(data []byte) (XmlHeader, error) {
 		}
 	}
 	return header, nil
-}
-
-// XmlHeader xml key value pair.
-// Protocol-specific, depending on
-// traditional protocol data structures
-type XmlHeader map[string]string
-
-type KeyValueEntry struct {
-	XMLName xml.Name
-	Value   string `xml:",chardata"`
-}
-
-func (m XmlHeader) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-	if len(m) == 0 {
-		return nil
-	}
-
-	if err := e.EncodeToken(start); err != nil {
-		return err
-	}
-
-	for k, v := range m {
-		e.Encode(KeyValueEntry{XMLName: xml.Name{Local: k}, Value: v})
-	}
-
-	return e.EncodeToken(start.End())
-}
-
-func (m *XmlHeader) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	*m = XmlHeader{}
-	for {
-		var e KeyValueEntry
-
-		err := d.Decode(&e)
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return err
-		}
-
-		(*m)[e.XMLName.Local] = e.Value
-	}
-
-	return nil
 }

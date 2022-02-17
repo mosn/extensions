@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package xr
+package cd
 
 import (
 	"github.com/mosn/extensions/go-plugin/pkg/common"

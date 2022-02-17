@@ -1,36 +1,35 @@
 {
-  "name": "egress_xr",
-  "type": "egress",
-  "address": "0.0.0.0:2045",
+  "name": "ingress_cd",
+  "type": "ingress",
+  "address": "0.0.0.0:2046",
   "bind_port": true,
+  "log_path": "./logs/mosn/ingress.log",
+  "log_level": "INFO",
   "access_logs": [
     {
-      "log_path": "./logs/mosn/egress.log"
+      "log_path": "./logs/mosn/access_ingress.log"
     }
   ],
   "filter_chains": [
     {
-      "tls_context_set": [
-        {}
-      ],
       "filters": [
         {
           "type": "proxy",
           "config": {
             "downstream_protocol": "X",
             "extend_config": {
-              "sub_protocol": "xr"
+              "sub_protocol": "cd"
             },
             "name": "proxy_config",
-            "router_config_name": "egress_xr_router",
+            "router_config_name": "ingress_cd_router",
             "upstream_protocol": "X"
           }
         },
         {
           "type": "connection_manager",
           "config": {
-            "router_config_name": "egress_xr_router",
-            "router_configs": "./mosn/conf/routers/egress_xr_router/"
+            "router_config_name": "ingress_cd_router",
+            "router_configs": "./mosn/conf/routers/ingress_cd_router/"
           }
         }
       ]
@@ -55,17 +54,14 @@
     {
       "type": "fault_inject",
       "config": {
-        "direction": "outbound"
+        "direction": "inbound"
       }
-    },
-    {
-      "type": "downgrade"
     },
     {
       "type": "alipayLimitFilter",
       "config": {
         "enable": true,
-        "direction": "outbound"
+        "direction": "inbound"
       }
     },
     {
@@ -74,5 +70,6 @@
     {
       "type": "fault_tolerance_choose"
     }
-  ]
+  ],
+  "inspector": true
 }

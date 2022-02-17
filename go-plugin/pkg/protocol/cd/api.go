@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package xr
+package cd
 
 import (
 	"context"
@@ -23,7 +23,7 @@ import (
 	"mosn.io/api"
 )
 
-var proto = &XrProtocol{}
+var proto = &Protocol{}
 
 // NewRpcRequest is a utility function which build rpc Request object of xr protocol.
 func NewRpcRequest(headers *common.Header, data api.IoBuffer) *Request {

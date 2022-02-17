@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service>
+<sys-header>
+<data name="SYS_HEAD">
+<struct>
+<data name="CONSUMER_SVR_ID">
+<field length="8" scale="0" type="string">SmartUNFront</field>
+</data>
+<data name="SERVICE_REQUEST_ID">
+<field length="19" scale="0" type="string">EXT_REQUEST_ID</field>
+</data>
+<data name="SERVICE_SCENE">
+<field length="2" scale="0" type="string">03</field>
+</data>
+<data name="SERVICE_CODE">
+<field length="30" scale="0" type="string">ECIF1200003000</field>
+</data>
+<data name="MESSAGE_CODE">
+<field length="6" scale="0" type="string">0008</field>
+</data>
+<data name="CONSUMER_SEQ_NO">
+<field length="52" scale="0" type="string">AQDT202108110670585</field>
+</data>
+<data name="TRAN_TIMESTAMP">
+<field length="9" scale="0" type="string">123456</field>
+</data>
+<data name="MODULE_ID">
+<field length="4" scale="0" type="string">RB</field>
+</data>
+<data name="SOURCE_BRANCH_NO">
+<field length="10" scale="0" type="string">EsbBJFront</field>
+</data>
+<data name="TRAN_DATE">
+<field length="8" scale="0" type="string">20210811</field>
+</data>
+<data name="CONSUMER_ID">
+<field length="6" scale="0" type="string">QDT001</field>
+</data>
+<data name="TRAN_CODE">
+<field length="4" scale="0" type="string">ACC582300</field>
+</data>
+</struct>
+</data>
+</sys-header>
+<app-header>
+<data name="APP_HEAD">
+<struct>
+<data name="AGENT_BRANCH_ID">
+<field length="9" scale="0" type="string">90012</field>
+</data>
+<data name="USER_ID">
+<field length="30" scale="0" type="string">BOBQZ2</field>
+</data>
+<data name="BRANCH_ID">
+<field length="9" scale="0" type="string">90012</field>
+</data>
+</struct>
+</data>
+</app-header>
+<local-header>
+<data name="LOCAL_HEAD">
+<struct/>
+</data>
+</local-header>
+<body>
+<data name="I_ACNO">
+<field length="1" scale="0" type="string">20012314654161348118512</field>
+</data>
+<data name="I_PZNO">
+<field length="4" scale="0" type="string">0000</field>
+</data>
+<data name="I_SUBA">
+<field length="5" scale="0" type="string">00001</field>
+</data>
+<data name="I_KEYA">
+<field length="4" scale="0" type="string">0000</field>
+</data>
+<data name="I_KEYQ">
+<field length="1" scale="0" type="string">0</field>
+</data>
+<data name="__AREA_CODE">
+<field length="4" scale="0" type="string">0000</field>
+</data>
+<data name="I_SDT">
+<field length="4" scale="0" type="string">0000</field>
+</data>
+<data name="I_ADSN">
+<field length="10" scale="0" type="string">0</field>
+</data>
+<data name="I_EDT">
+<field length="30" scale="0" type="string">20012314654161457818512</field>
+</data>
+</body>
+</service>
