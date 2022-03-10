@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"mosn.io/api"
-	"mosn.io/extensions/go-plugin/pkg/protocol/xr"
+	"mosn.io/extensions/go-plugin/pkg/protocol/dubbo"
 )
 
 // LoadCodec load codec function
@@ -13,25 +13,23 @@ func LoadCodec() api.XProtocolCodec {
 }
 
 type Codec struct {
-	proto               xr.XrProtocol
-	xrMatcher           xr.Matcher
-	xrHttpStatusMapping xr.StatusMapping
+	HttpStatusMapping dubbo.StatusMapping
 }
 
 func (r Codec) ProtocolName() api.ProtocolName {
-	return r.proto.Name()
+	return dubbo.ProtocolName
 }
 
 func (r Codec) ProtocolMatch() api.ProtocolMatch {
-	return r.xrMatcher.XrProtocolMatcher
+	return dubbo.Matcher
 }
 
 func (r Codec) HTTPMapping() api.HTTPMapping {
-	return &r.xrHttpStatusMapping
+	return r.HttpStatusMapping
 }
 
-func (r Codec) NewXProtocol(ctx context.Context) api.XProtocol {
-	return &xr.XrProtocol{}
+func (r Codec) NewXProtocol(context.Context) api.XProtocol {
+	return dubbo.DubboProtocol{}
 }
 
 // compiler check
