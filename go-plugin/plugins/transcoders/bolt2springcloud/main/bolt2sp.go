@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/mosn/extensions/go-plugin/pkg/protocol/bolt"
 	"github.com/valyala/fasthttp"
 	"mosn.io/api"
 	at "mosn.io/api/extensions/transcoder"
+	"mosn.io/extensions/go-plugin/pkg/protocol/bolt"
 	"mosn.io/pkg/log"
 	"mosn.io/pkg/protocol/http"
 )

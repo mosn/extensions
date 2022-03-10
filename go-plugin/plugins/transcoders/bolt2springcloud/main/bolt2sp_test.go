@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/mosn/extensions/go-plugin/pkg/protocol/bolt"
 	"github.com/stretchr/testify/assert"
 	"github.com/valyala/fasthttp"
+	"mosn.io/extensions/go-plugin/pkg/protocol/bolt"
 )
 
 func TestBolt2spHttpPath(t *testing.T) {

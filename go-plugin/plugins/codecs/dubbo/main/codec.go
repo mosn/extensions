@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 
-	"github.com/mosn/extensions/go-plugin/pkg/protocol/dubbo"
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/protocol/dubbo"
 )
 
 // LoadCodec load codec function

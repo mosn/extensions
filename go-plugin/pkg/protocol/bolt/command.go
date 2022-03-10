@@ -18,8 +18,8 @@
 package bolt
 
 import (
-	"github.com/mosn/extensions/go-plugin/pkg/common"
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/common"
 )
 
 // RequestHeader is the header part of bolt v1 request
