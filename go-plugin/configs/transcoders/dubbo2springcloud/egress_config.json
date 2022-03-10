@@ -6,7 +6,20 @@
     "dst_protocol": "springcloud"
   },
   "matcher_config":{
-    "matcher_type" :"simpleMatcher"
+    "matcher_type" :"mulit_matcher",
+    "config": {
+      "name": "dubbo2springcloud",
+      "variables": [
+        {
+          "name": "service",
+          "values": [
+            "reservation-client"
+          ],
+          "operator": "and",
+          "regex": false
+        }
+      ]
+    }
   },
   "rule_info": {
     "upstream_protocol": "springcloud",
