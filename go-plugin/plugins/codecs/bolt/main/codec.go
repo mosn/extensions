@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/mosn/extensions/go-plugin/pkg/protocol/bolt"
+	"mosn.io/extensions/go-plugin/pkg/protocol/bolt"
 
 	"mosn.io/api"
 )

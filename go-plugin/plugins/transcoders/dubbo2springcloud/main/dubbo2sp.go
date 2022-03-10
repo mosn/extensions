@@ -25,10 +25,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mosn/extensions/go-plugin/pkg/protocol/dubbo"
 	"github.com/valyala/fasthttp"
 	"mosn.io/api"
 	"mosn.io/api/extensions/transcoder"
+	"mosn.io/extensions/go-plugin/pkg/protocol/dubbo"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
 	"mosn.io/pkg/protocol/http"
