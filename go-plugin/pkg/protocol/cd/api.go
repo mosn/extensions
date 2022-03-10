@@ -19,8 +19,8 @@ package cd
 
 import (
 	"context"
-	"github.com/mosn/extensions/go-plugin/pkg/common"
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/common"
 )
 
 var proto = &Protocol{}
