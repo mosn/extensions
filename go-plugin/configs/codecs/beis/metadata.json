@@ -1,11 +1,11 @@
 {
-	"name": "cd",
+	"name": "beis",
 	"kind": "protocol",
 	"framework": "X",
 	"internal": false,
 	"variables": [{
 		"field": "x-mosn-data-id",
-		"pattern": ["${service}@cd"],
+		"pattern": ["${service}@beis"],
 		"required": true
     }],
 	"health_check": {

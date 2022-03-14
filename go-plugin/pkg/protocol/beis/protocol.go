@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package cd
+package beis
 
 import (
 	"bytes"
@@ -29,85 +29,35 @@ import (
 	"mosn.io/pkg/log"
 	"strconv"
 	"strings"
-	"sync/atomic"
 )
 
-// CdProtocol protocol format: 10 byte length + string body
-// <service>
-//    <sys-header>
-//        <data name="SYS_HEAD">
-//            <struct>
-//                <data name="field_name">
-//                     <field length=int, type=string>...</field>
-//                </data>
-//                <data name="field_name_array">
-//                     <array>
-//                     	   <struct>
-//                              <data name="field_name">
-//                                 <field length=int, type=string>...</field>
-//                              </data>
-//                     	   </struct>
-//                     </array>
-//                </data>
-//            </struct>
-//        </data>
-//    </sys-header>
-//    <app-header>
-//        <data name="APP_HEAD">
-//            <struct>
-//                <data name="field_name">
-//                     <field length=int, type=string>...</field>
-//                </data>
-//                <data name="field_name_array">
-//                     <array>
-//                     	   <struct>
-//                              <data name="field_name">
-//                                 <field length=int, type=string>...</field>
-//                              </data>
-//                     	   </struct>
-//                     </array>
-//                </data>
-//            </struct>
-//        </data>
-//    </app-header>
-//    <local-header>
-//        <data name="APP_HEAD">
-//            <struct />
-//        </data>
-//    </local-header>
-//    <Body>
-//        <data name="field_name">
-//             <field length=int, type=string>...</field>
-//        </data>
-//        <data name="field_name_array"> optional
-//            <array>
-//               <struct>
-//                    <data name="field_name">
-//                       <field length=int, type=string>...</field>
-//                    </data>
-//               </struct>
-//            </array>
-//        </data>
-//        <data name="field_name_array"> optional
-//            <struct>
-//                <data name="field_name">
-//                   <field length=int, type=string>...</field>
-//                </data>
-//            </struct>
-//        </data>
-//    </Body>
-//  </service>
-//
-// ------------------ request example ---------------------------
-// EXT_REF: Business requests are replaced automatically
-//
+// BeisProtocol protocol format: 128 byte header + string body
+// <Document>
+//    <SysHead>
+//        <key>...</key>
+//        <RetStatus>1</RetStatus>
+//        <Ret>
+//           <RetMsg>...</RetMsg>
+//           <RetCode>..</RetCode>
+//        </Ret>
+//    </SysHead>
+//    <AppHead>
+//        <key>...</key>
+//    </AppHead>
+//    <key>...</key>
+//    <details>
+//        <xx>
+//             <key>...</key>
+//        </xx>
+//    </details>
+//  </Document>
 
 type Protocol struct {
 	streams safe.IntMap
 }
 
 func (proto *Protocol) Name() api.ProtocolName {
-	return Cd
+	return Beis
 }
 
 func (proto *Protocol) Encode(ctx context.Context, model interface{}) (api.IoBuffer, error) {
@@ -117,7 +67,7 @@ func (proto *Protocol) Encode(ctx context.Context, model interface{}) (api.IoBuf
 	case *Response:
 		return proto.encodeResponse(ctx, frame)
 	default:
-		log.DefaultLogger.Errorf("[protocol][cd] encode with unknown command : %+v", model)
+		log.DefaultLogger.Errorf("[protocol][beis] encode with unknown command : %+v", model)
 		return nil, errors.New("unknown command type")
 	}
 }
@@ -127,39 +77,70 @@ func (proto *Protocol) Decode(ctx context.Context, buf api.IoBuffer) (interface{
 	bLen := buf.Len()
 	data := buf.Bytes()
 
-	if bLen < 10 /** cd header length*/ {
+	if bLen < RequestHeaderLen /** beis header length*/ {
 		return nil, nil
 	}
 
 	var packetLen = 0
 	var err error
 
-	rawLen := strings.TrimLeft(string(data[0:10]), "0")
+	rawLen := strings.TrimLeft(string(data[MessageLengthIndex:MessageLengthIndex+8]), "0")
 	if rawLen != "" {
 		packetLen, err = strconv.Atoi(rawLen)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("failed to decode cd ptoco package len %d, err: %v", packetLen, err))
+			return nil, errors.New(fmt.Sprintf("failed to decode beis proto package len %d, err: %v", packetLen, err))
 		}
 	}
 
+	totalLen := RequestHeaderLen /** fixed 128 byte header len */ + packetLen
 	// expected full message length
-	if bLen < packetLen {
+	if bLen < totalLen {
 		return nil, nil
 	}
 
-	totalLen := 10 /** fixed 10 byte len */ + packetLen
+	// decode buf xml body if encrypt
+	ioBuf, err := decrypt(ctx, buf, totalLen)
+	if err != nil {
+		return nil, err
+	}
 
 	rpcHeader := common.Header{}
-	injectHeaders(data[10:totalLen], &rpcHeader)
+	resolveHeaders(ioBuf.Bytes()[RequestHeaderLen:RequestHeaderLen+totalLen], &rpcHeader)
 
 	frameType, _ := rpcHeader.Get(requestTypeKey)
 	switch frameType {
 	case requestFlag:
-		return proto.decodeRequest(ctx, buf, &rpcHeader)
+		return proto.decodeRequest(ctx, ioBuf, &rpcHeader)
 	case responseFlag:
-		return proto.decodeResponse(ctx, buf, &rpcHeader)
+		return proto.decodeResponse(ctx, ioBuf, &rpcHeader)
 	default:
-		return nil, fmt.Errorf("decode cd rpc Error, unknown request type = %s", frameType)
+		return nil, fmt.Errorf("decode beis rpc Error, unknown request type = %s", frameType)
+	}
+}
+
+// decrypt the body and return a new BUF if encryption exists
+func decrypt(ctx context.Context, buf api.IoBuffer, totalLen int) (api.IoBuffer, error) {
+	data := buf.Bytes()
+	ctrlBits := data[26:34] // ctrl_bits
+	cryptType := string(ctrlBits[0])
+
+	switch cryptType {
+	case "0": // plain text
+		return buf, nil
+	case "1": // xor ??
+		buf.Drain(totalLen)
+		// todo need to be implement
+		// 1. decode xml body
+		// 2. replace ioBuf MessageLength field, offset: [18:18+8], need append prefix '0'
+		return nil, errors.New("unimplemented encrypt algorithm")
+	case "2": // 3DS
+		buf.Drain(totalLen)
+		// todo need to be implement
+		// 1. decode xml body
+		// 2. replace ioBuf MessageLength field, offset: [18:18+8], need append prefix '0'
+		return nil, errors.New("unimplemented encrypt 3DS algorithm")
+	default:
+		return nil, errors.New("unknown encrypt algorithm")
 	}
 }
 
@@ -186,15 +167,15 @@ func (proto *Protocol) Mapping(httpStatusCode uint32) uint32 {
 
 // PoolMode returns whether ping-pong or multiplex
 func (proto *Protocol) PoolMode() api.PoolMode {
-	return api.Multiplex
+	return api.PingPong
 }
 
 func (proto *Protocol) EnableWorkerPool() bool {
-	return true
+	return false
 }
 
 func (proto *Protocol) GenerateRequestID(streamID *uint64) uint64 {
-	return atomic.AddUint64(streamID, 1)
+	return 0
 }
 
 // hijackResponse build hijack response
@@ -227,7 +208,7 @@ func (proto *Protocol) hijackResponse(request api.XFrame, statusCode uint32) *Re
 
 	// response header
 	rpcHeader := common.Header{}
-	injectHeaders(buf.Bytes()[10:10+len(body)], &rpcHeader)
+	resolveHeaders(buf.Bytes()[10:10+len(body)], &rpcHeader)
 
 	resp := NewRpcResponse(&rpcHeader, buf)
 	return resp

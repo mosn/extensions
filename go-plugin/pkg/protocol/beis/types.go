@@ -15,31 +15,37 @@
  * limitations under the License.
  */
 
-package cd
+package beis
 
 import (
 	"context"
 	"encoding/xml"
+	"io"
 	"mosn.io/api"
 )
 
-var Cd api.ProtocolName = "cd" // protocol
+var Beis api.ProtocolName = "beis" // protocol
 
 const (
-	startHeader = "<sys-header>"
-	endHeader   = "</sys-header>"
-
-	requestIdKey = "RequestId"
+	startHeader = "<SysHead>"
+	endHeader   = "</SysHead>"
 
 	serviceKey = "service"
+
+	serviceCodeKey  = "ServiceCode"
+	serviceSceneKey = "ServiceScene"
+	retStatusKey    = "RetStatus"
 
 	// request or response
 	requestTypeKey = "RequestType"
 	requestFlag    = "0" // 0 request
 	responseFlag   = "1" // 1 response
 
-	ResponseStatusSuccess uint32 = 0  // 0 response status
-	RequestHeaderLen      int    = 10 // fix 10 byte header length
+	beginFlag = "{BOBXML:"
+
+	ResponseStatusSuccess uint32 = 0   // 0 response status
+	RequestHeaderLen      int    = 128 // fix 128 byte header length
+	MessageLengthIndex    int    = 18  // message content offset index
 )
 
 // StreamId query mapping stream id
@@ -59,31 +65,46 @@ func (proto *Protocol) RemoveStreamId(ctx context.Context, key string) {
 	return
 }
 
-// SystemHeader cd protocol sys-header
-// <service>
-//    <sys-header>
-type SystemHeader struct {
-	XMLName  xml.Name   `xml:"data"`
-	Name     string     `xml:"name,attr"`
-	WrapData []WrapData `xml:"struct>data"`
+// SystemHeader decode sys-header key value pair
+type SystemHeader map[string]string
+
+type KeyValueEntry struct {
+	XMLName xml.Name
+	Value   string `xml:",chardata"`
 }
 
-// WrapData cd protocol data>struct
-// <data name="SYS_HEAD">
-//    <struct>
-type WrapData struct {
-	XMLName    xml.Name    `xml:"data"`
-	Name       string      `xml:"name,attr"`
-	Field      *Field      `xml:"field,omitempty"`
-	ArrayField *[]WrapData `xml:"array>struct>data,omitempty"`
+func (m SystemHeader) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	if len(m) == 0 {
+		return nil
+	}
+
+	if err := e.EncodeToken(start); err != nil {
+		return err
+	}
+
+	for k, v := range m {
+		e.Encode(KeyValueEntry{XMLName: xml.Name{Local: k}, Value: v})
+	}
+
+	return e.EncodeToken(start.End())
 }
 
-// Field cd protocol filed
-// <data>
-//    <field
-type Field struct {
-	Length int    `xml:"length,attr"`
-	Scale  int    `xml:"scale,attr"`
-	Type   string `xml:"type,attr"`
-	Value  string `xml:",chardata"`
+func (m *SystemHeader) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	*m = SystemHeader{}
+	for {
+		var e KeyValueEntry
+
+		err := d.Decode(&e)
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+
+		(*m)[e.XMLName.Local] = e.Value
+	}
+
+	return nil
 }

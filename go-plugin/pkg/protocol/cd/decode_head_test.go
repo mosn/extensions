@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestExampleMarshalIndent(t *testing.T) {
+func TestCdHeaderMarshalIndent(t *testing.T) {
 
 	v := &SystemHeader{Name: "SYS_HEAD",
 		WrapData: []WrapData{
@@ -42,7 +42,7 @@ func TestExampleMarshalIndent(t *testing.T) {
 
 }
 
-func TestExampleUnmarshal(t *testing.T) {
+func TestCdHeaderUnmarshal(t *testing.T) {
 
 	v := SystemHeader{}
 

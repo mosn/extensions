@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package cd
+package beis
 
 import (
 	"bytes"
@@ -31,31 +31,33 @@ import (
 
 func (proto *Protocol) encodeRequest(ctx context.Context, request *Request) (api.IoBuffer, error) {
 
-	packetLen := 10 /** fixed 10 byte length */ + request.Payload.Len()
+	packetLen := RequestHeaderLen /** fixed 128 byte length */ + request.Payload.Len()
 	buf := buffer.GetIoBuffer(packetLen)
 
-	// 1. write 10 byte length + body
-	proto.prefixOfZero(buf, request.Payload.Len())
+	// 1. write 128 byte length, 8 byte fixed begin flag
+	buf.WriteString(beginFlag)
+	// 10 byte origin sender
+	proto.suffixOfBlank(buf, request.OrigSender, 10)
+	// 8 byte message length
+	proto.prefixOfZero(buf, request.Payload.Len(), 8)
+	// 8 byte control bits.
+	buf.WriteString(request.CtrlBits)
+	// 4 byte AreaCode
+	proto.suffixOfBlank(buf, request.AreaCode, 4)
+	// 4 byte fixed version
+	buf.WriteString("0001")
+	// 20 byte
+	proto.suffixOfBlank(buf, request.MessageID, 20)
+	// 20 byte
+	proto.suffixOfBlank(buf, request.MessageRefID, 20)
+	// 45 byte
+	proto.suffixOfBlank(buf, request.Reserve, 45)
+	// 1 byte end flag
+	buf.WriteString("}")
 
 	if request.Payload.Len() > 0 {
-		if request.RequestId == "" {
-			// try query business id from payload.
-			payload := request.Payload.Bytes()
-			request.RequestId = fetchId(payload)
-		}
-
 		// 2. write payload bytes
 		buf.Write(request.Payload.Bytes())
-	}
-
-	// If sidecar replaces the ID, we associate the ID with the business ID
-	// When the response is received, streamId is restored correctly.
-	if request.SteamId != nil {
-		proto.PutStreamId(ctx, request.RequestId, request.SteamId.(uint64))
-		// record debug mapping stream info.
-		if log.DefaultLogger.GetLogLevel() >= log.DEBUG {
-			log.DefaultLogger.Debugf("cd proto mapping streamId: %d -> %d", request.RequestId, request.SteamId.(uint64))
-		}
 	}
 
 	return buf, nil
@@ -63,25 +65,33 @@ func (proto *Protocol) encodeRequest(ctx context.Context, request *Request) (api
 
 func (proto *Protocol) encodeResponse(ctx context.Context, response *Response) (api.IoBuffer, error) {
 
-	packetLen := 10 /** fixed 10 byte length */ + response.Payload.Len()
+	packetLen := RequestHeaderLen /** fixed 128 byte length */ + response.Payload.Len()
 	buf := buffer.GetIoBuffer(packetLen)
 
-	// 1. write 10 byte length + body
-	proto.prefixOfZero(buf, response.Payload.Len())
-	if response.Payload.Len() > 0 {
-		if response.RequestId == "" {
-			payload := response.Payload.Bytes()
-			response.RequestId = fetchId(payload)
-		}
+	// 1. write 128 byte length, 8 byte fixed begin flag
+	buf.WriteString(beginFlag)
+	// 10 byte origin sender
+	proto.suffixOfBlank(buf, response.OrigSender, 10)
+	// 8 byte message length
+	proto.prefixOfZero(buf, response.Payload.Len(), 8)
+	// 8 byte control bits.
+	buf.WriteString(response.CtrlBits)
+	// 4 byte AreaCode
+	proto.suffixOfBlank(buf, response.AreaCode, 4)
+	// 4 byte fixed version
+	buf.WriteString("0001")
+	// 20 byte
+	proto.suffixOfBlank(buf, response.MessageID, 20)
+	// 20 byte
+	proto.suffixOfBlank(buf, response.MessageRefID, 20)
+	// 45 byte
+	proto.suffixOfBlank(buf, response.Reserve, 45)
+	// 1 byte end flag
+	buf.WriteString("}")
 
+	if response.Payload.Len() > 0 {
 		// 2. write payload bytes
 		buf.Write(response.Payload.Bytes())
-	}
-
-	// remove associate the ID with the business ID if exists.
-	if _, found := proto.StreamId(ctx, response.RequestId); found {
-		// remove stream id, help gc
-		proto.RemoveStreamId(ctx, response.RequestId)
 	}
 
 	return buf, nil
@@ -89,9 +99,9 @@ func (proto *Protocol) encodeResponse(ctx context.Context, response *Response) (
 
 // prefixOfZero Appends '0' character until 10 bytes are satisfied
 // eg: 0000000064, length 64, append prefix 00000000
-func (proto *Protocol) prefixOfZero(buf buffer.IoBuffer, payloadLen int) {
-	rayLen := strconv.Itoa(payloadLen)
-	if count := 10 - len(rayLen); count > 0 {
+func (proto *Protocol) prefixOfZero(buf buffer.IoBuffer, num int, max int) {
+	rayLen := strconv.Itoa(num)
+	if count := max - len(rayLen); count > 0 {
 		for i := 0; i < count; i++ {
 			buf.WriteString("0")
 		}
@@ -99,67 +109,45 @@ func (proto *Protocol) prefixOfZero(buf buffer.IoBuffer, payloadLen int) {
 	buf.WriteString(rayLen)
 }
 
-func fetchId(data []byte) string {
-	h := common.Header{}
-	injectHeaders(data, &h)
-	id, _ := h.Get(requestIdKey)
-	return id
+// suffixOfBlank Appends ' ' character until max length are satisfied
+func (proto *Protocol) suffixOfBlank(buf buffer.IoBuffer, val string, max int) {
+	buf.WriteString(val)
+	if count := max - len(val); count > 0 {
+		for i := 0; i < count; i++ {
+			buf.WriteString(" ")
+		}
+	}
 }
 
-func injectHeaders(data []byte, h *common.Header) error {
+func resolveHeaders(data []byte, h *common.Header) error {
 	if len(data) <= 0 {
 		return nil
 	}
 
 	v, err := parseXmlHeader(data)
 	if err != nil {
-		log.DefaultLogger.Errorf("failed to resolve cd proto header, err %v, data: %s", err, string(data))
+		log.DefaultLogger.Errorf("failed to resolve beis proto header, err %v, data: %s", err, string(data))
 		return err
 	}
 
 	var (
 		code  string
 		scene string
-		reqId string
 		flag  = requestFlag
 	)
 
-	if len(v.WrapData) > 0 {
-		for _, d := range v.WrapData {
-			if d.Field != nil { // plain field
-				switch d.Name {
-				case "SERVICE_CODE":
-					code = d.Field.Value
-				case "SERVICE_SCENE":
-					scene = d.Field.Value
-				case "SERVICE_REQUEST_ID": // todo need to be modified.
-					reqId = d.Field.Value
-				}
-			} else if d.ArrayField != nil {
-				for _, f := range *d.ArrayField {
-					if f.Field != nil {
-						// struct field
-						switch f.Name {
-						case "RET":
-							flag = responseFlag
-						}
-					}
-				}
-			}
-		}
-	} else {
+	if len(*v) <= 0 {
 		// should never happen
-		log.DefaultLogger.Warnf("resolved empty cd proto header, data: %s", string(data))
+		log.DefaultLogger.Warnf("resolved empty beis proto header, data: %s", string(data))
 	}
 
-	// check request id must exist
-	if reqId == "" {
-		log.DefaultLogger.Warnf("cd proto header req id must exist, data: %s", string(data))
+	// only response contains RetStatus
+	if s, ok := (*v)[retStatusKey]; ok && s != "" {
+		flag = responseFlag
 	}
 
-	// inject request id
-	h.Set(requestIdKey, reqId)
-
+	code = (*v)[serviceCodeKey]
+	scene = (*v)[serviceSceneKey]
 	// inject service id: code + scene
 	h.Set(serviceKey, code+scene)
 
