@@ -151,6 +151,22 @@ func resolveHeaders(data []byte, h *common.Header) error {
 	// inject service id: code + scene
 	h.Set(serviceKey, code+scene)
 
+	// resolve Document xmlns
+	xmlns := ""
+	ds := string(data)
+	i := strings.Index(ds, "xmlns=\"")
+	if i >= 0 {
+		xmlns = string(data[i+7 : i+7+20 /** `****.****.****.**.**` **/])
+		// hijack response used.
+		h.Set(xmlnsKey, xmlns)
+	}
+
+	if s, _ := h.Get(serviceKey); s == "" {
+		// resolve xml namespace
+		s = strings.ReplaceAll(xmlns, ".", "")
+		h.Set(serviceKey, strings.ToUpper(s))
+	}
+
 	// inject other head if required.
 	h.Set(requestTypeKey, flag)
 

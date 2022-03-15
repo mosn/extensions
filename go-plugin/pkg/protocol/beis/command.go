@@ -22,7 +22,7 @@ import (
 	"mosn.io/extensions/go-plugin/pkg/common"
 )
 
-const defaultTimeout = 10000 // default request timeout(10 seconds).
+const defaultTimeout = 30000 // default request timeout(30 seconds).
 
 type Request struct {
 	common.Header              // request key value pair

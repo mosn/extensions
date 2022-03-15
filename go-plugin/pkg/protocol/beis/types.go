@@ -31,6 +31,7 @@ const (
 	endHeader   = "</SysHead>"
 
 	serviceKey = "service"
+	xmlnsKey   = "xmlns"
 
 	serviceCodeKey  = "ServiceCode"
 	serviceSceneKey = "ServiceScene"

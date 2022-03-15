@@ -181,35 +181,91 @@ func (proto *Protocol) GenerateRequestID(streamID *uint64) uint64 {
 // hijackResponse build hijack response
 func (proto *Protocol) hijackResponse(request api.XFrame, statusCode uint32) *Response {
 	req := request.(*Request)
-	body := req.Payload.String()
 
 	var bodyBuf bytes.Buffer
-	headerIndex := strings.Index(body, startHeader)
-	if headerIndex >= 0 {
-		bodyBuf.WriteString(body[:headerIndex+len(startHeader)])
-		bodyBuf.WriteString("<Response>")
-		bodyBuf.WriteString("<ReturnCode>")
-		bodyBuf.WriteString(strconv.Itoa(int(statusCode)))
-		bodyBuf.WriteString("</ReturnCode>")
-		bodyBuf.WriteString("<ReturnMessage>此请求被劫持，code: ")
-		bodyBuf.WriteString(strconv.Itoa(int(statusCode)))
-		bodyBuf.WriteString("</ReturnMessage>")
-		bodyBuf.WriteString("</Response>")
-		bodyBuf.WriteString(body[headerIndex+len(startHeader):])
+
+	// 1. write xml header
+	bodyBuf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+
+	// 2. write Document tag
+	xmlns, _ := req.Get(xmlnsKey)
+	bodyBuf.WriteString("<Document ")
+	{
+		// Document attribute
+		bodyBuf.WriteString("xmlns=\"" + xmlns + "\">")
 	}
-	body = bodyBuf.String()
-	// replace request type -> response
-	body = strings.ReplaceAll(body, "<RequestType>0</RequestType>", "<RequestType>1</RequestType>")
 
-	// 10 byte length + string body
-	buf := buffer.GetIoBuffer(10 + len(body))
-	proto.prefixOfZero(buf, len(body))
-	buf.WriteString(body)
+	// 3. write SysHead
+	bodyBuf.WriteString("<SysHead>")
+	{
+		bodyBuf.WriteString("<RetStatus>1</RetStatus>") // failed
+		bodyBuf.WriteString("<Ret>")
+		{
+			code, message := mappingCode(statusCode)
 
-	// response header
-	rpcHeader := common.Header{}
-	resolveHeaders(buf.Bytes()[10:10+len(body)], &rpcHeader)
+			bodyBuf.WriteString("<RetCode>")
+			bodyBuf.WriteString(code)
+			bodyBuf.WriteString("</RetCode>")
 
-	resp := NewRpcResponse(&rpcHeader, buf)
+			bodyBuf.WriteString("<RetMsg>")
+			bodyBuf.WriteString(message)
+			bodyBuf.WriteString("</RetMsg>")
+		}
+		bodyBuf.WriteString("</Ret>")
+	}
+	bodyBuf.WriteString("</SysHead>")
+
+	// 4. write LOCAL_HEAD
+	bodyBuf.WriteString("<LOCAL_HEAD/>")
+
+	// 5. write AppHead
+	bodyBuf.WriteString("<AppHead/>")
+	bodyBuf.WriteString("</Document>")
+
+	// 128 byte length + string body
+	buf := buffer.GetIoBuffer(128 + bodyBuf.Len())
+
+	// 1. write 128 byte length, 8 byte fixed begin flag
+	buf.WriteString(beginFlag)
+	// 10 byte origin sender
+	proto.suffixOfBlank(buf, req.OrigSender, 10)
+	// 8 byte message length
+	proto.prefixOfZero(buf, bodyBuf.Len(), 8)
+	// 8 byte control bits.
+	buf.WriteString(req.CtrlBits)
+	// 4 byte AreaCode
+	proto.suffixOfBlank(buf, req.AreaCode, 4)
+	// 4 byte fixed version
+	buf.WriteString("0001")
+	// 20 byte
+	proto.suffixOfBlank(buf, req.MessageID, 20)
+	// 20 byte
+	proto.suffixOfBlank(buf, req.MessageRefID, 20)
+	// 45 byte
+	proto.suffixOfBlank(buf, req.Reserve, 45)
+	// 1 byte end flag
+	buf.WriteString("}")
+
+	// write body
+	buf.Write(bodyBuf.Bytes())
+
+	resp := NewRpcResponse(&common.Header{}, buf)
 	return resp
+}
+
+func mappingCode(code uint32) (esbCode string, message string) {
+	switch code {
+	case api.RouterUnavailableCode:
+		esbCode, message = "B100", "no provider available(sidecar:404)."
+	case api.NoHealthUpstreamCode:
+		esbCode, message = "B100", "remote connection closed(sidecar:502)."
+	case api.TimeoutExceptionCode:
+		esbCode, message = "B100", "invoke timeout(sidecar:504)."
+	case api.CodecExceptionCode:
+		esbCode, message = "B100", "decode error(sidecar:0)."
+	default:
+		esbCode, message = "B100", fmt.Sprintf("unknown error(sidecar:%d).", code)
+	}
+
+	return
 }
