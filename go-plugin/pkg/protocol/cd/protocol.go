@@ -29,7 +29,7 @@ import (
 	"mosn.io/pkg/log"
 	"strconv"
 	"strings"
-	"sync/atomic"
+	"time"
 )
 
 // CdProtocol protocol format: 10 byte length + string body
@@ -186,49 +186,194 @@ func (proto *Protocol) Mapping(httpStatusCode uint32) uint32 {
 
 // PoolMode returns whether ping-pong or multiplex
 func (proto *Protocol) PoolMode() api.PoolMode {
-	return api.Multiplex
+	return api.PingPong
 }
 
 func (proto *Protocol) EnableWorkerPool() bool {
-	return true
+	return false
 }
 
 func (proto *Protocol) GenerateRequestID(streamID *uint64) uint64 {
-	return atomic.AddUint64(streamID, 1)
+	return 0
 }
 
 // hijackResponse build hijack response
 func (proto *Protocol) hijackResponse(request api.XFrame, statusCode uint32) *Response {
 	req := request.(*Request)
-	body := req.Payload.String()
 
 	var bodyBuf bytes.Buffer
-	headerIndex := strings.Index(body, startHeader)
-	if headerIndex >= 0 {
-		bodyBuf.WriteString(body[:headerIndex+len(startHeader)])
-		bodyBuf.WriteString("<Response>")
-		bodyBuf.WriteString("<ReturnCode>")
-		bodyBuf.WriteString(strconv.Itoa(int(statusCode)))
-		bodyBuf.WriteString("</ReturnCode>")
-		bodyBuf.WriteString("<ReturnMessage>此请求被劫持，code: ")
-		bodyBuf.WriteString(strconv.Itoa(int(statusCode)))
-		bodyBuf.WriteString("</ReturnMessage>")
-		bodyBuf.WriteString("</Response>")
-		bodyBuf.WriteString(body[headerIndex+len(startHeader):])
+
+	// decode app-header
+	v, err := parseXmlHeader(req.Payload.Bytes(), startAppHeader, endAppHeader)
+	if err != nil {
+		// should never happen
+		log.DefaultLogger.Errorf("failed to resolve cd proto app header, err %v, data: %s", err, string(req.Payload.Bytes()))
 	}
-	body = bodyBuf.String()
-	// replace request type -> response
-	body = strings.ReplaceAll(body, "<RequestType>0</RequestType>", "<RequestType>1</RequestType>")
+
+	// decode app header
+	var (
+		branchId string
+		userId   string
+	)
+
+	if len(v.WrapData) > 0 {
+		for _, d := range v.WrapData {
+			if d.Field != nil { // plain field
+				switch d.Name {
+				case branchIdKey:
+					branchId = d.Field.Value
+				case userIdKey:
+					userId = d.Field.Value
+				}
+			}
+		}
+	} else {
+		// should never happen
+		log.DefaultLogger.Warnf("resolved empty cd proto app header, data: %s", string(req.Payload.Bytes()))
+	}
+
+	if branchId == "" {
+		branchId, _ = req.Get(branchIdKey)
+	}
+
+	if userId == "" {
+		userId, _ = req.Get(userIdKey)
+	}
+
+	// 1. write xml header
+	bodyBuf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+
+	// 2. write service
+	bodyBuf.WriteString("<service>")
+	{
+		bodyBuf.WriteString("<sys-header>")
+		{
+			bodyBuf.WriteString("<data name=\"SERVICE_CODE\">")
+			code, _ := req.Get(serviceCodeKey)
+			bodyBuf.WriteString(fmt.Sprintf("<field length=\"%d\" scale=\"0\" type=\"string\">%s</field>", len(code), code))
+			bodyBuf.WriteString("</data>")
+		}
+		{
+			bodyBuf.WriteString("<data name=\"SERVICE_SCENE\">")
+			scene, _ := req.Get(serviceSceneKey)
+			bodyBuf.WriteString(fmt.Sprintf("<field length=\"%d\" scale=\"0\" type=\"string\">%s</field>", len(scene), scene))
+			bodyBuf.WriteString("</data>")
+		}
+		{
+			bodyBuf.WriteString("<data name=\"CONSUMER_ID\">")
+			consumerId, _ := req.Get(consumerIdKey)
+			bodyBuf.WriteString(fmt.Sprintf("<field length=\"%d\" scale=\"0\" type=\"string\">%s</field>", len(consumerId), consumerId))
+			bodyBuf.WriteString("</data>")
+		}
+		{
+			bodyBuf.WriteString("<data name=\"CONSUMER_SEQ_NO\">")
+			consumerSeqNo, _ := req.Get(consumerSeqNoKey)
+			bodyBuf.WriteString(fmt.Sprintf("<field length=\"%d\" scale=\"0\" type=\"string\">%s</field>", len(consumerSeqNo), consumerSeqNo))
+			bodyBuf.WriteString("</data>")
+		}
+		{
+			dateLayout := "20060102"
+			timeLayout := "150405"
+			now := time.Now()
+
+			dateVal := now.Format(dateLayout)
+			timeVal := now.Format(timeLayout)
+			bodyBuf.WriteString("<data name=\"TRAN_DATE\">")
+			bodyBuf.WriteString(fmt.Sprintf("<field length=\"%d\" scale=\"0\" type=\"string\">%s</field>", len(dateVal), dateVal))
+			bodyBuf.WriteString("</data>")
+
+			bodyBuf.WriteString("<data name=\"TRAN_TIMESTAMP\">")
+			bodyBuf.WriteString(fmt.Sprintf("<field length=\"%d\" scale=\"0\" type=\"string\">%s</field>", len(timeVal), timeVal))
+			bodyBuf.WriteString("</data>")
+		}
+		{
+			bodyBuf.WriteString("<data name=\"RET_STATUS\">")
+			bodyBuf.WriteString("<field length=\"1\" scale=\"0\" type=\"string\">F</field>") // failed
+			bodyBuf.WriteString("</data>")
+
+			bodyBuf.WriteString("<data name=\"RET\">")
+			{
+				bodyBuf.WriteString("<array><struct>")
+				{
+					bodyBuf.WriteString("<data name=\"RET_CODE\">")
+
+					code, message := mappingCode(statusCode)
+					bodyBuf.WriteString(fmt.Sprintf("<field length=\"%d\" scale=\"0\" type=\"string\">%s</field>", len(code), code)) // failed
+					bodyBuf.WriteString("</data>")
+
+					bodyBuf.WriteString("<data name=\"RET_MSG\">")
+					bodyBuf.WriteString(fmt.Sprintf("<field length=\"%d\" scale=\"0\" type=\"string\">%s</field>", len(message), message)) // failed
+					bodyBuf.WriteString("</data>")
+				}
+				bodyBuf.WriteString("</struct></array>")
+			}
+			bodyBuf.WriteString("</data>")
+		}
+		{
+			bodyBuf.WriteString("<data name=\"TRAN_ID\">")
+			tranId, _ := req.Get(tranIdKey)
+			bodyBuf.WriteString(fmt.Sprintf("<field length=\"%d\" scale=\"0\" type=\"string\">%s</field>", len(tranId), tranId))
+			bodyBuf.WriteString("</data>")
+		}
+		bodyBuf.WriteString("</sys-header>")
+	}
+
+	// 3. write appHeader
+	{
+		bodyBuf.WriteString("<app-header>")
+		{
+			bodyBuf.WriteString("<data name=\"BRANCH_ID\">")
+			bodyBuf.WriteString(fmt.Sprintf("<field length=\"%d\" scale=\"0\" type=\"string\">%s</field>", len(branchId), branchId))
+			bodyBuf.WriteString("</data>")
+
+			bodyBuf.WriteString("<data name=\"USER_ID\">")
+			bodyBuf.WriteString(fmt.Sprintf("<field length=\"%d\" scale=\"0\" type=\"string\">%s</field>", len(userId), userId))
+			bodyBuf.WriteString("</data>")
+		}
+		bodyBuf.WriteString("</app-header>")
+	}
+
+	// 4. write local-header
+	{
+		bodyBuf.WriteString("<local-header>")
+		{
+			bodyBuf.WriteString("<data name=\"LOCAL_HEAD\">")
+			{
+				bodyBuf.WriteString("<struct/>")
+			}
+			bodyBuf.WriteString("</data>")
+		}
+		bodyBuf.WriteString("</local-header>")
+	}
+
+	// 5. write body
+	bodyBuf.WriteString("<body/>")
+	bodyBuf.WriteString("</service>")
 
 	// 10 byte length + string body
-	buf := buffer.GetIoBuffer(10 + len(body))
-	proto.prefixOfZero(buf, len(body))
-	buf.WriteString(body)
+	buf := buffer.GetIoBuffer(10 + bodyBuf.Len())
 
-	// response header
-	rpcHeader := common.Header{}
-	injectHeaders(buf.Bytes()[10:10+len(body)], &rpcHeader)
+	// write 10 byte length + xml body
+	proto.prefixOfZero(buf, bodyBuf.Len())
+	buf.Write(bodyBuf.Bytes())
 
-	resp := NewRpcResponse(&rpcHeader, buf)
+	resp := NewRpcResponse(&common.Header{}, buf)
 	return resp
+}
+
+func mappingCode(code uint32) (esbCode string, message string) {
+	switch code {
+	case api.RouterUnavailableCode:
+		esbCode, message = "999999", "no provider available(sidecar:404)."
+	case api.NoHealthUpstreamCode:
+		esbCode, message = "999999", "no health provider available(sidecar:502)."
+	case api.TimeoutExceptionCode:
+		esbCode, message = "999999", "invoke timeout(sidecar:504)."
+	case api.CodecExceptionCode:
+		esbCode, message = "999999", "decode error(sidecar:0)."
+	default:
+		esbCode, message = "999999", fmt.Sprintf("unknown error(sidecar:%d).", code)
+	}
+
+	return
 }

@@ -54,16 +54,11 @@ func (proto *Protocol) decodeRequest(ctx context.Context, buf api.IoBuffer, head
 	// Read the complete packet data from the connection
 	buf.Drain(totalLen)
 
-	// rpcBufCtx := bufferByContext(ctx)
-
 	request := &Request{}
 
 	// decode request field
 	request.Header = *header
-	request.RequestId, _ = header.Get(requestIdKey)
-	if val, found := proto.StreamId(ctx, request.RequestId); found {
-		request.SteamId = val
-	}
+
 	request.Timeout = defaultTimeout
 
 	request.Data = buffer.GetIoBuffer(totalLen)
@@ -100,18 +95,10 @@ func (proto *Protocol) decodeResponse(ctx context.Context, buf api.IoBuffer, hea
 	// Read the complete packet data from the connection
 	buf.Drain(totalLen)
 
-	// rpcBufCtx := bufferByContext(ctx)
-
 	response := &Response{}
 
 	// decode request field
 	response.Header = *header
-	response.RequestId, _ = header.Get(requestIdKey)
-	if val, found := proto.StreamId(ctx, response.RequestId); found {
-		response.SteamId = val
-		// remove stream id, help gc
-		proto.RemoveStreamId(ctx, response.RequestId)
-	}
 
 	// Check whether the packet succeeds based on the actual packet
 	// response.Status = 0

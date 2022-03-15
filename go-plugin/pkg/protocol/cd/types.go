@@ -18,7 +18,6 @@
 package cd
 
 import (
-	"context"
 	"encoding/xml"
 	"mosn.io/api"
 )
@@ -29,7 +28,8 @@ const (
 	startHeader = "<sys-header>"
 	endHeader   = "</sys-header>"
 
-	requestIdKey = "RequestId"
+	startAppHeader = "<app-header>"
+	endAppHeader   = "</app-header>"
 
 	serviceKey = "service"
 
@@ -40,24 +40,16 @@ const (
 
 	ResponseStatusSuccess uint32 = 0  // 0 response status
 	RequestHeaderLen      int    = 10 // fix 10 byte header length
+
+	// required field
+	branchIdKey      = "BRANCH_ID"       // 9 byte string  :app header
+	userIdKey        = "USER_ID"         // 30 byte string :app header
+	serviceCodeKey   = "SERVICE_CODE"    // 30 byte string :system header
+	serviceSceneKey  = "SERVICE_SCENE"   // 2 byte string  :system header
+	consumerIdKey    = "CONSUMER_ID"     // 6 byte string  :system header
+	consumerSeqNoKey = "CONSUMER_SEQ_NO" // 52 byte string :system header
+	tranIdKey        = "TRAN_ID"         // 30 byte string :system header
 )
-
-// StreamId query mapping stream id
-func (proto *Protocol) StreamId(ctx context.Context, key string) (val uint64, found bool) {
-	val, found = proto.streams.Get(key)
-	return
-}
-
-// PutStreamId put mapping stream id
-func (proto *Protocol) PutStreamId(ctx context.Context, key string, val uint64) (err error) {
-	err = proto.streams.Put(key, val)
-	return err
-}
-
-func (proto *Protocol) RemoveStreamId(ctx context.Context, key string) {
-	proto.streams.Remove(key)
-	return
-}
 
 // SystemHeader cd protocol sys-header
 // <service>

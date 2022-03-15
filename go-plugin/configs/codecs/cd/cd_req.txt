@@ -6,9 +6,6 @@
 <data name="CONSUMER_SVR_ID">
 <field length="8" scale="0" type="string">SmartUNFront</field>
 </data>
-<data name="SERVICE_REQUEST_ID">
-<field length="19" scale="0" type="string">EXT_REQUEST_ID</field>
-</data>
 <data name="SERVICE_SCENE">
 <field length="2" scale="0" type="string">03</field>
 </data>

@@ -258,7 +258,7 @@ func mappingCode(code uint32) (esbCode string, message string) {
 	case api.RouterUnavailableCode:
 		esbCode, message = "B100", "no provider available(sidecar:404)."
 	case api.NoHealthUpstreamCode:
-		esbCode, message = "B100", "remote connection closed(sidecar:502)."
+		esbCode, message = "B100", "no health provider available(sidecar:502)."
 	case api.TimeoutExceptionCode:
 		esbCode, message = "B100", "invoke timeout(sidecar:504)."
 	case api.CodecExceptionCode:

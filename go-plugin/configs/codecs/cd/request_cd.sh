@@ -8,9 +8,7 @@ IP=127.0.0.1
 PORT=2045
 EXT_REF="$(date +%Y%m%d%H%M%S)$RANDOM"
 echo
-echo "=======5.2.2======"
 echo  $IP $PORT
-echo $EXT_REF ${#EXT_REF}
 echo
 echo $(date +%Y-%m-%d,%H:%M:%s)
 
