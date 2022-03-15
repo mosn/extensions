@@ -22,7 +22,7 @@ func TestXorEncoder(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res := XorEncoder(tt.msg, tt.key)
+			res := XorEncrypt(tt.msg, tt.key)
 			if !reflect.DeepEqual(res, tt.want) {
 				t.Errorf("XorEncoder() got = %v, want %v", res, tt.want)
 			}
@@ -47,7 +47,7 @@ func TestXorDecoder(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res := XorDecoder(tt.msg, tt.key)
+			res := XorDecrypt(tt.msg, tt.key)
 			if !reflect.DeepEqual(res, tt.want) {
 				t.Errorf("XorDecoder() got = %v, want %v", res, tt.want)
 			}

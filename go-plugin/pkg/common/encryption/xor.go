@@ -11,10 +11,10 @@ func xorBytes(key []byte, msg []byte) []byte {
 	return msg
 }
 
-func XorEncoder(msg []byte, key []byte) []byte {
+func XorEncrypt(msg []byte, key []byte) []byte {
 	return xorBytes(key, msg)
 }
 
-func XorDecoder(msg []byte, key []byte) []byte {
+func XorDecrypt(msg []byte, key []byte) []byte {
 	return xorBytes(key, msg)
 }
