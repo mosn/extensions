@@ -7,7 +7,7 @@ import (
 	"github.com/beevik/etree"
 	"github.com/valyala/fastjson"
 	"mosn.io/api"
-	"mosn.io/extensions/go-plugin/pkg/protocol/bolt"
+	"mosn.io/extensions/go-plugin/pkg/protocol/beis"
 	"mosn.io/pkg/buffer"
 )
 
@@ -42,7 +42,7 @@ func NewBums2Beis(header api.HeaderMap, value string, config Bums2BeisConfig) (*
 
 func (br2br *Bums2Beis) Head() (api.HeaderMap, error) {
 	// 大小写转换
-	beisHeader := &bolt.RequestHeader{}
+	beisHeader := &beis.Request{}
 	br2br.header.Range(func(k, v string) bool {
 		k = strings.ToLower(k)
 		beisHeader.Set(k, v)

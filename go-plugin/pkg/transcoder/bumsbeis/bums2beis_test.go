@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"mosn.io/extensions/go-plugin/pkg/protocol/bolt"
+	"mosn.io/extensions/go-plugin/pkg/protocol/beis"
 )
 
 var (
@@ -21,7 +21,7 @@ func TestBmr2BirDetailTrue(t *testing.T) {
 		Namespace:    "genl.1400.0382.00.01",
 	}
 
-	header := &bolt.RequestHeader{}
+	header := &beis.Request{}
 	header.Set("TraceId", "CBT02100000000000011")
 	header.Set("SpanId", "CBT01100000000000011")
 	header.Set("origsender", "1234")
@@ -63,7 +63,7 @@ func TestBmr2BirDetailFalse(t *testing.T) {
 		BodySwitch:   true,
 		Namespace:    "genl.1400.0382.00.01",
 	}
-	header := &bolt.RequestHeader{}
+	header := &beis.Request{}
 	header.Set("TraceId", "CBT02100000000000011")
 	header.Set("SpanId", "CBT01100000000000011")
 	header.Set("origsender", "1234")
