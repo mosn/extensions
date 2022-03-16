@@ -256,13 +256,13 @@ func (proto *Protocol) hijackResponse(request api.XFrame, statusCode uint32) *Re
 func mappingCode(code uint32) (esbCode string, message string) {
 	switch code {
 	case api.RouterUnavailableCode:
-		esbCode, message = "B100", "no provider available(sidecar:404)."
+		esbCode, message = "B100", "no provider available(sidecar code:404)."
 	case api.NoHealthUpstreamCode:
-		esbCode, message = "B100", "no health provider available(sidecar:502)."
+		esbCode, message = "B100", "no health provider available(sidecar code:502)."
 	case api.TimeoutExceptionCode:
-		esbCode, message = "B100", "invoke timeout(sidecar:504)."
+		esbCode, message = "B100", "invoke timeout(sidecar code:504)."
 	case api.CodecExceptionCode:
-		esbCode, message = "B100", "decode error(sidecar:0)."
+		esbCode, message = "B100", "decode error(sidecar code:0)."
 	default:
 		esbCode, message = "B100", fmt.Sprintf("unknown error(sidecar:%d).", code)
 	}

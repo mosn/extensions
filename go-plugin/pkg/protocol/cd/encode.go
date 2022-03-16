@@ -112,16 +112,8 @@ func injectHeaders(data []byte, h *common.Header) error {
 					branchId = d.Field.Value
 				case userIdKey:
 					userId = d.Field.Value
-				}
-			} else if d.ArrayField != nil {
-				for _, f := range *d.ArrayField {
-					if f.Field != nil {
-						// struct field
-						switch f.Name {
-						case "RET":
-							flag = responseFlag
-						}
-					}
+				case retStatusKey, retKey:
+					flag = responseFlag
 				}
 			}
 		}
