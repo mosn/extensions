@@ -1,0 +1,138 @@
+{
+  "close_graceful": true,
+  "servers": [
+    {
+      "default_log_path": "/home/admin/logs/mosn/default.log",
+      "listeners": [
+        {
+          "name": "egress_sofa_bolt",
+          "address": "0.0.0.0:2045",
+          "bind_port": true,
+          "filter_chains": [
+            {
+              "filters": [
+                {
+                  "type": "proxy",
+                  "config": {
+                    "downstream_protocol": "X",
+                    "upstream_protocol": "X",
+                    "router_config_name": "client_router",
+                    "extend_config": {
+                      "sub_protocol": "bolt"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "ingress_sofa_bolt",
+          "address": "0.0.0.0:2046",
+          "bind_port": true,
+          "filter_chains": [
+            {
+              "filters": [
+                {
+                  "type": "proxy",
+                  "config": {
+                    "downstream_protocol": "X",
+                    "upstream_protocol": "X",
+                    "extend_config": {
+                      "sub_protocol": "bolt"
+                    },
+                    "router_config_name": "server_router"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "routers": [
+        {
+          "router_config_name": "client_router",
+          "virtual_hosts": [
+            {
+              "name": "clientHost",
+              "domains": [
+                "*"
+              ],
+              "routers": [
+                {
+                  "route": {
+                    "cluster_name": "clientCluster"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "router_config_name": "server_router",
+          "virtual_hosts": [
+            {
+              "name": "serverHost",
+              "domains": [
+                "*"
+              ],
+              "routers": [
+                {
+                  "route": {
+                    "cluster_name": "serverCluster"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "cluster_manager": {
+    "clusters": [
+      {
+        "name": "clientCluster",
+        "type": "SIMPLE",
+        "lb_type": "LB_RANDOM",
+        "max_request_per_conn": 1024,
+        "conn_buffer_limit_bytes": 32768,
+        "hosts": [
+          {
+            "address": "127.0.0.1:2046"
+          }
+        ]
+      },
+      {
+        "name": "serverCluster",
+        "type": "SIMPLE",
+        "lb_type": "LB_RANDOM",
+        "max_request_per_conn": 1024,
+        "conn_buffer_limit_bytes": 32768,
+        "hosts": [
+          {
+            "address": "30.230.19.251:12199"
+          }
+        ]
+      }
+    ]
+  },
+  "admin": {
+    "address": {
+      "socket_address": {
+        "address": "0.0.0.0",
+        "port_value": 34801
+      }
+    }
+  },
+  "third_part_codec": {
+    "codecs": [
+      {
+        "enable": true,
+        "type": "go-plugin",
+        "path": "/go/src/mosn.io/extensions/go-plugin/build/codecs/xr/codec-bolt.so",
+        "loader_func_name": "LoadCodec"
+      }
+    ]
+  }
+}

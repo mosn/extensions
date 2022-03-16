@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 
-	"github.com/mosn/extensions/go-plugin/pkg/protocol/xr"
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/protocol/xr"
 )
 
 // LoadCodec load codec function
