@@ -20,10 +20,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/mosn/extensions/go-plugin/pkg/protocol/xr"
 	"github.com/valyala/fasthttp"
 	"mosn.io/api"
 	"mosn.io/api/extensions/transcoder"
-	"mosn.io/extensions/go-plugin/pkg/protocol/xr"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/protocol/http"
 )

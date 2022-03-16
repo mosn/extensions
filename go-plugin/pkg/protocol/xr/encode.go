@@ -21,9 +21,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/xml"
+	"github.com/mosn/extensions/go-plugin/pkg/common"
 	"io"
 	"mosn.io/api"
-	"mosn.io/extensions/go-plugin/pkg/common"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
 	"strconv"
@@ -42,7 +42,7 @@ func (proto *XrProtocol) encodeRequest(ctx context.Context, request *Request) (a
 		if request.RequestId == "" {
 			// try query business id from payload.
 			payload := request.Payload.Bytes()
-			request.RequestId = fetchId(payload)
+			request.RequestId = fetchId(payload[8 : 8+len(payload)])
 		}
 
 		// 2. write payload bytes
@@ -72,7 +72,7 @@ func (proto *XrProtocol) encodeResponse(ctx context.Context, response *Response)
 	if response.Payload.Len() > 0 {
 		if response.RequestId == "" {
 			payload := response.Payload.Bytes()
-			response.RequestId = fetchId(payload)
+			response.RequestId = fetchId(payload[8 : 8+len(payload)])
 		}
 
 		// 2. write payload bytes

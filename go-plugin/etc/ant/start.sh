@@ -1,7 +1,7 @@
 #! /bin/bash
 
 BASE_IMAGE=zonghaishang/delve:1.6.1
-PROJECT_NAME=mosn.io/extensions/go-plugin
+PROJECT_NAME=github.com/mosn/extensions/go-plugin
 SIDECAR_GITLAB_PROJECT_NAME=gitlab.alipay-inc.com/ant-mesh/mosn
 
 DEBUG_PORTS="-p 2345:2345"
