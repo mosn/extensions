@@ -18,8 +18,8 @@
 package cd
 
 import (
+	"github.com/mosn/extensions/go-plugin/pkg/common"
 	"mosn.io/api"
-	"mosn.io/extensions/go-plugin/pkg/common"
 )
 
 const defaultTimeout = 30000 // default request timeout(30 seconds).
