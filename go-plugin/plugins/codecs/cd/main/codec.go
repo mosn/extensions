@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 
-	"github.com/mosn/extensions/go-plugin/pkg/protocol/xr"
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/protocol/cd"
 )
 
 // LoadCodec load codec function
@@ -13,9 +13,9 @@ func LoadCodec() api.XProtocolCodec {
 }
 
 type Codec struct {
-	proto               xr.XrProtocol
-	xrMatcher           xr.Matcher
-	xrHttpStatusMapping xr.StatusMapping
+	proto               cd.Protocol
+	xrMatcher           cd.Matcher
+	xrHttpStatusMapping cd.StatusMapping
 }
 
 func (r Codec) ProtocolName() api.ProtocolName {
@@ -23,7 +23,7 @@ func (r Codec) ProtocolName() api.ProtocolName {
 }
 
 func (r Codec) ProtocolMatch() api.ProtocolMatch {
-	return r.xrMatcher.XrProtocolMatcher
+	return r.xrMatcher.CdProtocolMatcher
 }
 
 func (r Codec) HTTPMapping() api.HTTPMapping {
@@ -31,7 +31,7 @@ func (r Codec) HTTPMapping() api.HTTPMapping {
 }
 
 func (r Codec) NewXProtocol(ctx context.Context) api.XProtocol {
-	return &xr.XrProtocol{}
+	return &cd.Protocol{}
 }
 
 // compiler check

@@ -1,11 +1,11 @@
 {
-	"name": "xr",
+	"name": "cd",
 	"kind": "protocol",
 	"framework": "X",
 	"internal": false,
 	"variables": [{
 		"field": "x-mosn-data-id",
-		"pattern": ["${ServiceCode}@xr"],
+		"pattern": ["${service}@cd"],
 		"required": true
     }],
 	"health_check": {

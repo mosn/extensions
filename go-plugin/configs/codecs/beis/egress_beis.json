@@ -1,7 +1,7 @@
 {
-  "name": "egress_xr",
+  "name": "egress_beis",
   "type": "egress",
-  "address": "0.0.0.0:2045",
+  "address": "0.0.0.0:3045",
   "bind_port": true,
   "access_logs": [
     {
@@ -19,18 +19,18 @@
           "config": {
             "downstream_protocol": "X",
             "extend_config": {
-              "sub_protocol": "xr"
+              "sub_protocol": "beis"
             },
             "name": "proxy_config",
-            "router_config_name": "egress_xr_router",
+            "router_config_name": "egress_beis_router",
             "upstream_protocol": "X"
           }
         },
         {
           "type": "connection_manager",
           "config": {
-            "router_config_name": "egress_xr_router",
-            "router_configs": "./mosn/conf/routers/egress_xr_router/"
+            "router_config_name": "egress_beis_router",
+            "router_configs": "./mosn/conf/routers/egress_beis_router/"
           }
         }
       ]
