@@ -1,0 +1,21 @@
+{BOBXML:PUBKEY    000006510234567800000001                                        {BOBXML:                                     }<?xml version="1.0" encoding="UTF-8"?>
+<Document
+    xmlns="brnc.1400.3028.00.01">
+    <ACCT_NO>01090341400120105195432</ACCT_NO>
+    <CODE_ORG/>
+    <SysHead>
+        <ConsumerId>NET001</ConsumerId>
+        <ModuleId>xyc</ModuleId>
+        <ProgramId>TCCX</ProgramId>
+        <ConsumerSeqNo>A000000000000928423</ConsumerSeqNo>
+        <TranDate>20220104</TranDate>
+        <TranTimestamp>001839</TranTimestamp>
+        <TranCode>xNBT</TranCode>
+    </SysHead>
+    <AppHead>
+        <BranchId>90003</BranchId>
+        <AgentBranchId>90003</AgentBranchId>
+        <UserId>121</UserId>
+        <VerifyUserId>121</VerifyUserId>
+    </AppHead>
+</Document>

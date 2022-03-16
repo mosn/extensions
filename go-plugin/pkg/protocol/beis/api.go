@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package xr
+package beis
 
 import (
 	"context"
-	"github.com/mosn/extensions/go-plugin/pkg/common"
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/common"
 )
 
-var proto = &XrProtocol{}
+var proto = &Protocol{}
 
 // NewRpcRequest is a utility function which build rpc Request object of xr protocol.
 func NewRpcRequest(headers *common.Header, data api.IoBuffer) *Request {

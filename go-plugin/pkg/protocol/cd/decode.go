@@ -15,32 +15,32 @@
  * limitations under the License.
  */
 
-package xr
+package cd
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/mosn/extensions/go-plugin/pkg/common"
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/common"
 	"mosn.io/pkg/buffer"
 	"strconv"
 	"strings"
 )
 
-func (proto *XrProtocol) decodeRequest(ctx context.Context, buf api.IoBuffer, header *common.Header) (interface{}, error) {
+func (proto *Protocol) decodeRequest(ctx context.Context, buf api.IoBuffer, header *common.Header) (interface{}, error) {
 	bufLen := buf.Len()
 	data := buf.Bytes()
 
-	rawLen := strings.TrimLeft(string(data[0:8]), "0")
+	rawLen := strings.TrimLeft(string(data[0:10]), "0")
 
 	var err error
 	var packetLen = 0
 	if rawLen != "" {
-		// resolve fix 8 byte length
+		// resolve fix 10 byte length
 		packetLen, err = strconv.Atoi(rawLen)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("failed to decode request len %d, err: %v", packetLen, err))
+			return nil, errors.New(fmt.Sprintf("failed to decode cd proto request len %d, err: %v", packetLen, err))
 		}
 	}
 
@@ -50,43 +50,38 @@ func (proto *XrProtocol) decodeRequest(ctx context.Context, buf api.IoBuffer, he
 		return nil, nil
 	}
 
-	totalLen := 8 /** fixed 8 byte len */ + packetLen
+	totalLen := 10 /** fixed 10 byte len */ + packetLen
 	// Read the complete packet data from the connection
 	buf.Drain(totalLen)
-
-	// rpcBufCtx := bufferByContext(ctx)
 
 	request := &Request{}
 
 	// decode request field
 	request.Header = *header
-	request.RequestId, _ = header.Get(requestIdKey)
-	if val, found := proto.StreamId(ctx, request.RequestId); found {
-		request.SteamId = val
-	}
+
 	request.Timeout = defaultTimeout
 
 	request.Data = buffer.GetIoBuffer(totalLen)
 	request.Data.Write(data[:totalLen])
 
-	payload := request.Data.Bytes()[8:totalLen]
+	payload := request.Data.Bytes()[10:totalLen]
 	request.Payload = buffer.NewIoBufferBytes(payload)
 
 	return request, nil
 }
 
-func (proto *XrProtocol) decodeResponse(ctx context.Context, buf api.IoBuffer, header *common.Header) (interface{}, error) {
+func (proto *Protocol) decodeResponse(ctx context.Context, buf api.IoBuffer, header *common.Header) (interface{}, error) {
 	bufLen := buf.Len()
 	data := buf.Bytes()
 
-	rawLen := strings.TrimLeft(string(data[0:8]), "0")
+	rawLen := strings.TrimLeft(string(data[0:10]), "0")
 
 	var err error
 	var packetLen = 0
 	if rawLen != "" {
 		packetLen, err = strconv.Atoi(rawLen)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("failed to decode request len %d, err: %v", packetLen, err))
+			return nil, errors.New(fmt.Sprintf("failed to decode cd protoco request len %d, err: %v", packetLen, err))
 		}
 	}
 
@@ -96,22 +91,14 @@ func (proto *XrProtocol) decodeResponse(ctx context.Context, buf api.IoBuffer, h
 		return nil, nil
 	}
 
-	totalLen := 8 /** fixed 8 byte len */ + packetLen
+	totalLen := 10 /** fixed 10 byte len */ + packetLen
 	// Read the complete packet data from the connection
 	buf.Drain(totalLen)
-
-	// rpcBufCtx := bufferByContext(ctx)
 
 	response := &Response{}
 
 	// decode request field
 	response.Header = *header
-	response.RequestId, _ = header.Get(requestIdKey)
-	if val, found := proto.StreamId(ctx, response.RequestId); found {
-		response.SteamId = val
-		// remove stream id, help gc
-		proto.RemoveStreamId(ctx, response.RequestId)
-	}
 
 	// Check whether the packet succeeds based on the actual packet
 	// response.Status = 0
@@ -119,7 +106,7 @@ func (proto *XrProtocol) decodeResponse(ctx context.Context, buf api.IoBuffer, h
 	response.Data = buffer.GetIoBuffer(totalLen)
 	response.Data.Write(data[:totalLen])
 
-	payload := response.Data.Bytes()[8:totalLen]
+	payload := response.Data.Bytes()[10:totalLen]
 	response.Payload = buffer.NewIoBufferBytes(payload)
 
 	return response, nil

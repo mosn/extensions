@@ -15,19 +15,17 @@
  * limitations under the License.
  */
 
-package xr
+package cd
 
 import (
-	"github.com/mosn/extensions/go-plugin/pkg/common"
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/common"
 )
 
-const defaultTimeout = 10000 // default request timeout(10 seconds).
+const defaultTimeout = 30000 // default request timeout(30 seconds).
 
 type Request struct {
 	common.Header              // request key value pair
-	RequestId     string       // request id (biz id)
-	SteamId       interface{}  // sidecar request id (replaced by sidecar, uint64 or nil)
 	Timeout       uint32       // request timeout
 	Payload       api.IoBuffer // it refers to the service parameters of a packet
 	Data          api.IoBuffer // full package bytes
@@ -59,16 +57,12 @@ func (r *Request) GetStreamType() api.StreamType {
 }
 
 func (r *Request) GetRequestId() uint64 {
-	if r.SteamId != nil {
-		return r.SteamId.(uint64)
-	}
-
-	// we don't care about it
-	return hash(r.RequestId)
+	// Request not implement request id so that request and response must be ping pong
+	return 0
 }
 
 func (r *Request) SetRequestId(id uint64) {
-	r.SteamId = id
+	// Request not implement request id so that request and response must be ping pong
 }
 
 // check command implement api interface.
@@ -110,27 +104,14 @@ func (r *Response) GetStreamType() api.StreamType {
 }
 
 func (r *Response) GetRequestId() uint64 {
-	if r.SteamId != nil {
-		return r.SteamId.(uint64)
-	}
-
-	// we don't care about it
-	return hash(r.RequestId)
+	// Response not implement request id so that request and response must be ping pong
+	return 0
 }
 
 func (r *Response) SetRequestId(id uint64) {
-	r.SteamId = id
+	// Response not implement request id so that request and response must be ping pong
 }
 
 func (r *Response) GetStatusCode() uint32 {
 	return r.Status
-}
-
-func hash(s string) uint64 {
-	var h uint64
-	for i := 0; i < len(s); i++ {
-		h ^= uint64(s[i])
-		h *= 16777619
-	}
-	return h
 }

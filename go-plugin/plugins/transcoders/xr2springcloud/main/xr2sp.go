@@ -20,10 +20,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/mosn/extensions/go-plugin/pkg/protocol/xr"
 	"github.com/valyala/fasthttp"
 	"mosn.io/api"
 	"mosn.io/api/extensions/transcoder"
+	"mosn.io/extensions/go-plugin/pkg/protocol/cd"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/protocol/http"
 )
@@ -35,7 +35,7 @@ func (t *xr2sp) Accept(ctx context.Context, headers api.HeaderMap, buf api.IoBuf
 }
 
 func (t *xr2sp) TranscodingRequest(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
-	sourceHeader, ok := headers.(*xr.Request)
+	sourceHeader, ok := headers.(*cd.Request)
 	if !ok {
 		return nil, nil, nil, fmt.Errorf("[xprotocol][dubbo] decode xr header type error")
 	}
@@ -60,7 +60,7 @@ func (t *xr2sp) TranscodingResponse(ctx context.Context, headers api.HeaderMap, 
 		return nil, nil, nil, fmt.Errorf("[xprotocol][dubbo] decode http header type error")
 	}
 	//header
-	xrResponse := xr.Response{}
+	xrResponse := cd.Response{}
 	sourceHeader.Range(func(key, value string) bool {
 		//skip for Content-Length,the Content-Length may effect the value decode when transcode more one time
 		if key != "Content-Length" && key != "Accept:" {
@@ -70,7 +70,7 @@ func (t *xr2sp) TranscodingResponse(ctx context.Context, headers api.HeaderMap, 
 	})
 
 	payloads := buffer.NewIoBufferBytes(buf.Bytes())
-	respHeader := xr.NewRpcResponse(&xrResponse.Header, payloads)
+	respHeader := cd.NewRpcResponse(&xrResponse.Header, payloads)
 
 	return respHeader.GetHeader(), respHeader.GetData(), trailers, nil
 }

@@ -15,29 +15,31 @@
  * limitations under the License.
  */
 
-package xr
+package cd
 
 import (
-	"context"
-	"errors"
-	"net/http"
-
 	"mosn.io/api"
+	"strconv"
+	"strings"
 )
 
-type StatusMapping struct{}
+type Matcher struct{}
 
-func (m *StatusMapping) MappingHeaderStatusCode(ctx context.Context, headers api.HeaderMap) (int, error) {
-	cmd, ok := headers.(api.XRespFrame)
-	if !ok {
-		return 0, errors.New("no response status in headers")
+func (m *Matcher) CdProtocolMatcher(data []byte) api.MatchResult {
+	if len(data) < RequestHeaderLen {
+		return api.MatchAgain
 	}
-	code := cmd.GetStatusCode()
-	// TODO: more accurate mapping
-	switch code {
-	case ResponseStatusSuccess:
-		return http.StatusOK, nil
-	default:
-		return http.StatusInternalServerError, nil
+
+	rawLen := strings.TrimLeft(string(data[0:10]), "0")
+	if rawLen == "" {
+		return api.MatchFailed
 	}
+
+	packetLen, err := strconv.Atoi(rawLen)
+	// invalid packet length or not number
+	if packetLen <= 0 || err != nil {
+		return api.MatchFailed
+	}
+
+	return api.MatchSuccess
 }
