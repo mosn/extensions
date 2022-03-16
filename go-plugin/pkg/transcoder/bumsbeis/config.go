@@ -10,6 +10,7 @@ type Bums2BeisVo struct {
 	MesgId    string `json:"mesgId"`
 	MesgRefId string `json:"mesg_refId"`
 	Reserve   string `json:"reserve"`
+	GWName    string `json:"gw"`
 }
 
 type Bums2BeisConfig struct {
@@ -17,8 +18,12 @@ type Bums2BeisConfig struct {
 	AppHead      []string `json:"app_head"`
 	DetailSwitch bool     `json:"detail_switch"`
 	BodySwitch   bool     `json:"body_switch"`
-	//
-	Namespace string `json:"namespace"`
+}
+
+type Beis2BumsConfig struct {
+	Path   string `json:"path"`
+	Method string `json:"method"`
+	GWName string `json:"gw"`
 }
 
 // not support utf8.RuneSelf
@@ -69,7 +74,6 @@ func BytesToFristLower(r []byte) []byte {
 	return r
 }
 
-// TODO b panic
 func b2s(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
 }

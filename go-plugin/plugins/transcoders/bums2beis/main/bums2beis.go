@@ -2,16 +2,20 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"strings"
 
 	"mosn.io/api"
 	at "mosn.io/api/extensions/transcoder"
+	"mosn.io/extensions/go-plugin/pkg/protocol/beis"
+	"mosn.io/extensions/go-plugin/pkg/transcoder/bumsbeis"
 )
 
 type bums2beis struct {
-	cfg map[string]interface{}
-	//
-
-	MesgId int64
+	cfg  map[string]interface{}
+	bums api.HeaderMap
+	br   *beis.Request
 }
 
 func LoadTranscoderFactory(cfg map[string]interface{}) at.Transcoder {
@@ -20,38 +24,63 @@ func LoadTranscoderFactory(cfg map[string]interface{}) at.Transcoder {
 	}
 }
 
-func (t *bums2beis) Accept(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) bool {
+func (bmbi *bums2beis) Accept(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) bool {
+	//TODO 参数配置解析
 	return true
 }
 
-func (t *bums2beis) TranscodingRequest(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
-	// TODO vo &
-	// vo      Bums2BeisVo
-	config := Bums2BeisConfig{}
-	br2br, err := NewBumsReq2BeisReq(headers, "", config)
+func (bmbi *bums2beis) TranscodingRequest(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
+	config, vo, err := bmbi.GetConfig()
+	if err != nil {
+		return headers, buf, trailers, err
+	}
+	br2br, err := bumsbeis.NewBums2Beis(ctx, headers, buf, config, vo)
 	if err != nil {
 		return headers, buf, trailers, nil
 	}
-	if br2br.CheckParam() {
-		return headers, buf, trailers, nil
+
+	if err := br2br.CheckParam(); err != nil {
+		return headers, buf, trailers, err
 	}
-	beisHeaders, beisBuf, err := br2br.Transcoder()
+
+	beisHeaders, beisBuf, err := br2br.Transcoder(true)
 	if err != nil {
-		return headers, buf, trailers, nil
+		return headers, buf, trailers, err
 	}
-	beisHeaders.Set("Content-Type", "application/json")
+	bmbi.br = beisHeaders.(*beis.Request)
 	return beisHeaders, beisBuf, trailers, nil
 }
 
-func (t *bums2beis) TranscodingResponse(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
-	br2br, err := NewBeisResp2BumsResp(headers, buf)
+func (bmbi *bums2beis) TranscodingResponse(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
+	br2br, err := bumsbeis.NewBeis2Bums(ctx, headers, buf, nil)
 	if err != nil {
 		return headers, buf, trailers, nil
 	}
-	bumsHeaders, bumsBuf, err := br2br.Transcoder()
+	bumsHeaders, bumsBuf, err := br2br.Transcoder(false)
 	if err != nil {
 		return headers, buf, trailers, nil
 	}
-	// TODO ID
+	bumsHeaders.Set("VersionId", bmbi.br.VersionID)
+	bumsHeaders.Set("OrigSender", bmbi.br.OrigSender)
+	bumsHeaders.Set("CtrlBits", bmbi.br.CtrlBits)
+	bumsHeaders.Set("AreaCode", bmbi.br.AreaCode)
 	return bumsHeaders, bumsBuf, trailers, nil
+}
+
+func (bmbi *bums2beis) GetConfig() (*bumsbeis.Bums2BeisConfig, *bumsbeis.Bums2BeisVo, error) {
+	details, ok := bmbi.cfg["details"].(string)
+	if ok {
+		return nil, nil, fmt.Errorf("the %s of details is not exist", bmbi.cfg)
+	}
+	var configs []Bums2BeisConfig
+	if err := json.Unmarshal([]byte(details), &configs); err != nil {
+		return nil, nil, err
+	}
+	if len(configs) != 1 {
+		return nil, nil, fmt.Errorf("the length of configs is illage")
+	}
+	vo := &bumsbeis.Bums2BeisVo{
+		Namespace: strings.ToLower(configs[0].ServiceScene) + "." + configs[0].ServiceCode,
+	}
+	return configs[0].ReqMapping, vo, nil
 }

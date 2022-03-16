@@ -1,20 +1,28 @@
 package bumsbeis
 
 import (
+	"context"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/beevik/etree"
+	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
 	"mosn.io/api"
 	"mosn.io/pkg/buffer"
+	"mosn.io/pkg/log"
+	"mosn.io/pkg/protocol/http"
 )
 
 type Beis2Bums struct {
+	config *Beis2BumsConfig
+	ctx    context.Context
 	root   *etree.Element
 	header api.HeaderMap
 }
 
-func NewBeis2Bums(header api.HeaderMap, buf api.IoBuffer) (*Beis2Bums, error) {
+func NewBeis2Bums(ctx context.Context, header api.HeaderMap, buf api.IoBuffer, config *Beis2BumsConfig) (*Beis2Bums, error) {
 	doc := etree.NewDocument()
 	doc.ReadFrom(buf)
 	root := doc.SelectElement("Document")
@@ -24,17 +32,18 @@ func NewBeis2Bums(header api.HeaderMap, buf api.IoBuffer) (*Beis2Bums, error) {
 	return &Beis2Bums{
 		root:   root,
 		header: header,
+		config: config,
 	}, nil
 }
 
-func (br2br *Beis2Bums) BodyJson() ([]byte, error) {
+func (bibm *Beis2Bums) BodyJson(header api.HeaderMap) ([]byte, error) {
 	val := fastjson.Arena{}
 	body := val.NewObject()
 	val = fastjson.Arena{}
 	head := val.NewObject()
-	for _, t := range br2br.root.Child {
+	for _, t := range bibm.root.Child {
 		if c, ok := t.(*etree.Element); ok {
-			br2br.bodyTrancoder(c, head, body)
+			bibm.bodyTrancoder(c, head, body, header)
 		}
 	}
 
@@ -46,49 +55,106 @@ func (br2br *Beis2Bums) BodyJson() ([]byte, error) {
 	return data, nil
 }
 
-func (br2br *Beis2Bums) Transcoder() (api.HeaderMap, api.IoBuffer, error) {
-	header := br2br.header
-	body, err := br2br.BodyJson()
+func (bibm *Beis2Bums) HeadRespone() (api.HeaderMap, error) {
+	respHeader := &fasthttp.ResponseHeader{}
+	respHeader.Set("Content-Type", "application/json")
+	bibm.header.Range(func(key, value string) bool {
+		if key != "Content-Length" && key != "Accept:" {
+			respHeader.Set(key, value)
+		}
+		return true
+	})
+
+	if code, ok := bibm.header.Get("x-mosn-status"); ok {
+		statusCode, err := strconv.Atoi(code)
+		if err == nil {
+			respHeader.SetStatusCode(statusCode)
+		} else {
+			log.DefaultContextLogger.Warnf(bibm.ctx, "the atoi of statuscode failed. err:%s", err)
+		}
+	}
+	reqHeaders := http.ResponseHeader{respHeader}
+	return reqHeaders, nil
+}
+
+func (bibm *Beis2Bums) HeadRequest() (api.HeaderMap, error) {
+	reqHeader := &fasthttp.RequestHeader{}
+	reqHeader.Set("Content-Type", "application/json")
+	bibm.header.Range(func(key, value string) bool {
+		if key != "Content-Length" && key != "Accept:" {
+			reqHeader.Set(key, value)
+		}
+		return true
+	})
+	reqHeader.Set("x-mosn-method", bibm.config.Method)
+	reqHeader.Set("x-mosn-path", bibm.config.Path)
+	reqHeader.Set("X-TARGET-APP", bibm.config.GWName)
+	reqHeaders := http.RequestHeader{reqHeader}
+	return reqHeaders, nil
+}
+
+func (bibm *Beis2Bums) Transcoder(isRequest bool) (header api.HeaderMap, buf api.IoBuffer, err error) {
+	if isRequest {
+		header, err = bibm.HeadRequest()
+	} else {
+		header, err = bibm.HeadRespone()
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+
+	body, err := bibm.BodyJson(header)
 	if err != nil {
 		return nil, nil, err
 	}
 	return header, buffer.NewIoBufferBytes(body), nil
 }
 
-func (br2br *Beis2Bums) bodyTrancoder(e *etree.Element, head, body *fastjson.Value) {
+func (bibm *Beis2Bums) bodyTrancoder(e *etree.Element, head, body *fastjson.Value, header api.HeaderMap) {
 	switch e.Tag {
 	case "AppHead":
-		br2br.Head(e, head, "appHead")
+		bibm.BodyHead(e, head, "appHead", header)
 	case "SysHead":
-		br2br.Head(e, head, "sysHead")
+		bibm.BodyHead(e, head, "sysHead", header)
 	case "LOCAL_HEAD":
-		br2br.Head(e, head, "localHead")
+		bibm.BodyHead(e, head, "localHead", header)
 	case "details":
-		br2br.Details(e, body)
+		bibm.Details(e, body)
 	default:
-		br2br.OtherBody(e, body, e.Tag, 0)
+		bibm.OtherBody(e, body, e.Tag, 0)
 	}
 }
 
-func (br2br *Beis2Bums) Head(e *etree.Element, head *fastjson.Value, key string) {
+func (bibm *Beis2Bums) BodyHead(e *etree.Element, head *fastjson.Value, key string, header api.HeaderMap) {
 	elemEmpty := true
 	for _, t := range e.Child {
 		if c, ok := t.(*etree.Element); ok {
-			br2br.Head(c, head, c.Tag)
+			elemEmpty = true
+			bibm.BodyHead(c, head, c.Tag, header)
 		}
 	}
 	if elemEmpty {
 		if len(e.Text()) == 0 {
-			// return fmt.Errorf("the %s of text is empty", e.Tag)
+			log.DefaultContextLogger.Warnf(bibm.ctx, "the tag:%s of value is empty in head", e.Tag)
 			return
 		}
 		val := fastjson.Arena{}
-		head.Set(br2br.HeadKey(key), val.NewString(e.Text()))
+		key = bibm.HeadKey(key)
+		head.Set(key, val.NewString(e.Text()))
+
+		if header != nil {
+			// traceid/spanid 兼容
+			if strings.EqualFold(key, "traceid") {
+				header.Add("SpanId", e.Text())
+			}
+			if strings.EqualFold(key, "traceid") {
+				header.Add("TraceId", e.Text())
+			}
+		}
 	}
-	// TODO bug
 }
 
-func (br2br *Beis2Bums) HeadKey(key string) string {
+func (bibm *Beis2Bums) HeadKey(key string) string {
 	key = ToFristLower(key)
 	switch key {
 	case "traceid":
@@ -101,12 +167,12 @@ func (br2br *Beis2Bums) HeadKey(key string) string {
 	return key
 }
 
-func (br2br *Beis2Bums) BodyKey(key string) string {
+func (bibm *Beis2Bums) BodyKey(key string) string {
 	return key
 	// return ToFristLower(key)
 }
 
-func (br2br *Beis2Bums) OtherBody(e *etree.Element, body *fastjson.Value, key string, depth int) {
+func (bibm *Beis2Bums) OtherBody(e *etree.Element, body *fastjson.Value, key string, depth int) {
 	elemEmpty := true
 	val := fastjson.Arena{}
 	obj := val.NewObject()
@@ -115,9 +181,9 @@ func (br2br *Beis2Bums) OtherBody(e *etree.Element, body *fastjson.Value, key st
 		if c, ok := t.(*etree.Element); ok {
 			elemEmpty = false
 			if depth <= 0 {
-				br2br.OtherBody(c, obj, c.Tag, depth+1)
+				bibm.OtherBody(c, obj, c.Tag, depth+1)
 			} else {
-				br2br.Head(c, obj, c.Tag)
+				bibm.BodyHead(c, obj, c.Tag, nil)
 			}
 		}
 	}
@@ -136,14 +202,14 @@ func (br2br *Beis2Bums) OtherBody(e *etree.Element, body *fastjson.Value, key st
 	}
 }
 
-func (br2br *Beis2Bums) Details(e *etree.Element, body *fastjson.Value) {
+func (bibm *Beis2Bums) Details(e *etree.Element, body *fastjson.Value) {
 	val := fastjson.Arena{}
 	details := val.NewObject()
 	elemEmpty := true
 	for _, t := range e.Child {
 		if c, ok := t.(*etree.Element); ok {
 			elemEmpty = false
-			bodyKey := br2br.BodyKey(c.Tag)
+			bodyKey := bibm.BodyKey(c.Tag)
 			array := details.Get(bodyKey)
 			if array == nil {
 				erena := fastjson.Arena{}
@@ -151,7 +217,7 @@ func (br2br *Beis2Bums) Details(e *etree.Element, body *fastjson.Value) {
 				details.Set(bodyKey, array)
 			}
 			elements := e.SelectElements(c.Tag)
-			br2br.VisitArray(e, array, elements)
+			bibm.VisitArray(e, array, elements)
 			details.Set(bodyKey, array)
 		}
 	}
@@ -159,20 +225,20 @@ func (br2br *Beis2Bums) Details(e *etree.Element, body *fastjson.Value) {
 		body.Set("details", details)
 	} else if len(e.Text()) != 0 {
 		body.Set("details", val.NewString(e.Text()))
+	} else {
+		log.DefaultContextLogger.Warnf(bibm.ctx, "the tag:%s of value is empty in details", e.Tag)
 	}
-	// TODO log
-	// return fmt.Errorf("the %v of details is empty", e)
 }
 
 // 保证数组顺序
-func (br2br *Beis2Bums) VisitArray(parent *etree.Element, array *fastjson.Value, elements []*etree.Element) {
+func (bibm *Beis2Bums) VisitArray(parent *etree.Element, array *fastjson.Value, elements []*etree.Element) {
 	for index, e := range elements {
-		array.SetArrayItem(index, br2br.VisitObject(e))
+		array.SetArrayItem(index, bibm.VisitObject(e))
 		parent.RemoveChild(e)
 	}
 }
 
-func (br2br *Beis2Bums) VisitObject(ele *etree.Element) *fastjson.Value {
+func (bibm *Beis2Bums) VisitObject(ele *etree.Element) *fastjson.Value {
 	erena := fastjson.Arena{}
 	object := erena.NewObject()
 	elemEmpty := true
@@ -180,13 +246,13 @@ func (br2br *Beis2Bums) VisitObject(ele *etree.Element) *fastjson.Value {
 		if c, ok := t.(*etree.Element); ok {
 			elemEmpty = false
 			if elements := ele.SelectElements(c.Tag); len(elements) == 1 {
-				key := br2br.BodyKey(c.Tag)
-				object.Set(key, br2br.VisitObject(c))
+				key := bibm.BodyKey(c.Tag)
+				object.Set(key, bibm.VisitObject(c))
 			} else {
 				erena := fastjson.Arena{}
 				array := erena.NewArray()
-				br2br.VisitArray(ele, array, elements)
-				key := br2br.BodyKey(c.Tag)
+				bibm.VisitArray(ele, array, elements)
+				key := bibm.BodyKey(c.Tag)
 				object.Set(key, array)
 			}
 		}
@@ -194,7 +260,7 @@ func (br2br *Beis2Bums) VisitObject(ele *etree.Element) *fastjson.Value {
 	if elemEmpty {
 		val := fastjson.Arena{}
 		if len(ele.Text()) == 0 {
-			// TODO log
+			log.DefaultContextLogger.Warnf(bibm.ctx, "the tag:%s of value is empty in VisitObject", ele.Tag)
 		}
 		return val.NewString(ele.Text())
 	}

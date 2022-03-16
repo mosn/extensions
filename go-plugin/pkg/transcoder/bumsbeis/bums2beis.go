@@ -1,6 +1,7 @@
 package bumsbeis
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -12,22 +13,24 @@ import (
 )
 
 type Bums2Beis struct {
+	ctx    context.Context
 	header api.HeaderMap
 
 	head    *fastjson.Value  // kv struct
 	body    *fastjson.Object // list or string
 	bodyErr error
-	config  Bums2BeisConfig
-	vo      Bums2BeisVo
+	config  *Bums2BeisConfig
+	vo      *Bums2BeisVo
 }
 
-func NewBums2Beis(header api.HeaderMap, value string, config Bums2BeisConfig) (*Bums2Beis, error) {
+func NewBums2Beis(ctx context.Context, header api.HeaderMap, buf api.IoBuffer, config *Bums2BeisConfig, vo *Bums2BeisVo) (*Bums2Beis, error) {
 	br2br := &Bums2Beis{
 		config: config,
+		vo:     vo,
 		header: header,
 	}
 	// json parse
-	body, err := fastjson.Parse(value)
+	body, err := fastjson.Parse(buf.String())
 	if err != nil {
 		return br2br, err
 	}
@@ -40,7 +43,7 @@ func NewBums2Beis(header api.HeaderMap, value string, config Bums2BeisConfig) (*
 	return br2br, nil
 }
 
-func (br2br *Bums2Beis) Head() (api.HeaderMap, error) {
+func (br2br *Bums2Beis) HeadRequest() (api.HeaderMap, error) {
 	// 大小写转换
 	beisHeader := &beis.Request{}
 	br2br.header.Range(func(k, v string) bool {
@@ -53,18 +56,29 @@ func (br2br *Bums2Beis) Head() (api.HeaderMap, error) {
 	if !ok || len(origsender) > 10 {
 		return nil, fmt.Errorf("the %s of origsender is illage", origsender)
 	}
+	beisHeader.OrigSender = origsender
+	beisHeader.Del("origsender")
+
 	ctrlbits, ok := beisHeader.Get("ctrlbits")
 	if !ok || len(ctrlbits) > 8 {
 		return nil, fmt.Errorf("the %s of ctrlbits is illage", ctrlbits)
 	}
+	beisHeader.CtrlBits = ctrlbits
+	beisHeader.Del("ctrlbits")
+
 	areacode, ok := beisHeader.Get("areacode")
 	if !ok || len(areacode) != 4 {
 		return nil, fmt.Errorf("the %s of areacode is illage", areacode)
 	}
+	beisHeader.AreaCode = areacode
+	beisHeader.Del("areacode")
+
 	versionid, ok := beisHeader.Get("versionid")
 	if !ok || len(versionid) != 4 {
 		return nil, fmt.Errorf("the %s of versionid is illage", versionid)
 	}
+	beisHeader.VersionID = versionid
+	beisHeader.Del("versionid")
 
 	// 校验traceid ，spanid
 	traceid, ok := beisHeader.Get("traceid")
@@ -78,41 +92,99 @@ func (br2br *Bums2Beis) Head() (api.HeaderMap, error) {
 	}
 
 	if len(br2br.vo.MesgId) != 0 {
-		// beisHeader
-		// TODO
+		beisHeader.MessageID = br2br.vo.MesgId
 	}
 
 	if len(br2br.vo.MesgRefId) != 0 {
-		// beisHeader
-		// TODO
+		beisHeader.MessageRefID = br2br.vo.MesgRefId
 	}
 
 	if len(br2br.vo.Reserve) != 0 {
-		// beisHeader
-		// TODO
+		beisHeader.Reserve = br2br.vo.Reserve
 	}
 	return beisHeader, nil
 }
 
-func (br2br *Bums2Beis) CheckParam() bool {
-	if len(br2br.vo.Namespace) != 20 {
-		// TODO log
-		return false
-	} else if len(br2br.vo.MesgRefId) != 0 && len(br2br.vo.MesgRefId) > 20 {
-		// TODO log
-		return false
-	} else if len(br2br.vo.Reserve) != 0 && len(br2br.vo.Reserve) > 45 {
-		// TODO log
-		return false
+func (br2br *Bums2Beis) HeadRespone() (api.HeaderMap, error) {
+	// 大小写转换
+	beisHeader := &beis.Response{}
+	br2br.header.Range(func(k, v string) bool {
+		k = strings.ToLower(k)
+		beisHeader.Set(k, v)
+		return true
+	})
+
+	origsender, ok := beisHeader.Get("origsender")
+	if !ok || len(origsender) > 10 {
+		return nil, fmt.Errorf("the %s of origsender is illage", origsender)
 	}
-	return true
+	beisHeader.OrigSender = origsender
+	beisHeader.Del("origsender")
+
+	ctrlbits, ok := beisHeader.Get("ctrlbits")
+	if !ok || len(ctrlbits) > 8 {
+		return nil, fmt.Errorf("the %s of ctrlbits is illage", ctrlbits)
+	}
+	beisHeader.CtrlBits = ctrlbits
+	beisHeader.Del("ctrlbits")
+
+	areacode, ok := beisHeader.Get("areacode")
+	if !ok || len(areacode) != 4 {
+		return nil, fmt.Errorf("the %s of areacode is illage", areacode)
+	}
+	beisHeader.AreaCode = areacode
+	beisHeader.Del("areacode")
+
+	versionid, ok := beisHeader.Get("versionid")
+	if !ok || len(versionid) != 4 {
+		return nil, fmt.Errorf("the %s of versionid is illage", versionid)
+	}
+	beisHeader.VersionID = versionid
+	beisHeader.Del("versionid")
+
+	// 校验traceid ，spanid
+	traceid, ok := beisHeader.Get("traceid")
+	if !ok {
+		return nil, fmt.Errorf("the %s of traceid is illage", traceid)
+	}
+
+	spanid, ok := beisHeader.Get("spanid")
+	if !ok {
+		return nil, fmt.Errorf("the %s of spanid is illage", spanid)
+	}
+
+	if len(br2br.vo.MesgId) != 0 {
+		beisHeader.MessageID = br2br.vo.MesgId
+	}
+
+	if len(br2br.vo.MesgRefId) != 0 {
+		beisHeader.MessageRefID = br2br.vo.MesgRefId
+	}
+
+	if len(br2br.vo.Reserve) != 0 {
+		beisHeader.Reserve = br2br.vo.Reserve
+	}
+	return beisHeader, nil
+}
+
+func (br2br *Bums2Beis) CheckParam() error {
+	if len(br2br.vo.Namespace) != 20 {
+		return fmt.Errorf("the %s of namespace is illage", br2br.vo.Namespace)
+	} else if len(br2br.vo.MesgId) != 0 && len(br2br.vo.MesgRefId) > 20 {
+		return fmt.Errorf("the %s of mesgId is illage", br2br.vo.MesgId)
+	} else if len(br2br.vo.MesgRefId) != 0 && len(br2br.vo.MesgRefId) > 20 {
+		return fmt.Errorf("the %s of mesgRefId is illage", br2br.vo.MesgRefId)
+	} else if len(br2br.vo.Reserve) != 0 && len(br2br.vo.Reserve) > 45 {
+		return fmt.Errorf("the %s of reserve is illage", br2br.vo.Reserve)
+	}
+	return nil
 }
 
 func (br2br *Bums2Beis) GetXmlBytes(header api.HeaderMap) ([]byte, error) {
 	beis := etree.NewDocument()
 	beis.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
 	element := beis.CreateElement("Document")
-	element.CreateAttr("xmlns", br2br.config.Namespace)
+	element.CreateAttr("xmlns", br2br.vo.Namespace)
 
 	sysHead := element.CreateElement("SysHead")
 	if err := br2br.SysHead(sysHead); err != nil {
@@ -130,8 +202,12 @@ func (br2br *Bums2Beis) GetXmlBytes(header api.HeaderMap) ([]byte, error) {
 	return beis.WriteToBytes()
 }
 
-func (br2br *Bums2Beis) Transcoder() (api.HeaderMap, api.IoBuffer, error) {
-	header, err := br2br.Head()
+func (br2br *Bums2Beis) Transcoder(isRequest bool) (header api.HeaderMap, buf api.IoBuffer, err error) {
+	if isRequest {
+		header, err = br2br.HeadRequest()
+	} else {
+		header, err = br2br.HeadRespone()
+	}
 	if err != nil {
 		return nil, nil, err
 	}

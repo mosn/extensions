@@ -7,11 +7,11 @@ import (
 	"github.com/beevik/etree"
 	"github.com/stretchr/testify/assert"
 	"mosn.io/api"
-	"mosn.io/extensions/go-plugin/pkg/protocol/beis"
+	"mosn.io/extensions/go-plugin/pkg/protocol/cd"
 )
 
 func TestBumsReq2CdReq_GetXmlBytes(t *testing.T) {
-	header := &beis.Request{}
+	header := &cd.Request{}
 	header.Set("OrigSender", "QDT001")
 	type fields struct {
 		header api.HeaderMap
@@ -49,7 +49,7 @@ func TestBumsReq2CdReq_GetXmlBytes(t *testing.T) {
 }
 
 func TestBumsReq2CdReq_ParseBody(t *testing.T) {
-	header := &beis.Request{}
+	header := &cd.Request{}
 	header.Set("OrigSender", "QDT001")
 	type fields struct {
 		header api.HeaderMap
@@ -103,7 +103,7 @@ func TestBumsReq2CdReq_ParseBody(t *testing.T) {
 }
 
 func TestBumsReq2CdReq_BodyHead(t *testing.T) {
-	header := &beis.Request{}
+	header := &cd.Request{}
 	header.Set("OrigSender", "QDT001")
 	type fields struct {
 		header api.HeaderMap

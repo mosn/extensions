@@ -1,10 +1,12 @@
 package bumsbeis
 
 import (
+	"context"
 	"testing"
 
 	"github.com/beevik/etree"
 	"github.com/stretchr/testify/assert"
+	"mosn.io/extensions/go-plugin/pkg/protocol/beis"
 	"mosn.io/pkg/buffer"
 )
 
@@ -34,9 +36,9 @@ func TestBeis2BumsTranscoder(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			br2br, err := NewBeis2Bums(nil, buffer.NewIoBufferString(tt.val))
+			br2br, err := NewBeis2Bums(context.Background(), &beis.Request{}, buffer.NewIoBufferString(tt.val), &Beis2BumsConfig{})
 			assert.NoError(t, err)
-			_, body, err := br2br.Transcoder()
+			_, body, err := br2br.Transcoder(true)
 			assert.NoError(t, err)
 			assert.Len(t, body.String(), len(tt.want))
 			t.Log(body.String())
