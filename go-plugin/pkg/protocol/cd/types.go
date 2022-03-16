@@ -49,6 +49,8 @@ const (
 	consumerIdKey    = "CONSUMER_ID"     // 6 byte string  :system header
 	consumerSeqNoKey = "CONSUMER_SEQ_NO" // 52 byte string :system header
 	tranIdKey        = "TRAN_ID"         // 30 byte string :system header
+	retStatusKey     = "RET_STATUS"      // response flag
+	retKey           = "RET"             // response flag
 )
 
 // SystemHeader cd protocol sys-header
