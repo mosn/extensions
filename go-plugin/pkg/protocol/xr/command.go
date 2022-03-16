@@ -18,8 +18,8 @@
 package xr
 
 import (
+	"github.com/mosn/extensions/go-plugin/pkg/common"
 	"mosn.io/api"
-	"mosn.io/extensions/go-plugin/pkg/common"
 )
 
 const defaultTimeout = 10000 // default request timeout(10 seconds).
