@@ -16,7 +16,7 @@ TRANSCODER_OUTPUT = ${TRANSCODER_PREFIX}-${OUTPUT}
 STEAM_FILTER_PREFIX = filter
 
 SIDECAR_PROJECT_NAME 	= mosn.io/mosn
-PROJECT_NAME			= github.com/mosn/extensions/go-plugin
+PROJECT_NAME			= mosn.io/extensions/go-plugin
 
 # only for local test
 SIDECAR_GITLAB_PROJECT_NAME = gitlab.alipay-inc.com/ant-mesh/mosn
