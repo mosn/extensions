@@ -3,15 +3,16 @@
   "type": "ingress",
   "address": "0.0.0.0:10080",
   "bind_port": true,
-  "log_path": "./logs/mosn/ingress.log",
-  "log_level": "INFO",
   "access_logs": [
     {
-      "log_path": "./logs/mosn/access_ingress.log"
+      "log_path": "./logs/mosn/egress.log"
     }
   ],
   "filter_chains": [
     {
+      "tls_context_set": [
+        {}
+      ],
       "filters": [
         {
           "type": "proxy",
@@ -43,19 +44,25 @@
       "type": "tamperproofing"
     },
     {
+      "type": "rpc_service_tracer"
+    },
+    {
       "type": "cloud_metrics"
     },
     {
       "type": "fault_inject",
       "config": {
-        "direction": "inbound"
+        "direction": "outbound"
       }
+    },
+    {
+      "type": "downgrade"
     },
     {
       "type": "alipayLimitFilter",
       "config": {
         "enable": true,
-        "direction": "inbound"
+        "direction": "outbound"
       }
     },
     {
@@ -64,6 +71,5 @@
     {
       "type": "fault_tolerance_choose"
     }
-  ],
-  "inspector": true
+  ]
 }

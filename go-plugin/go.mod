@@ -1,4 +1,4 @@
-module mosn.io/extensions/go-plugin
+module github.com/mosn/extensions/go-plugin
 
 go 1.14
 
