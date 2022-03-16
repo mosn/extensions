@@ -102,6 +102,7 @@ func (br2br *Bums2Beis) HeadRequest() (api.HeaderMap, error) {
 	if len(br2br.vo.Reserve) != 0 {
 		beisHeader.Reserve = br2br.vo.Reserve
 	}
+	beisHeader.Set("service", br2br.vo.GWName)
 	return beisHeader, nil
 }
 

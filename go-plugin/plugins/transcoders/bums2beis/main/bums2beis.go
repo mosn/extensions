@@ -81,6 +81,7 @@ func (bmbi *bums2beis) GetConfig() (*bumsbeis.Bums2BeisConfig, *bumsbeis.Bums2Be
 	}
 	vo := &bumsbeis.Bums2BeisVo{
 		Namespace: strings.ToLower(configs[0].ServiceScene) + "." + configs[0].ServiceCode,
+		GWName:    configs[0].GWName,
 	}
 	return configs[0].ReqMapping, vo, nil
 }
