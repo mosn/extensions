@@ -29,7 +29,6 @@ import (
 )
 
 func (proto *Protocol) decodeRequest(ctx context.Context, buf api.IoBuffer, header *common.Header) (interface{}, error) {
-	bufLen := buf.Len()
 	data := buf.Bytes()
 
 	rawLen := strings.TrimLeft(string(data[0:10]), "0")
@@ -44,12 +43,6 @@ func (proto *Protocol) decodeRequest(ctx context.Context, buf api.IoBuffer, head
 		}
 	}
 
-	// The buf does not contain the complete packet length,
-	// So we wait for the next decoder notification.
-	if bufLen < packetLen {
-		return nil, nil
-	}
-
 	totalLen := 10 /** fixed 10 byte len */ + packetLen
 	// Read the complete packet data from the connection
 	buf.Drain(totalLen)
@@ -62,7 +55,7 @@ func (proto *Protocol) decodeRequest(ctx context.Context, buf api.IoBuffer, head
 	request.Timeout = defaultTimeout
 
 	request.Data = buffer.GetIoBuffer(totalLen)
-	request.Data.Write(data[:totalLen])
+	request.Data.Write(data[0:totalLen])
 
 	payload := request.Data.Bytes()[10:totalLen]
 	request.Payload = buffer.NewIoBufferBytes(payload)
@@ -71,7 +64,6 @@ func (proto *Protocol) decodeRequest(ctx context.Context, buf api.IoBuffer, head
 }
 
 func (proto *Protocol) decodeResponse(ctx context.Context, buf api.IoBuffer, header *common.Header) (interface{}, error) {
-	bufLen := buf.Len()
 	data := buf.Bytes()
 
 	rawLen := strings.TrimLeft(string(data[0:10]), "0")
@@ -83,12 +75,6 @@ func (proto *Protocol) decodeResponse(ctx context.Context, buf api.IoBuffer, hea
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("failed to decode cd protoco request len %d, err: %v", packetLen, err))
 		}
-	}
-
-	// The buf does not contain the complete packet length,
-	// So we wait for the next decoder notification.
-	if bufLen < packetLen {
-		return nil, nil
 	}
 
 	totalLen := 10 /** fixed 10 byte len */ + packetLen

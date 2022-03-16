@@ -142,12 +142,12 @@ func (proto *Protocol) Decode(ctx context.Context, buf api.IoBuffer) (interface{
 		}
 	}
 
+	totalLen := 10 /** fixed 10 byte len */ + packetLen
+
 	// expected full message length
-	if bLen < packetLen {
+	if bLen < totalLen {
 		return nil, nil
 	}
-
-	totalLen := 10 /** fixed 10 byte len */ + packetLen
 
 	rpcHeader := common.Header{}
 	injectHeaders(data[10:totalLen], &rpcHeader)
@@ -364,13 +364,13 @@ func (proto *Protocol) hijackResponse(request api.XFrame, statusCode uint32) *Re
 func mappingCode(code uint32) (esbCode string, message string) {
 	switch code {
 	case api.RouterUnavailableCode:
-		esbCode, message = "999999", "no provider available(sidecar:404)."
+		esbCode, message = "999999", "no provider available(sidecar code:404)."
 	case api.NoHealthUpstreamCode:
-		esbCode, message = "999999", "no health provider available(sidecar:502)."
+		esbCode, message = "999999", "no health provider available(sidecar code:502)."
 	case api.TimeoutExceptionCode:
-		esbCode, message = "999999", "invoke timeout(sidecar:504)."
+		esbCode, message = "999999", "invoke timeout(sidecar code:504)."
 	case api.CodecExceptionCode:
-		esbCode, message = "999999", "decode error(sidecar:0)."
+		esbCode, message = "999999", "decode error(sidecar code:0)."
 	default:
 		esbCode, message = "999999", fmt.Sprintf("unknown error(sidecar:%d).", code)
 	}
