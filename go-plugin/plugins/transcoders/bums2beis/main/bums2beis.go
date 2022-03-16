@@ -8,14 +8,12 @@ import (
 
 	"mosn.io/api"
 	at "mosn.io/api/extensions/transcoder"
-	"mosn.io/extensions/go-plugin/pkg/protocol/beis"
 	"mosn.io/extensions/go-plugin/pkg/transcoder/bumsbeis"
 )
 
 type bums2beis struct {
 	cfg  map[string]interface{}
 	bums api.HeaderMap
-	br   *beis.Request
 }
 
 func LoadTranscoderFactory(cfg map[string]interface{}) at.Transcoder {
@@ -47,7 +45,6 @@ func (bmbi *bums2beis) TranscodingRequest(ctx context.Context, headers api.Heade
 	if err != nil {
 		return headers, buf, trailers, err
 	}
-	bmbi.br = beisHeaders.(*beis.Request)
 	return beisHeaders, beisBuf, trailers, nil
 }
 
@@ -60,10 +57,6 @@ func (bmbi *bums2beis) TranscodingResponse(ctx context.Context, headers api.Head
 	if err != nil {
 		return headers, buf, trailers, nil
 	}
-	bumsHeaders.Set("VersionId", bmbi.br.VersionID)
-	bumsHeaders.Set("OrigSender", bmbi.br.OrigSender)
-	bumsHeaders.Set("CtrlBits", bmbi.br.CtrlBits)
-	bumsHeaders.Set("AreaCode", bmbi.br.AreaCode)
 	return bumsHeaders, bumsBuf, trailers, nil
 }
 

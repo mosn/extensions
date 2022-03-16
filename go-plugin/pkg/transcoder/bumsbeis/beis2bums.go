@@ -10,6 +10,7 @@ import (
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/protocol/beis"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
 	"mosn.io/pkg/protocol/http"
@@ -73,8 +74,14 @@ func (bibm *Beis2Bums) HeadRespone() (api.HeaderMap, error) {
 			log.DefaultContextLogger.Warnf(bibm.ctx, "the atoi of statuscode failed. err:%s", err)
 		}
 	}
-	reqHeaders := http.ResponseHeader{respHeader}
-	return reqHeaders, nil
+
+	// beis数据解析
+	br := bibm.header.(*beis.Response)
+	respHeader.Set("VersionId", br.VersionID)
+	respHeader.Set("OrigSender", br.OrigSender)
+	respHeader.Set("CtrlBits", br.CtrlBits)
+	respHeader.Set("AreaCode", br.AreaCode)
+	return http.ResponseHeader{respHeader}, nil
 }
 
 func (bibm *Beis2Bums) HeadRequest() (api.HeaderMap, error) {
@@ -89,8 +96,14 @@ func (bibm *Beis2Bums) HeadRequest() (api.HeaderMap, error) {
 	reqHeader.Set("x-mosn-method", bibm.config.Method)
 	reqHeader.Set("x-mosn-path", bibm.config.Path)
 	reqHeader.Set("X-TARGET-APP", bibm.config.GWName)
-	reqHeaders := http.RequestHeader{reqHeader}
-	return reqHeaders, nil
+
+	// beis数据解析
+	br := bibm.header.(*beis.Request)
+	reqHeader.Set("VersionId", br.VersionID)
+	reqHeader.Set("OrigSender", br.OrigSender)
+	reqHeader.Set("CtrlBits", br.CtrlBits)
+	reqHeader.Set("AreaCode", br.AreaCode)
+	return http.RequestHeader{reqHeader}, nil
 }
 
 func (bibm *Beis2Bums) Transcoder(isRequest bool) (header api.HeaderMap, buf api.IoBuffer, err error) {
