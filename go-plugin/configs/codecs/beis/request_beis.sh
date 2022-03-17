@@ -12,10 +12,10 @@ BODY="$(cat beis_req.txt)"
 
 echo $BODY
 echo
-echo "--------START telnet---------"
+echo "--------START invoke---------"
 echo
 
-(sleep 1;echo "$BODY";echo;echo;sleep 300;)|telnet $IP $PORT
+(sleep 1;echo "$BODY";echo;echo;sleep 300;) | nc $IP $PORT
 echo
 echo "--------END-------------"
 

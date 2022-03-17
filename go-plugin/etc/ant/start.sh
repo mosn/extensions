@@ -22,14 +22,17 @@ if [[ -n "$sidecar" ]]; then
   echo "terminated ok"
 fi
 
+DEBUG_MODE=${DLV_DEBUG}
+
 # export local ip for mosn
-export PUB_BOLT_LOCAL_IP=$(ifconfig -a | grep inet | grep -v 127.0.0.1 | grep -v inet6 | grep -v "inet 0" | grep -v "\-\-" | awk '{print $2}' | tr -d "addr:")
+export PUB_BOLT_LOCAL_IP=$(ipconfig getifaddr en0)
 echo "host address: ${PUB_BOLT_LOCAL_IP}"
 
 docker run -u admin \
   -e PLUGIN_PROJECT_NAME="${PROJECT_NAME}" \
   -e DYNAMIC_CONF_PATH=/go/src/${PROJECT_NAME}/build/codecs \
   -e SIDECAR_PROJECT_NAME=${SIDECAR_GITLAB_PROJECT_NAME} \
+  -e SIDECAR_DLV_DEBUG="${DEBUG_MODE}" \
   -v $(go env GOPATH)/src/${PROJECT_NAME}:/go/src/${PROJECT_NAME} \
   -v $(go env GOPATH)/src/${PROJECT_NAME}/logs:/home/admin/logs \
   -v $(go env GOPATH)/src/${SIDECAR_GITLAB_PROJECT_NAME}:/go/src/${SIDECAR_GITLAB_PROJECT_NAME} \
