@@ -1,5 +1,9 @@
 #!/bin/bash
 
+go env -w GO111MODULE=on
+go env -w GOPROXY=https://goproxy.cn,direct
+go env -w GOPRIVATE=gitlab.alipay-inc.com,code.alipay.com
+
 # build transcoder plugins
 if [[ -n "${PLUGIN_TRANSCODER}" ]]; then
   coders=(${PLUGIN_TRANSCODER//,/ })
