@@ -1,0 +1,9 @@
+{
+  "type": "bums_decoder",
+  "go_plugin_config": {
+    "so_path": "./stream_filter-bums_decoder.so"
+  },
+  "config": {
+    "before": "govern_config"
+  }
+}
