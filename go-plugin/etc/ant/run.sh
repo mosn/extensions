@@ -35,4 +35,10 @@ cp -r /go/src/${SIDECAR_PROJECT_NAME}/configs/certs $MOSN_PREFIX/base_conf/certs
 
 echo "sidecar->  ${mosn}"
 
-dlv --listen=0.0.0.0:2345 --headless=true --api-version=2 --accept-multiclient --allow-non-terminal-interactive exec /home/admin/mosn/bin/mosn -- start -c /home/admin/mosn/conf/mosn_config.json -b /home/admin/mosn/base_conf/mosn_config.json -n "sidecar~$RequestedIP~$POD_NAME.$POD_NAMESPACE~$POD_NAMESPACE.$DOMAINNAME" -s "$Sigma_Site" -l /home/admin/logs/mosn/default.log
+debug=${SIDECAR_DLV_DEBUG}
+if [[ -n "$debug" && "$debug" == "true" ]]; then
+  echo "running mode: debug"
+  dlv --listen=0.0.0.0:2345 --headless=true --api-version=2 --accept-multiclient --allow-non-terminal-interactive exec /home/admin/mosn/bin/mosn -- start -c /home/admin/mosn/conf/mosn_config.json -b /home/admin/mosn/base_conf/mosn_config.json -n "sidecar~$RequestedIP~$POD_NAME.$POD_NAMESPACE~$POD_NAMESPACE.$DOMAINNAME" -s "$Sigma_Site" -l /home/admin/logs/mosn/default.log
+else
+  /home/admin/mosn/bin/mosn start -c /home/admin/mosn/conf/mosn_config.json -b /home/admin/mosn/base_conf/mosn_config.json -n "sidecar~$RequestedIP~$POD_NAME.$POD_NAMESPACE~$POD_NAMESPACE.$DOMAINNAME" -s "$Sigma_Site" -l /home/admin/logs/mosn/default.log
+fi
