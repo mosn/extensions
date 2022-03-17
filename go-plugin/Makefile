@@ -33,7 +33,6 @@ codec:
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-e PLUGIN_STREAM_FILTER=${STREAM_FILTER} \
 	-e PLUGIN_TRANSCODER=${TRANSCODER} \
-	-v $(shell go env GOPATH):/go \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} -it ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile-codec.sh
@@ -46,7 +45,6 @@ transcoder:
 	-e PLUGIN_TRANSCODER=${TARGET} \
 	-e PLUGIN_TRANSCODER_PREFIX=${TRANSCODER_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
-	-v $(shell go env GOPATH):/go \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile-transcoder.sh
@@ -59,7 +57,6 @@ stream-filter:
 	-e PLUGIN_STREAM_FILTER=${TARGET} \
 	-e PLUGIN_STEAM_FILTER_PREFIX=${STEAM_FILTER_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
-	-v $(shell go env GOPATH):/go \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile-filter.sh
@@ -102,7 +99,6 @@ pkg-codec:
 	docker run --rm \
 	-e PLUGIN_CODEC=${TARGET} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
-	-v $(shell go env GOPATH):/go \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/package-codec.sh
@@ -111,7 +107,6 @@ pkg-filter:
 	docker run --rm \
 	-e PLUGIN_STREAM_FILTER=${TARGET} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
-	-v $(shell go env GOPATH):/go \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/package-filter.sh
@@ -120,7 +115,6 @@ pkg-trans:
 	docker run --rm \
 	-e PLUGIN_TRANSCODER=${TARGET} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
-	-v $(shell go env GOPATH):/go \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/package-transcoder.sh
@@ -130,7 +124,6 @@ sidecar:
 	docker run --rm \
 	--env PROJECT_NAME=${PROJECT_NAME} \
 	--env SIDECAR_PROJECT_NAME=${SIDECAR_PROJECT_NAME} \
-	-v $(shell go env GOPATH):/go \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-v $(shell go env GOPATH)/src/${SIDECAR_PROJECT_NAME}:/go/src/${SIDECAR_PROJECT_NAME} \
 	-w /go/src/${SIDECAR_PROJECT_NAME} ${BUILD_IMAGE} \
@@ -141,7 +134,6 @@ ant:
 	docker run --rm \
 	--env PROJECT_NAME=${PROJECT_NAME} \
 	--env SIDECAR_PROJECT_NAME=${SIDECAR_GITLAB_PROJECT_NAME} \
-	-v $(shell go env GOPATH):/go \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-v $(shell go env GOPATH)/src/${SIDECAR_GITLAB_PROJECT_NAME}:/go/src/${SIDECAR_GITLAB_PROJECT_NAME} \
 	-w /go/src/${SIDECAR_GITLAB_PROJECT_NAME} -it ${BUILD_IMAGE} \
@@ -150,7 +142,6 @@ ant:
 pkg-ant:
 	docker run --rm \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
-	-v $(shell go env GOPATH):/go \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/package-ant.sh
