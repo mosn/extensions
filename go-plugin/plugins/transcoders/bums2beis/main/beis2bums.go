@@ -9,6 +9,7 @@ import (
 	"mosn.io/api"
 	at "mosn.io/api/extensions/transcoder"
 	"mosn.io/extensions/go-plugin/pkg/transcoder/bumsbeis"
+	"mosn.io/pkg/log"
 )
 
 type beis2bums struct {
@@ -32,7 +33,7 @@ func (bibm *beis2bums) Accept(ctx context.Context, headers api.HeaderMap, buf ap
 }
 
 func (bibm *beis2bums) TranscodingRequest(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
-	config, err := bibm.GetConfig()
+	config, err := bibm.GetConfig(ctx)
 	if err != nil {
 		return headers, buf, trailers, err
 	}
@@ -44,11 +45,17 @@ func (bibm *beis2bums) TranscodingRequest(ctx context.Context, headers api.Heade
 	if err != nil {
 		return headers, buf, trailers, nil
 	}
+
+	if log.DefaultContextLogger.GetLogLevel() >= log.DEBUG {
+		jhs, _ := json.Marshal(headers)
+		jhd, _ := json.Marshal(bumsHeaders)
+		log.DefaultContextLogger.Debugf(ctx, "[transcoders][beis2bums] tran request src_head:%s,dst_head:%s,src_body:%s,dst_body:%s", jhs, jhd, buf.String(), bumsBuf.String())
+	}
 	return bumsHeaders, bumsBuf, trailers, nil
 }
 
 func (bibm *beis2bums) TranscodingResponse(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
-	config, err := bibm.GetConfig()
+	config, err := bibm.GetConfig(ctx)
 	if err != nil {
 		return headers, buf, trailers, err
 	}
@@ -70,10 +77,15 @@ func (bibm *beis2bums) TranscodingResponse(ctx context.Context, headers api.Head
 	if err != nil {
 		return headers, buf, trailers, err
 	}
+	if log.DefaultContextLogger.GetLogLevel() >= log.DEBUG {
+		jhs, _ := json.Marshal(headers)
+		jhd, _ := json.Marshal(beisHeaders)
+		log.DefaultContextLogger.Debugf(ctx, "[transcoders][beis2bums] tran request src_head:%s,dst_head:%s,src_body:%s,dst_body:%s", jhs, jhd, buf.String(), beisBuf.String())
+	}
 	return beisHeaders, beisBuf, trailers, nil
 }
 
-func (bibm *beis2bums) GetConfig() (*Bums2BeisConfig, error) {
+func (bibm *beis2bums) GetConfig(ctx context.Context) (*Bums2BeisConfig, error) {
 	details, ok := bibm.cfg["details"].(string)
 	if !ok {
 		return nil, fmt.Errorf("the %s of details is not exist", bibm.cfg)
@@ -89,6 +101,11 @@ func (bibm *beis2bums) GetConfig() (*Bums2BeisConfig, error) {
 		Path:   configs[0].Path,
 		Method: configs[0].Method,
 		GWName: configs[0].GWName,
+	}
+
+	if log.DefaultContextLogger.GetLogLevel() >= log.DEBUG {
+		cstr, _ := json.Marshal(configs[0])
+		log.DefaultContextLogger.Debugf(ctx, "[transcoders][beis2bums] config:%s", cstr)
 	}
 	return configs[0], nil
 }

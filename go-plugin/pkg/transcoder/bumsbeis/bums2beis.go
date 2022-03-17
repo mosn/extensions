@@ -70,7 +70,7 @@ func (br2br *Bums2Beis) GetXmlBytes(header api.HeaderMap) ([]byte, error) {
 	if err := br2br.AppHead(appHead, header); err != nil {
 		return nil, err
 	}
-	// bugfix
+
 	if err := br2br.Body(element); err != nil {
 		return nil, err
 	}
