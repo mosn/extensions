@@ -1,5 +1,5 @@
 {
-  "name": "ingress_springcloud",
+  "name": "ingress_bums",
   "type": "ingress",
   "address": "0.0.0.0:20080",
   "bind_port": true,
@@ -17,17 +17,17 @@
         {
           "type": "proxy",
           "config": {
-            "downstream_protocol": "springcloud",
+            "downstream_protocol": "bums",
             "name": "proxy_config",
-            "router_config_name": "ingress_springcloud_router",
-            "upstream_protocol": "springcloud"
+            "router_config_name": "ingress_bums_router",
+            "upstream_protocol": "bums"
           }
         },
         {
           "type": "connection_manager",
           "config": {
-            "router_config_name": "ingress_springcloud_router",
-            "router_configs": "./mosn/conf/routers/ingress_springcloud_router/"
+            "router_config_name": "ingress_bums_router",
+            "router_configs": "./mosn/conf/routers/ingress_bums_router/"
           }
         }
       ]
