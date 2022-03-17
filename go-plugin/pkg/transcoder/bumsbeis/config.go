@@ -6,11 +6,11 @@ import (
 )
 
 type Bums2BeisVo struct {
-	Namespace string `json:"namespace"`
-	MesgId    string `json:"mesgId"`
-	MesgRefId string `json:"mesg_refId"`
-	Reserve   string `json:"reserve"`
-	GWName    string `json:"gw"`
+	Namespace string `json:"namespace,omitempty"`
+	MesgId    string `json:"mesgId,omitempty"`
+	MesgRefId string `json:"mesg_refId,omitempty"`
+	Reserve   string `json:"reserve,omitempty"`
+	GWName    string `json:"gw,omitempty"`
 }
 
 type Bums2BeisConfig struct {
@@ -21,9 +21,9 @@ type Bums2BeisConfig struct {
 }
 
 type Beis2BumsConfig struct {
-	Path   string `json:"path"`
-	Method string `json:"method"`
-	GWName string `json:"gw"`
+	Path   string `json:"path,omitempty"`
+	Method string `json:"method,omitempty"`
+	GWName string `json:"gw,omitempty"`
 }
 
 // not support utf8.RuneSelf

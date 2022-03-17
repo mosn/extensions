@@ -62,7 +62,7 @@ func (bmbi *bums2beis) TranscodingResponse(ctx context.Context, headers api.Head
 
 func (bmbi *bums2beis) GetConfig() (*bumsbeis.Bums2BeisConfig, *bumsbeis.Bums2BeisVo, error) {
 	details, ok := bmbi.cfg["details"].(string)
-	if ok {
+	if !ok {
 		return nil, nil, fmt.Errorf("the %s of details is not exist", bmbi.cfg)
 	}
 	var configs []Bums2BeisConfig

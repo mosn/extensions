@@ -154,7 +154,7 @@ func (bibm *Beis2Bums) BodyHead(e *etree.Element, head *fastjson.Value, key stri
 		val := fastjson.Arena{}
 		key = bibm.HeadKey(key)
 		head.Set(key, val.NewString(e.Text()))
-
+		// TODO 状态码转换映射
 		if header != nil {
 			// traceid/spanid 兼容
 			if strings.EqualFold(key, "traceid") {

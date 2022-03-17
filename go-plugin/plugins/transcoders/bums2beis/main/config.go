@@ -5,10 +5,10 @@ import (
 )
 
 type Bums2BeisConfig struct {
-	UniqueId     string                    `json:"uniqueId"`
-	ServiceCode  string                    `json:"service_code"`
-	ServiceScene string                    `json:"service_scene"`
-	GWName       string                    `json:"gw"`
-	ReqMapping   *bumsbeis.Bums2BeisConfig `json:"req_mapping"`
-	// RespMapping  *bumsbeis.Bums2BeisConfig `json:"resp_mapping"`
+	UniqueId    string                    `json:"uniqueId"`
+	Path        string                    `json:"path"`
+	Method      string                    `json:"method"`
+	GWName      string                    `json:"gw"`
+	ReqMapping  *bumsbeis.Beis2BumsConfig `json:"-"`
+	RespMapping *bumsbeis.Bums2BeisConfig `json:"resp_mapping"`
 }
