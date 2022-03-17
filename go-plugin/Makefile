@@ -161,7 +161,10 @@ start:
 stop:
 	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/ant/stop.sh
 
+debug:
+	DLV_DEBUG=true bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/ant/start.sh
+
 clean:
 	@rm -rf build/codecs build/stream_filters build/transcoders
 
-.PHONY: codec clean start stop
+.PHONY: codec clean start stop debug
