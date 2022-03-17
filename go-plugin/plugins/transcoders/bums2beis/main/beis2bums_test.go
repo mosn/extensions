@@ -6,13 +6,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"mosn.io/api"
-	"mosn.io/pkg/protocol/http"
+	"mosn.io/extensions/go-plugin/pkg/protocol/beis"
 )
 
 func TestBums2beisGetConfig(t *testing.T) {
 	type fields struct {
 		cfg  map[string]interface{}
-		bums api.HeaderMap
+		beis api.HeaderMap
 	}
 	tests := []struct {
 		name    string
@@ -24,7 +24,7 @@ func TestBums2beisGetConfig(t *testing.T) {
 			name: "GetConfig",
 			fields: fields{
 				cfg:  map[string]interface{}{"details": `[{"uniqueId":"","path":"/","method":"GET","gw":"","resp_mapping":{"sys_head":["ServiceCode","ServiceScene","MessageType","MessageCode","ConsumerSvrId","ConsumerSeqNo","ConsumerId","TranTimestamp","TranDate","TranCode"],"app_head":["UniqueId","AdminUserIdA","Traceid","Spanid","BranchId","AgentBranchId","UserId","VerifyUserId"],"detail_switch":false,"body_switch":false}}]`},
-				bums: http.RequestHeader{},
+				beis: &beis.Request{},
 			},
 			want:    `{"uniqueId":"","path":"/","method":"GET","gw":"","resp_mapping":{"sys_head":["ServiceCode","ServiceScene","MessageType","MessageCode","ConsumerSvrId","ConsumerSeqNo","ConsumerId","TranTimestamp","TranDate","TranCode"],"app_head":["UniqueId","AdminUserIdA","Traceid","Spanid","BranchId","AgentBranchId","UserId","VerifyUserId"],"detail_switch":false,"body_switch":false}}`,
 			wantErr: nil,
@@ -34,7 +34,7 @@ func TestBums2beisGetConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			bmbi := &beis2bums{
 				cfg:  tt.fields.cfg,
-				bums: tt.fields.bums,
+				beis: tt.fields.beis,
 			}
 			got, err := bmbi.GetConfig()
 			assert.Equal(t, tt.wantErr, err)
