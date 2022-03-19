@@ -1,6 +1,6 @@
 #!/bin/bash
 
-URL=http://127.0.0.1:20088/brn/pdf/0001/000016
+URL=http://127.0.0.1:2088/brn/pdf/0001/000016
 #EXTREF=$ date +%s%N
 EXTREF=$(date +%Y%m%d%H%M%S)$RANDOM
 echo  $URL
