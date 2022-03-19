@@ -1,8 +1,9 @@
 package encryption
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"mosn.io/pkg/log"
 	"sync/atomic"
 )
@@ -13,16 +14,24 @@ type SecretConfig struct {
 	Secret map[string]string `json:"secrets"`
 }
 
-func ParseSecret(value *atomic.Value) (*SecretConfig, error) {
-
-	secretConfigValue := value.Load().(string)
+func ParseSecret(ctx context.Context) (*SecretConfig, error) {
+	value := ctx.Value("code_config")
+	if value == nil {
+		return nil, errors.New("code_config is empty")
+	}
+	atomicValue := value.(*atomic.Value)
+	valueStr := atomicValue.Load()
+	if valueStr == nil {
+		return nil, errors.New("code_config is empty")
+	}
+	secretConfigValue := valueStr.(string)
 
 	if log.DefaultLogger.GetLogLevel() >= log.DEBUG {
 		log.DefaultLogger.Debugf("[common] [encryption]: SecretConfig parse: %s", secretConfigValue)
 	}
 
 	if secretConfigValue == "" {
-		return nil, fmt.Errorf("secretConfigValue is empty")
+		return nil, errors.New("secretConfigValue is empty")
 	}
 
 	secretConfig := &SecretConfig{}
@@ -36,7 +45,7 @@ func ParseSecret(value *atomic.Value) (*SecretConfig, error) {
 	}
 
 	if !secretConfig.Enable {
-		return nil, fmt.Errorf("secretConfig is not enabled")
+		return nil, errors.New("secretConfig is not enabled")
 	}
 
 	return secretConfig, nil

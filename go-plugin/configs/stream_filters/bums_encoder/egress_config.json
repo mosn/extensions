@@ -4,6 +4,5 @@
     "so_path": "./stream_filter-bums_encoder.so"
   },
   "config": {
-    "before": "govern_config"
   }
 }

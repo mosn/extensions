@@ -60,7 +60,7 @@ func (proto *Protocol) encodeRequest(ctx context.Context, request *Request) (api
 		buf.Write(request.Payload.Bytes())
 	}
 
-	return buf, nil
+	return encrypt(ctx, buf, packetLen)
 }
 
 func (proto *Protocol) encodeResponse(ctx context.Context, response *Response) (api.IoBuffer, error) {
@@ -94,7 +94,7 @@ func (proto *Protocol) encodeResponse(ctx context.Context, response *Response) (
 		buf.Write(response.Payload.Bytes())
 	}
 
-	return buf, nil
+	return encrypt(ctx, buf, packetLen)
 }
 
 // prefixOfZero Appends '0' character until 10 bytes are satisfied

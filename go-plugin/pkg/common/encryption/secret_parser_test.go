@@ -1,6 +1,7 @@
 package encryption
 
 import (
+	"context"
 	"reflect"
 	"sync/atomic"
 	"testing"
@@ -49,7 +50,8 @@ func TestParseSecret(t *testing.T) {
 	for _, tt := range tests {
 		atoValue := &atomic.Value{}
 		atoValue.Store(tt.value)
-		got, _ := ParseSecret(atoValue)
+		ctx := context.WithValue(context.Background(), "code_config", atoValue)
+		got, _ := ParseSecret(ctx)
 		if !reflect.DeepEqual(got, tt.want) {
 			t.Errorf("ParseSecret() got = %v, want %v", got, tt.want)
 		}

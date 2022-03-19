@@ -35,6 +35,9 @@
   ],
   "stream_filters": [
     {
+      "type": "bums_decoder"
+    },
+    {
       "type": "govern_config"
     },
     {
@@ -67,6 +70,9 @@
     },
     {
       "type": "fault_tolerance_choose"
+    },
+    {
+      "type": "bums_encoder"
     }
   ]
 }

@@ -3,6 +3,7 @@ module mosn.io/extensions/go-plugin
 go 1.14
 
 require (
+	code.alipay.com/neo/lookout/golang/lookoutsdk v0.0.0-20220310120642-875548e39280 // indirect
 	github.com/valyala/fasthttp v1.31.0
 	mosn.io/api v0.0.0-20211217011300-b851d129be01
 	mosn.io/pkg v0.0.0-20211217101631-d914102d1baf

@@ -24,6 +24,8 @@ import (
 	"fmt"
 	"mosn.io/api"
 	"mosn.io/extensions/go-plugin/pkg/common"
+	"mosn.io/extensions/go-plugin/pkg/common/encryption"
+	"mosn.io/extensions/go-plugin/pkg/common/encryption/xor"
 	"mosn.io/extensions/go-plugin/pkg/common/safe"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
@@ -99,13 +101,14 @@ func (proto *Protocol) Decode(ctx context.Context, buf api.IoBuffer) (interface{
 	}
 
 	// decode buf xml body if encrypt
-	ioBuf, err := decrypt(ctx, buf, totalLen)
+	ioBuf, newTotalLen, err := decrypt(ctx, buf, totalLen)
 	if err != nil {
 		return nil, err
 	}
 
 	rpcHeader := common.Header{}
-	resolveHeaders(ioBuf.Bytes()[RequestHeaderLen:RequestHeaderLen+totalLen], &rpcHeader)
+	newData := ioBuf.Bytes()
+	resolveHeaders(newData[RequestHeaderLen:newTotalLen], &rpcHeader)
 
 	frameType, _ := rpcHeader.Get(requestTypeKey)
 	switch frameType {
@@ -118,21 +121,39 @@ func (proto *Protocol) Decode(ctx context.Context, buf api.IoBuffer) (interface{
 	}
 }
 
-// decrypt the body and return a new BUF if encryption exists
-func decrypt(ctx context.Context, buf api.IoBuffer, totalLen int) (api.IoBuffer, error) {
+// encrypt the body and return a new BUF if encryption exists
+func encrypt(ctx context.Context, buf api.IoBuffer, totalLen int) (api.IoBuffer, error) {
 	data := buf.Bytes()
 	ctrlBits := data[26:34] // ctrl_bits
 	cryptType := string(ctrlBits[0])
+	OrigSender := string(data[8:18]) //orig_sender
+
+	var err error
+	secretConfig, err := encryption.ParseSecret(ctx)
+	if err != nil {
+		log.DefaultLogger.Errorf("[beis][encoder] ParseSecret ERR: %s", err)
+	}
 
 	switch cryptType {
 	case "0": // plain text
 		return buf, nil
 	case "1": // xor ??
 		buf.Drain(totalLen)
-		// todo need to be implement
 		// 1. decode xml body
+		encryptBuf, err := xor.XorEncrypt(OrigSender, data[RequestHeaderLen:totalLen], secretConfig)
+		if err != nil {
+			return nil, err
+		}
 		// 2. replace ioBuf MessageLength field, offset: [18:18+8], need append prefix '0'
-		return nil, errors.New("unimplemented encrypt algorithm")
+		mesLen := len(encryptBuf)
+		totalLen = RequestHeaderLen + mesLen
+		lenOfPacket := common.BuildLenOfPacket(mesLen, 8)
+		newBuf := buffer.GetIoBuffer(totalLen)
+		newBuf.Write(data[:MessageLengthIndex])
+		newBuf.Write([]byte(lenOfPacket))
+		newBuf.Write(data[MessageLengthIndex+8 : RequestHeaderLen])
+		newBuf.Write(encryptBuf)
+		return newBuf, nil
 	case "2": // 3DS
 		buf.Drain(totalLen)
 		// todo need to be implement
@@ -141,6 +162,50 @@ func decrypt(ctx context.Context, buf api.IoBuffer, totalLen int) (api.IoBuffer,
 		return nil, errors.New("unimplemented encrypt 3DS algorithm")
 	default:
 		return nil, errors.New("unknown encrypt algorithm")
+	}
+}
+
+// decrypt the body and return a new BUF if encryption exists
+func decrypt(ctx context.Context, buf api.IoBuffer, totalLen int) (api.IoBuffer, int, error) {
+	data := buf.Bytes()
+	ctrlBits := data[26:34] // ctrl_bits
+	cryptType := string(ctrlBits[0])
+	OrigSender := string(data[8:18]) //orig_sender
+
+	var err error
+	secretConfig, err := encryption.ParseSecret(ctx)
+	if err != nil {
+		log.DefaultLogger.Errorf("[beis][decoder] ParseSecret ERR: %s", err)
+	}
+
+	switch cryptType {
+	case "0": // plain text
+		return buf, totalLen, nil
+	case "1": // xor ??
+		buf.Drain(totalLen)
+		// 1. decode xml body
+		decryptBuf, err := xor.XorDecrypt(OrigSender, data[RequestHeaderLen:totalLen], secretConfig)
+		if err != nil {
+			return nil, totalLen, err
+		}
+		// 2. replace ioBuf MessageLength field, offset: [18:18+8], need append prefix '0'
+		mesLen := len(decryptBuf)
+		totalLen = RequestHeaderLen + mesLen
+		lenOfPacket := common.BuildLenOfPacket(mesLen, 8)
+		newBuf := buffer.GetIoBuffer(totalLen)
+		newBuf.Write(data[:MessageLengthIndex])
+		newBuf.Write([]byte(lenOfPacket))
+		newBuf.Write(data[MessageLengthIndex+8 : RequestHeaderLen])
+		newBuf.Write(decryptBuf)
+		return newBuf, totalLen, nil
+	case "2": // 3DS
+		buf.Drain(totalLen)
+		// todo need to be implement
+		// 1. decode xml body
+		// 2. replace ioBuf MessageLength field, offset: [18:18+8], need append prefix '0'
+		return nil, totalLen, errors.New("unimplemented encrypt 3DS algorithm")
+	default:
+		return nil, totalLen, errors.New("unknown encrypt algorithm")
 	}
 }
 
