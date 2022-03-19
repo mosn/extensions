@@ -121,6 +121,7 @@ func (proto *Protocol) Decode(ctx context.Context, buf api.IoBuffer) (interface{
 	}
 }
 
+
 // encrypt the body and return a new BUF if encryption exists
 func encrypt(ctx context.Context, buf api.IoBuffer, totalLen int) (api.IoBuffer, error) {
 	data := buf.Bytes()
