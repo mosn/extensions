@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -38,7 +39,7 @@ func TestBums2beisGetConfig(t *testing.T) {
 				cfg:  tt.fields.cfg,
 				bums: tt.fields.bums,
 			}
-			got, got1, err := bmbi.GetConfig()
+			got, got1, err := bmbi.GetConfig(context.TODO())
 			assert.Equal(t, tt.wantErr, err)
 
 			str, _ := json.Marshal(got)

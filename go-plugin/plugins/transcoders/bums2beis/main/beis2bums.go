@@ -14,7 +14,6 @@ import (
 
 type beis2bums struct {
 	cfg       map[string]interface{}
-	bums      api.HeaderMap
 	namespace string
 }
 
@@ -90,24 +89,14 @@ func (bibm *beis2bums) GetConfig(ctx context.Context) (*Bums2BeisConfig, error) 
 	if !ok {
 		return nil, fmt.Errorf("the %s of details is not exist", bibm.cfg)
 	}
-	var configs []*Bums2BeisConfig
-	if err := json.Unmarshal([]byte(details), &configs); err != nil {
+	cfg, err := configManager.GetLatestRelation(details)
+	if err != nil {
 		return nil, err
 	}
-	if len(configs) != 1 {
-		return nil, fmt.Errorf("the length of configs is illage")
-	}
-	configs[0].ReqMapping = &bumsbeis.Beis2BumsConfig{
-		Path:   configs[0].Path,
-		Method: configs[0].Method,
-		GWName: configs[0].GWName,
-	}
-
 	if log.DefaultContextLogger.GetLogLevel() >= log.DEBUG {
-		cstr, _ := json.Marshal(configs[0])
-		log.DefaultContextLogger.Debugf(ctx, "[transcoders][beis2bums] config:%s", cstr)
+		log.DefaultContextLogger.Debugf(ctx, "[transcoders][beis2bums] config:%s", details)
 	}
-	return configs[0], nil
+	return cfg, nil
 }
 
 func (bibm *beis2bums) PraseeeNamespace(headers api.HeaderMap) error {

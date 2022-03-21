@@ -77,20 +77,16 @@ func (bmbi *bums2beis) GetConfig(ctx context.Context) (*bumsbeis.Bums2BeisConfig
 	if !ok {
 		return nil, nil, fmt.Errorf("the %s of details is not exist", bmbi.cfg)
 	}
-	var configs []Bums2BeisConfig
-	if err := json.Unmarshal([]byte(details), &configs); err != nil {
+	cfg, err := configManager.GetLatestRelation(details)
+	if err != nil {
 		return nil, nil, err
 	}
-	if len(configs) != 1 {
-		return nil, nil, fmt.Errorf("the length of configs is illage")
-	}
 	vo := &bumsbeis.Bums2BeisVo{
-		Namespace: strings.ToLower(configs[0].ServiceScene) + "." + configs[0].ServiceCode,
-		GWName:    configs[0].GWName,
+		Namespace: strings.ToLower(cfg.ServiceScene) + "." + cfg.ServiceCode,
+		GWName:    cfg.GWName,
 	}
 	if log.DefaultContextLogger.GetLogLevel() >= log.DEBUG {
-		cstr, _ := json.Marshal(configs[0])
-		log.DefaultContextLogger.Debugf(ctx, "[transcoders][beis2bums] config:%s", cstr)
+		log.DefaultContextLogger.Debugf(ctx, "[transcoders][beis2bums] config:%s", details)
 	}
-	return configs[0].ReqMapping, vo, nil
+	return cfg.ReqMapping, vo, nil
 }
