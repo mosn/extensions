@@ -107,6 +107,7 @@ func (br2br *Bums2Beis) SysHead(sysHead *etree.Element, header api.HeaderMap) er
 			header.Set("ServiceScene", b2s(val))
 		}
 		if strings.EqualFold(key, "ServiceCode") {
+			// TODO 状态码转换映射
 			header.Set("ServiceCode", b2s(val))
 		}
 	}
