@@ -9,12 +9,12 @@ import (
 )
 
 type Bums2BeisConfig struct {
-	UniqueId    string                    `json:"uniqueId"`
-	Path        string                    `json:"path"`
-	Method      string                    `json:"method"`
-	GWName      string                    `json:"gw"`
-	ReqMapping  *bumsbeis.Beis2BumsConfig `json:"-"`
-	RespMapping *bumsbeis.Bums2BeisConfig `json:"resp_mapping"`
+	UniqueId     string                    `json:"uniqueId"`
+	ServiceCode  string                    `json:"service_code"`
+	ServiceScene string                    `json:"service_scene"`
+	GWName       string                    `json:"gw"`
+	ReqMapping   *bumsbeis.Bums2BeisConfig `json:"req_mapping"`
+	// RespMapping  *bumsbeis.Bums2BeisConfig `json:"resp_mapping"`
 }
 
 var (
@@ -44,11 +44,6 @@ func (cm *ConfigManager) GetLatestRelation(info string) (*Bums2BeisConfig, error
 	}
 	if len(cfg) != 1 {
 		return nil, fmt.Errorf("the length of configs is illage")
-	}
-	cfg[0].ReqMapping = &bumsbeis.Beis2BumsConfig{
-		Path:   cfg[0].Path,
-		Method: cfg[0].Method,
-		GWName: cfg[0].GWName,
 	}
 	cm.cmap[string(rmd5)] = cfg
 	return cfg[0], nil

@@ -29,6 +29,23 @@ func (bmbi *bums2beis) Accept(ctx context.Context, headers api.HeaderMap, buf ap
 }
 
 func (bmbi *bums2beis) TranscodingRequest(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
+	br2br, err := bumsbeis.NewBeis2Bums(ctx, headers, buf, nil)
+	if err != nil {
+		return headers, buf, trailers, nil
+	}
+	bumsHeaders, bumsBuf, err := br2br.Transcoder(false)
+	if err != nil {
+		return headers, buf, trailers, nil
+	}
+	if log.DefaultContextLogger.GetLogLevel() >= log.DEBUG {
+		jhs, _ := json.Marshal(headers)
+		jhd, _ := json.Marshal(bumsHeaders)
+		log.DefaultContextLogger.Debugf(ctx, "[transcoders][beis2bums] tran request src_head:%s,dst_head:%s,src_body:%s,dst_body:%s", jhs, jhd, buf.String(), bumsBuf.String())
+	}
+	return bumsHeaders, bumsBuf, trailers, nil
+}
+
+func (bmbi *bums2beis) TranscodingResponse(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
 	config, vo, err := bmbi.GetConfig(ctx)
 	if err != nil {
 		return headers, buf, trailers, err
@@ -53,23 +70,6 @@ func (bmbi *bums2beis) TranscodingRequest(ctx context.Context, headers api.Heade
 		log.DefaultContextLogger.Debugf(ctx, "[transcoders][beis2bums] tran request src_head:%s,dst_head:%s,src_body:%s,dst_body:%s", jhs, jhd, buf.String(), beisBuf.String())
 	}
 	return beisHeaders, beisBuf, trailers, nil
-}
-
-func (bmbi *bums2beis) TranscodingResponse(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
-	br2br, err := bumsbeis.NewBeis2Bums(ctx, headers, buf, nil)
-	if err != nil {
-		return headers, buf, trailers, nil
-	}
-	bumsHeaders, bumsBuf, err := br2br.Transcoder(false)
-	if err != nil {
-		return headers, buf, trailers, nil
-	}
-	if log.DefaultContextLogger.GetLogLevel() >= log.DEBUG {
-		jhs, _ := json.Marshal(headers)
-		jhd, _ := json.Marshal(bumsHeaders)
-		log.DefaultContextLogger.Debugf(ctx, "[transcoders][beis2bums] tran request src_head:%s,dst_head:%s,src_body:%s,dst_body:%s", jhs, jhd, buf.String(), bumsBuf.String())
-	}
-	return bumsHeaders, bumsBuf, trailers, nil
 }
 
 func (bmbi *bums2beis) GetConfig(ctx context.Context) (*bumsbeis.Bums2BeisConfig, *bumsbeis.Bums2BeisVo, error) {

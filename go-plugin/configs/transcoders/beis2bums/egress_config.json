@@ -1,0 +1,36 @@
+{
+	"type": "beis2bums",
+	"go_plugin_config": {
+		"so_path": "./transcoder-beis2bums.so",
+		"src_protocol": "beis",
+		"dst_protocol": "bums"
+	},
+	"matcher_config": {
+		"matcher_type": "demo_matcher",
+		"config": {
+			"name": "beis2bums"
+		}
+	},
+	"rule_info": {
+		"upstream_protocol": "beis",
+		"description": "hello",
+		"config": {
+			"details": {
+				"uniqueId": "",
+				"path": "",
+				"method": "",
+				"gw": "",
+				"resp_mapping": {
+					"sys_head": ["ServiceCode", "ServiceScene", "MessageType", "MessageCode", "ConsumerSvrId", "ConsumerSeqNo", "ConsumerId", "TranTimestamp", "TranDate", "TranCode"],
+					"app_head": ["UniqueId", "AdminUserIdA", "Traceid", "Spanid", "BranchId", "AgentBranchId", "UserId", "VerifyUserId"],
+					"detail_switch": true,
+					"body_switch": true
+				}
+			}
+
+		}
+	},
+	"config": {
+		"User": "admin"
+	}
+}
