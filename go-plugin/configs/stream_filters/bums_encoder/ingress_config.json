@@ -1,0 +1,6 @@
+{
+  "type": "bums_encoder",
+  "go_plugin_config": {
+    "so_path": "./stream_filter-bums_encoder.so"
+  }
+}
