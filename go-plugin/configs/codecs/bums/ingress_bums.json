@@ -1,0 +1,78 @@
+{
+  "name": "ingress_bums",
+  "type": "ingress",
+  "address": "0.0.0.0:2080",
+  "bind_port": true,
+  "access_logs": [
+    {
+      "log_path": "./logs/mosn/egress.log"
+    }
+  ],
+  "filter_chains": [
+    {
+      "tls_context_set": [
+        {}
+      ],
+      "filters": [
+        {
+          "type": "proxy",
+          "config": {
+            "downstream_protocol": "bums",
+            "name": "proxy_config",
+            "router_config_name": "ingress_bums_router",
+            "upstream_protocol": "bums"
+          }
+        },
+        {
+          "type": "connection_manager",
+          "config": {
+            "router_config_name": "ingress_bums_router",
+            "router_configs": "./mosn/conf/routers/ingress_bums_router/"
+          }
+        }
+      ]
+    }
+  ],
+  "stream_filters": [
+    {
+      "type": "bums_decoder"
+    },
+    {
+      "type": "govern_config"
+    },
+    {
+      "type": "transcoder"
+    },
+    {
+      "type": "tamperproofing"
+    },
+    {
+      "type": "cloud_metrics"
+    },
+    {
+      "type": "fault_inject",
+      "config": {
+        "direction": "outbound"
+      }
+    },
+    {
+      "type": "downgrade"
+    },
+    {
+      "type": "alipayLimitFilter",
+      "config": {
+        "enable": true,
+        "direction": "outbound"
+      }
+    },
+    {
+      "type": "fault_tolerance_send"
+    },
+    {
+      "type": "fault_tolerance_choose"
+    },
+    {
+      "type": "bums_encoder"
+    }
+  ]
+}
