@@ -6,6 +6,12 @@ go env -w GOPRIVATE=gitlab.alipay-inc.com,code.alipay.com
 
 make compile-codec
 
+# build stream filter
+if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
+  bash /go/src/"${PLUGIN_PROJECT_NAME}"/etc/script/compile-filter.sh
+fi
+
+
 # copy stream filter
 if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
   filters=(${PLUGIN_STREAM_FILTER//,/ })
@@ -25,6 +31,11 @@ if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
 
   # write metadata
   echo "{\"plugins\":[${meta}]}" >/go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/stream_filters/plugin-meta.json
+fi
+
+# build transcoder
+if [[ -n "${PLUGIN_TRANSCODER}" ]]; then
+  bash /go/src/"${PLUGIN_PROJECT_NAME}"/etc/script/compile-transcoder.sh
 fi
 
 # copy transcoder
