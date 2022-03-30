@@ -27,14 +27,16 @@ BASE_IMAGE				= zonghaishang/delve:1.6.1
 
 codec:
 	docker run --rm \
-	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
 	-e PLUGIN_TARGET=${TARGET} \
 	-e PLUGIN_CODEC_OUTPUT=${CODEC_OUTPUT} \
 	-e PLUGIN_CODEC_PREFIX=${CODEC_PREFIX} \
+    -e PLUGIN_STEAM_FILTER_PREFIX=${STEAM_FILTER_PREFIX} \
+    -e PLUGIN_TRANSCODER_PREFIX=${TRANSCODER_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-e PLUGIN_STREAM_FILTER=${STREAM_FILTER} \
 	-e PLUGIN_TRANSCODER=${TRANSCODER} \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
 	-w /go/src/${PROJECT_NAME} -it ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile-codec.sh
 
@@ -43,11 +45,11 @@ trans: # alias for transcoder (more short)
 
 transcoder:
 	docker run --rm \
-	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
 	-e PLUGIN_TRANSCODER=${TARGET} \
 	-e PLUGIN_TRANSCODER_PREFIX=${TRANSCODER_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
 	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile-transcoder.sh
 
@@ -56,11 +58,11 @@ filter: # alias for stream-filter (more short)
 
 stream-filter:
 	docker run --rm \
-	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
 	-e PLUGIN_STREAM_FILTER=${TARGET} \
 	-e PLUGIN_STEAM_FILTER_PREFIX=${STEAM_FILTER_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
 	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile-filter.sh
 
@@ -100,7 +102,6 @@ compile-stream-filter:
 
 pkg-codec:
 	docker run --rm \
-	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
 	-e PLUGIN_CODEC=${TARGET} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
@@ -109,7 +110,6 @@ pkg-codec:
 
 pkg-filter:
 	docker run --rm \
-	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
 	-e PLUGIN_STREAM_FILTER=${TARGET} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
@@ -148,7 +148,6 @@ ant:
 
 pkg-ant:
 	docker run --rm \
-	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
