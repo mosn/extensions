@@ -1,42 +1,40 @@
 {
-  "type":"bolt2springcloud",
-  "go_plugin_config": {
-    "so_path":"./bolt2springcloud.so",
-    "src_protocol":"bolt",    
-    "dst_protocol":"springcloud"
-  },
-  "matcher_config":{
-      "matcher_type": "mulit_matcher",
-      "config": {
-          "name": "bolt2springcloud",
-          "variables": [
-              {
-                  "name": "service",
-                  "values": [
-                      "com.alipay.sofa.ms.service.SofaEchoService:1.0"
-                  ],
-                  "operator": "and",
-                  "regex": false
-              }
-          ]
-      }
-  },
-  "rule_info":{
-    "upstream_protocol":"springcloud",
-    "description":"hello",
-    "config": {
-        "class":"com.alipay.sofa.rpc.core.response.SofaResponse",
-        "service":"com.alipay.sofa.ms.service.SofaEchoService:1.0",
-        "com.alipay.sofa.ms.service.SofaEchoService:1.0":{
-            "echo":{
-                "x-mosn-path":"/reservations/hello",
-                "x-mosn-host":"",
-                "x-mosn-method":"GET"
-            }
+    "type": "bolt2springcloud",
+    "go_plugin_config": {
+        "so_path": "./bolt2springcloud.so",
+        "src_protocol": "bolt",
+        "dst_protocol": "springcloud"
+    },
+    "matcher_config": {
+        "matcher_type": "mulit_matcher",
+        "config": {
+            "name": "bolt2springcloud",
+            "variables": [
+                {
+                    "name": "x-mosn-data-id",
+                    "values": [
+                        "com.alipay.sofa.ms.service.SofaEchoService:1.0"
+                    ],
+                    "config": {
+                        "details": [
+                            {
+                                "unique_id": "echo",
+                                "path": "/bolt2springcloud/hello",
+                                "method": "GET",
+                                "target_app": "http.server",
+                                "class": "com.alipay.sofa.rpc.core.response.SofaResponse"
+                            }
+                        ]
+                    }
+                }
+            ]
         }
+    },
+    "rule_info": {
+        "upstream_protocol": "springcloud",
+        "description": "hello"
+    },
+    "config": {
+        "User": "admin"
     }
-  },
-  "config": {
-    "User":"admin" 
-  }
 }
