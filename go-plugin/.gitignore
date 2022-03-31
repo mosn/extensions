@@ -3,3 +3,4 @@
 /build/transcoders
 /build/sidecar/binary/
 /logs/
+.idea
