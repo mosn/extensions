@@ -5,20 +5,24 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/valyala/fasthttp"
 	"math/rand"
+	"strconv"
+	"strings"
+
+	"github.com/valyala/fasthttp"
 	"mosn.io/api"
 	"mosn.io/api/extensions/transcoder"
 	"mosn.io/extensions/go-plugin/pkg/protocol/dubbo"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
 	"mosn.io/pkg/protocol/http"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
-type http2dubbo struct{ cfg map[string]interface{} }
+type springcloud2dubbo struct {
+	cfg         map[string]interface{}
+	config      *Config
+	httpRequest api.HeaderMap
+}
 
 type DubboHttpResponseBody struct {
 	Attachments map[string]string `json:"attachments"`
@@ -31,66 +35,50 @@ type DubboHttpRequestParams struct {
 	Parameters  []dubbo.Parameter `json:"parameters"`
 }
 
-type paramAdapter struct {
-	Service        string           `json:"service"`
-	Method         string           `json:"method"`
-	Version        string           `json:"version"`
-	Group          string           `json:"group"`
-	Double         string           `json:"double"`
-	Query          []*query         `json:"query"`
-	Body           *body            `json:"body"`
-	HttpPathParams []*httpPathParam `json:"http_path_params"`
-}
-
-type query struct {
-	Type string `json:"type"`
-	Key  string `json:"key"`
-}
-
-type httpPathParam struct {
-	Type string `json:"type"`
-	Key  string `json:"key"`
-}
-
-type body struct {
-	Type string `json:"type"`
-}
-
-var conf = map[string]*paramAdapter{}
-
 //accept return when head has transcoder key and value is equal to TRANSCODER_NAME
-func (t *http2dubbo) Accept(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) bool {
+func (t *springcloud2dubbo) Accept(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) bool {
+	hr, ok := headers.(http.RequestHeader)
+	if !ok {
+		return false
+	}
+	config, err := t.getConfig(ctx, hr.RequestHeader)
+	if err != nil {
+		return false
+	}
+	t.config = config
 	return true
 }
 
 // transcode dubbp request to http request
-func (t *http2dubbo) TranscodingRequest(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
-
-	log.DefaultContextLogger.Debugf(ctx, "[http2dubbo transcoder] request header %v ,buf %v,", headers, buf)
-	if httpRequest, ok := headers.(http.RequestHeader); ok {
-		service, _ := httpRequest.Get("service")
-		method := string(httpRequest.Method())
-		path := string(httpRequest.RequestURI())
-		items := strings.Split(path, "?")
-		param, pathParams := getParamAdapter(catStr(service, ".", items[0], ".", method), conf)
-		queryMap := map[string]string{}
-		if len(items) == 2 {
-			queryMap = getQuery(items[1])
-		}
-		// 2. assemble target request
-		targetRequest, err := EncodeHttp2Dubbo(ctx, headers, buildDubboHttpRequestParams(headers, buf, param, pathParams, queryMap))
-		if err != nil {
-			return nil, nil, nil, err
-		}
-		return targetRequest.GetHeader(), targetRequest.GetData(), trailers, nil
+func (t *springcloud2dubbo) TranscodingRequest(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
+	log.DefaultContextLogger.Debugf(ctx, "[springcloud2dubbo transcoder] request header %v ,buf %v,", headers, buf)
+	httpRequest, ok := headers.(http.RequestHeader)
+	if !ok {
+		return nil, nil, nil, fmt.Errorf("[springcloud2dubbo transcoder] error for transcode header is not http.RequestHeader")
 	}
-	return nil, nil, nil, fmt.Errorf("[http2dubbo transcoder] error for transcode header is not http.RequestHeader")
+	path := string(httpRequest.RequestURI())
+	items := strings.Split(path, "?")
+	queryMap := map[string]string{}
+	if len(items) == 2 {
+		queryMap = getQuery(items[1])
+	}
+	// 2. assemble target request
+	targetRequest, err := EncodeHttp2Dubbo(ctx, headers, t.config, buildDubboHttpRequestParams(buf, t.config, queryMap))
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	t.httpRequest = headers
+	return targetRequest.GetHeader(), targetRequest.GetData(), trailers, nil
 }
 
 // transcode dubbo response to http response
-func (t *http2dubbo) TranscodingResponse(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
-	log.DefaultContextLogger.Debugf(ctx, "[http2dubbo transcoder] response header %v ,buf %v,", headers, buf)
-	response, err := DecodeDubbo2Http(ctx, headers, buf, trailers)
+func (t *springcloud2dubbo) TranscodingResponse(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
+	log.DefaultContextLogger.Debugf(ctx, "[springcloud2dubbo transcoder] response header %v ,buf %v,", headers, buf)
+	frame, ok := headers.(*dubbo.Frame)
+	if !ok {
+		return t.httpRequest, buf, trailers, nil
+	}
+	response, err := DecodeDubbo2Http(ctx, frame, buf, trailers)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -98,23 +86,17 @@ func (t *http2dubbo) TranscodingResponse(ctx context.Context, headers api.Header
 }
 
 // decode dubbo response to http response
-func DecodeDubbo2Http(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (fasthttp.Response, error) {
-	sourceResponse, ok := headers.(*dubbo.Frame)
-	if !ok {
-		return fasthttp.Response{}, fmt.Errorf("[xprotocol][http] decode http header type error")
-	}
+func DecodeDubbo2Http(ctx context.Context, frame *dubbo.Frame, buf api.IoBuffer, trailers api.HeaderMap) (fasthttp.Response, error) {
 	targetResponse := fasthttp.Response{}
 	//head
-	err := setResponseHeader(ctx, sourceResponse, &targetResponse)
+	err := setResponseHeader(ctx, frame, &targetResponse)
 	if err != nil {
 		return targetResponse, err
 	}
 	//body
-
-	if err := setTargetBody(sourceResponse, &targetResponse); err != nil {
+	if err := setTargetBody(frame, &targetResponse); err != nil {
 		return targetResponse, err
 	}
-
 	return targetResponse, nil
 }
 
@@ -128,15 +110,15 @@ func setResponseHeader(ctx context.Context, sourceResponse *dubbo.Frame, targetR
 	})
 	// is fream response
 	if sourceResponse.Direction != dubbo.EventResponse {
-		log.DefaultContextLogger.Errorf(ctx, "[http2dubbo transcoder] error for transcode header, sourceResponse: %v is not a response", sourceResponse)
-		return fmt.Errorf("[http2dubbo transcoder] error for transcode header, sourceResponse: %v is not a response", sourceResponse)
+		log.DefaultContextLogger.Errorf(ctx, "[springcloud2dubbo transcoder] error for transcode header, sourceResponse: %v is not a response", sourceResponse)
+		return fmt.Errorf("[springcloud2dubbo transcoder] error for transcode header, sourceResponse: %v is not a response", sourceResponse)
 	}
 	if code, ok := sourceResponse.Get("x-mosn-status"); ok {
-		log.DefaultContextLogger.Debugf(ctx, "[http2dubbo transcoder] get %v code is %v", "x-mosn-status", code)
+		log.DefaultContextLogger.Debugf(ctx, "[springcloud2dubbo transcoder] get %v code is %v", "x-mosn-status", code)
 		statusCode, err := strconv.Atoi(code)
 		if err != nil {
-			log.DefaultContextLogger.Errorf(ctx, "[http2dubbo transcoder] error for source response header name: %v code: %v, error %v", "x-mosn-status", code, err)
-			return fmt.Errorf("[http2dubbo transcoder] error for source response header name: %v code: %v, error %v", "x-mosn-status", code, err)
+			log.DefaultContextLogger.Errorf(ctx, "[springcloud2dubbo transcoder] error for source response header name: %v code: %v, error %v", "x-mosn-status", code, err)
+			return fmt.Errorf("[springcloud2dubbo transcoder] error for source response header name: %v code: %v, error %v", "x-mosn-status", code, err)
 		}
 		targetResponse.SetStatusCode(statusCode)
 	}
@@ -193,15 +175,21 @@ func setTargetBody(sourceResponse *dubbo.Frame, targetResponse *fasthttp.Respons
 }
 
 //encode http require to dubbo require
-func EncodeHttp2Dubbo(ctx context.Context, headers api.HeaderMap, reqBody DubboHttpRequestParams) (*dubbo.Frame, error) {
+func EncodeHttp2Dubbo(ctx context.Context, headers api.HeaderMap, param *Config, reqBody DubboHttpRequestParams) (*dubbo.Frame, error) {
 	//header
-	allHeaders := map[string]string{}
+	allHeaders := make(dubbo.CommonHeader)
 	headers.Range(func(key, value string) bool {
 		if key != "Content-Length" && key != "Accept:" {
-			allHeaders[key] = value
+			allHeaders.Set(key, value)
 		}
 		return true
 	})
+	allHeaders.Set("service", param.TragetApp)
+	allHeaders.Set("method", param.ReqMapping.Method)
+	allHeaders.Set("dubbo", param.ReqMapping.Double)
+	allHeaders.Set("version", param.ReqMapping.Version)
+	allHeaders.Set("group", param.ReqMapping.Group)
+
 	// convert data to dubbo frame
 	frame := &dubbo.Frame{
 		Header: dubbo.Header{
@@ -224,13 +212,12 @@ func EncodeHttp2Dubbo(ctx context.Context, headers api.HeaderMap, reqBody DubboH
 	// serializationId
 	frame.SerializationId = int(frame.Flag & 0x1f)
 	//workload
-	payLoadByteFin, err := EncodeWorkLoad(headers, reqBody)
+	payLoadByteFin, err := EncodeWorkLoad(allHeaders, reqBody)
 	if err != nil {
-		log.DefaultContextLogger.Errorf(ctx, "[http2dubbo transcoder] error EncodeWorkLoad error %v", err)
+		log.DefaultContextLogger.Errorf(ctx, "[springcloud2dubbo transcoder] error EncodeWorkLoad error %v", err)
 		return nil, err
 	}
 	frame.SetData(buffer.NewIoBufferBytes(payLoadByteFin))
-
 	return frame, nil
 }
 
@@ -303,10 +290,7 @@ func EncodeWorkLoad(headers api.HeaderMap, reqBody DubboHttpRequestParams) ([]by
 }
 
 func LoadTranscoderFactory(cfg map[string]interface{}) transcoder.Transcoder {
-	if cfgJson, err := json.Marshal(cfg); err == nil {
-		json.Unmarshal(cfgJson, &conf)
-	}
-	return &http2dubbo{cfg: cfg}
+	return &springcloud2dubbo{cfg: cfg}
 }
 
 func getQuery(queryStr string) map[string]string {
@@ -325,55 +309,46 @@ func getQuery(queryStr string) map[string]string {
 
 }
 
-func buildDubboHttpRequestParams(headers api.HeaderMap, buf api.IoBuffer, param *paramAdapter, pathParams []string, queryMap map[string]string) DubboHttpRequestParams {
+func buildDubboHttpRequestParams(buf api.IoBuffer, param *Config, queryMap map[string]string) DubboHttpRequestParams {
 	reqBody := DubboHttpRequestParams{}
-	if param != nil {
-		headers.Set("service", param.Service)
-		headers.Set("dubbo", param.Double)
-		headers.Set("method", param.Method)
-		headers.Set("version", param.Version)
-		headers.Set("group", param.Group)
-		params := []dubbo.Parameter{}
-
-		//路径参数转换
-		for i, h := range param.HttpPathParams {
-			if i < len(pathParams) {
-				v := pathParams[i]
-				if v != "" {
-					p := dubbo.Parameter{
-						Type:  h.Type,
-						Value: v,
-					}
-					params = append(params, p)
-				}
-			}
-		}
-
-		//查询参数转换
-		for _, q := range param.Query {
-			v := queryMap[q.Key]
+	params := []dubbo.Parameter{}
+	//路径参数转换
+	for i, h := range param.ReqMapping.PathParams {
+		if i < len(param.ReqMapping.PathParams) {
+			v := param.ReqMapping.pathParams[i]
 			if v != "" {
 				p := dubbo.Parameter{
-					Type:  q.Type,
+					Type:  h.Type,
 					Value: v,
 				}
 				params = append(params, p)
 			}
 		}
+	}
 
-		//body参数转换
-		if param.Body != nil {
-			var by interface{}
-			json.Unmarshal(buf.Bytes(), &by)
+	//查询参数转换
+	for _, q := range param.ReqMapping.Query {
+		v := queryMap[q.Key]
+		if v != "" {
 			p := dubbo.Parameter{
-				Type:  param.Body.Type,
-				Value: by,
+				Type:  q.Type,
+				Value: v,
 			}
 			params = append(params, p)
 		}
-		reqBody.Parameters = params
 	}
 
+	//body参数转换
+	if param.ReqMapping.Body != nil {
+		var by interface{}
+		json.Unmarshal(buf.Bytes(), &by)
+		p := dubbo.Parameter{
+			Type:  param.ReqMapping.Body.Type,
+			Value: by,
+		}
+		params = append(params, p)
+	}
+	reqBody.Parameters = params
 	return reqBody
 }
 
@@ -383,27 +358,4 @@ func catStr(params ...string) string {
 		buffer.WriteString(v)
 	}
 	return buffer.String()
-}
-
-func getParamAdapter(uri string, maps map[string]*paramAdapter) (*paramAdapter, []string) {
-
-	param := maps[uri]
-	if param != nil {
-		return param, nil
-	}
-
-	for k, v := range maps {
-		flysnowRegexp := regexp.MustCompile(catStr("^", k, "$"))
-		params := flysnowRegexp.FindStringSubmatch(uri)
-
-		if params != nil {
-			if len(params) > 1 {
-				return v, params[1:]
-			} else {
-				return v, nil
-			}
-		}
-	}
-
-	return nil, nil
 }

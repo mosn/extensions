@@ -1,42 +1,64 @@
 {
-  "type": "springcloud2dubbo",
-  "go_plugin_config": {
-    "so_path": "./transcoder-springcloud2dubbo.so",
-    "src_protocol": "springcloud",
-    "dst_protocol": "dubbo"
-  },
-  "matcher_config":{
-    "matcher_type" :"simpleMatcher"
-  },
-  "rule_info": {
-    "upstream_protocol": "dubbo",
-    "description": "spring cloud -> dubbo",
+    "type": "springcloud2dubbo",
+    "go_plugin_config": {
+        "so_path": "./transcoder-dubbo2springcloud.so",
+        "src_protocol": "springcloud",
+        "dst_protocol": "dubbo"
+    },
+    "matcher_config": {
+        "matcher_type": "mulit_matcher",
+        "config": {
+            "name": "springcloud2dubbo",
+            "variables": [
+                {
+                    "name": "x-mosn-data-id",
+                    "values": [
+                        "reservation-client"
+                    ],
+                    "config": {
+                        "details": [
+                            {
+                                "unique_id": "/reservations/echo.GET",
+                                "target_app": "com.alipay.sofa.ms.service.EchoService",
+                                "req_mapping": {
+                                    "method": "echo",
+                                    "double": "2.0.2",
+                                    "query": [
+                                        {
+                                            "type": "java.lang.String",
+                                            "key": "message"
+                                        }
+                                    ]
+                                },
+                                "resp_mapping": {
+                                    
+                                }
+                            },
+                            {
+                                "unique_id": "/reservations/echo.POST",
+                                "target_app": "com.alipay.sofa.ms.service.EchoService",
+                                "req_mapping": {
+                                    "method": "echo",
+                                    "double": "2.0.2",
+                                    "body": {
+                                        "type": "java/lang/String"
+                                    }
+                                },
+                                "resp_mapping": {
+                                    
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "rule_info": {
+        "upstream_protocol": "dubbo",
+        "description": "springcloud -> dubbo"
+    },
     "config": {
-      "reservation-client./reservations/echo.GET": {
-        "method": "echo",
-        "service": "com.alipay.sofa.ms.service.EchoService",
-        "query": [
-          {"type": "java.lang.String", "key": "message"}
-        ]
-      },
-      "reservation-client./reservations/sub.POST": {
-        "method": "sub",
-        "service": "com.alipay.sofa.ms.service.EchoService",
-        "body": {"type": "com.alipay.sofa.ms.service.model.SubReq"}
-      },
-      "reservation-client./reservations/(.*)/echo.POST": {
-        "method": "echo",
-        "service": "com.alipay.sofa.ms.service.EchoService",
-        "http_path_params":[
-          {
-            "type":"java.lang.String",
-            "key":"message"
-          }
-        ]
-      }
+        "User": "admin"
     }
-  },
-  "config": {
-    "User": "admin"
-  }
 }
