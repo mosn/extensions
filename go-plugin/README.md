@@ -90,9 +90,9 @@
 
 #### [2.5.2 启动springcloud应用服务](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.5filter.md#252-%E5%90%AF%E5%8A%A8springcloud%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1)  
 
-2.6 协议转换插件 @檀少
+### [2.6 协议转换插件](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.6transcoder.md)
 
-2.6.1 标准dubbo和spring cloud协议互转实践 @檀少
+#### [2.6.1 标准dubbo和spring cloud协议互转实践](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.6.1dubbo2springcloud.md)
 
 #### [2.6.2 标准bolt和spring cloud协议互转实践](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.6.2bolt2springcloud.md) 
 
