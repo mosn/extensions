@@ -19,7 +19,7 @@
                         "details": [
                             {
                                 "unique_id": "echo",
-                                "path": "/cd2springcloud/hello",
+                                "path": "/xr2springcloud/echo",
                                 "method": "GET",
                                 "target_app": "http.server"
                             }
