@@ -20,6 +20,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/valyala/fasthttp"
 	"mosn.io/api"
 	"mosn.io/api/extensions/transcoder"
@@ -28,16 +29,28 @@ import (
 	"mosn.io/pkg/protocol/http"
 )
 
-type xr2sp struct{ cfg map[string]interface{} }
+type xr2springcloud struct {
+	cfg    map[string]interface{}
+	config *Config
+}
 
-func (t *xr2sp) Accept(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) bool {
+func (t *xr2springcloud) Accept(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) bool {
+	_, ok := headers.(*xr.Request)
+	if !ok {
+		return false
+	}
+	config, err := t.getConfig(ctx, headers)
+	if err != nil {
+		return false
+	}
+	t.config = config
 	return true
 }
 
-func (t *xr2sp) TranscodingRequest(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
+func (t *xr2springcloud) TranscodingRequest(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
 	sourceHeader, ok := headers.(*xr.Request)
 	if !ok {
-		return nil, nil, nil, fmt.Errorf("[xprotocol][dubbo] decode xr header type error")
+		return nil, nil, nil, fmt.Errorf("[xprotocol][xr] decode xr header type error")
 	}
 	reqHeaderImpl := &fasthttp.RequestHeader{}
 	sourceHeader.Header.Range(func(key, value string) bool {
@@ -46,18 +59,17 @@ func (t *xr2sp) TranscodingRequest(ctx context.Context, headers api.HeaderMap, b
 		}
 		return true
 	})
-	//set request idoujju
-	serviceCode, _ := headers.Get("ServiceCode")
-	reqHeaderImpl.Set("service", serviceCode)
+	reqHeaderImpl.Set("x-mosn-method", t.config.Method)
+	reqHeaderImpl.Set("x-mosn-path", t.config.Path)
+	reqHeaderImpl.Set("X-TARGET-APP", t.config.TragetApp)
 	reqHeaders := http.RequestHeader{reqHeaderImpl}
-
 	return reqHeaders, buf, trailers, nil
 }
 
-func (t *xr2sp) TranscodingResponse(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
+func (t *xr2springcloud) TranscodingResponse(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
 	sourceHeader, ok := headers.(http.ResponseHeader)
 	if !ok {
-		return nil, nil, nil, fmt.Errorf("[xprotocol][dubbo] decode http header type error")
+		return nil, nil, nil, fmt.Errorf("[xprotocol][xr] decode http header type error")
 	}
 	//header
 	xrResponse := xr.Response{}
@@ -71,10 +83,12 @@ func (t *xr2sp) TranscodingResponse(ctx context.Context, headers api.HeaderMap, 
 
 	payloads := buffer.NewIoBufferBytes(buf.Bytes())
 	respHeader := xr.NewRpcResponse(&xrResponse.Header, payloads)
-
+	if respHeader == nil {
+		return nil, nil, nil, fmt.Errorf("[xprotocol][xr] decode http header type error")
+	}
 	return respHeader.GetHeader(), respHeader.GetData(), trailers, nil
 }
 
 func LoadTranscoderFactory(cfg map[string]interface{}) transcoder.Transcoder {
-	return &xr2sp{cfg: cfg}
+	return &xr2springcloud{cfg: cfg}
 }

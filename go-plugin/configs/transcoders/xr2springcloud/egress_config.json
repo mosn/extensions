@@ -1,15 +1,39 @@
 {
-  "type": "xr2springcloud",
-  "go_plugin_config": {
-    "so_path": "./transcoder-xr2springcloud.so",
-    "src_protocol": "xr",
-    "dst_protocol": "springcloud"
-  },
-  "rule_info": {
-    "upstream_protocol": "springcloud",
-    "description": "xr -> spring cloud"
-  },
-  "config": {
-    "User": "admin"
-  }
+    "type": "xr2springcloud",
+    "go_plugin_config": {
+        "so_path": "./transcoder-xr2springcloud.so",
+        "src_protocol": "xr",
+        "dst_protocol": "springcloud"
+    },
+    "matcher_config": {
+        "matcher_type": "mulit_matcher",
+        "config": {
+            "name": "xr2springcloud",
+            "variables": [
+                {
+                    "name": "x-mosn-data-id",
+                    "values": [
+                        "CIMT000070"
+                    ],
+                    "config": {
+                        "details": [
+                            {
+                                "unique_id": "echo",
+                                "path": "/cd2springcloud/hello",
+                                "method": "GET",
+                                "target_app": "http.server"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "rule_info": {
+        "upstream_protocol": "springcloud",
+        "description": "xr -> spring cloud"
+    },
+    "config": {
+        "User": "admin"
+    }
 }
