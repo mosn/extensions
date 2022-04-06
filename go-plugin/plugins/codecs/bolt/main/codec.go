@@ -22,7 +22,7 @@ func (r Codec) ProtocolName() api.ProtocolName {
 }
 
 func (r Codec) NewXProtocol(context.Context) api.XProtocol {
-	return bolt.BoltProtocol{}
+	return &bolt.BoltProtocol{}
 }
 
 func (r Codec) ProtocolMatch() api.ProtocolMatch {
