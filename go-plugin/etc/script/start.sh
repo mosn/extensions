@@ -13,6 +13,7 @@ fi
 EXPORT_PORTS="-p 2345:2345 -p 2045:2045 -p 2046:2046 -p 34801:34801"
 
 docker run -u admin \
+  --platform linux/amd64 \
   -e PLUGIN_PROJECT_NAME="${PROJECT_NAME}" \
   -v $(go env GOPATH)/src/${PROJECT_NAME}:/go/src/${PROJECT_NAME} \
   -itd --name mosn-container --env-file env_conf ${EXPORT_PORTS} \

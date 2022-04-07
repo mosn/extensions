@@ -27,6 +27,7 @@ BASE_IMAGE				= zonghaishang/delve:1.6.1
 
 codec:
 	docker run --rm \
+	--platform linux/amd64 \
 	-e PLUGIN_TARGET=${TARGET} \
 	-e PLUGIN_CODEC_OUTPUT=${CODEC_OUTPUT} \
 	-e PLUGIN_CODEC_PREFIX=${CODEC_PREFIX} \
@@ -45,6 +46,7 @@ trans: # alias for transcoder (more short)
 
 transcoder:
 	docker run --rm \
+  	--platform linux/amd64 \
 	-e PLUGIN_TRANSCODER=${TARGET} \
 	-e PLUGIN_TRANSCODER_PREFIX=${TRANSCODER_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
@@ -58,6 +60,7 @@ filter: # alias for stream-filter (more short)
 
 stream-filter:
 	docker run --rm \
+	--platform linux/amd64 \
 	-e PLUGIN_STREAM_FILTER=${TARGET} \
 	-e PLUGIN_STEAM_FILTER_PREFIX=${STEAM_FILTER_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
@@ -102,6 +105,7 @@ compile-stream-filter:
 
 pkg-codec:
 	docker run --rm \
+	--platform linux/amd64 \
 	-e PLUGIN_CODEC=${TARGET} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
@@ -110,6 +114,7 @@ pkg-codec:
 
 pkg-filter:
 	docker run --rm \
+	--platform linux/amd64 \
 	-e PLUGIN_STREAM_FILTER=${TARGET} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
@@ -118,6 +123,7 @@ pkg-filter:
 
 pkg-trans:
 	docker run --rm \
+	--platform linux/amd64 \
 	-e PLUGIN_TRANSCODER=${TARGET} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
@@ -127,6 +133,7 @@ pkg-trans:
 sidecar:
 	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/script/stop.sh
 	docker run --rm \
+	--platform linux/amd64 \
 	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
 	--env PROJECT_NAME=${PROJECT_NAME} \
 	--env SIDECAR_PROJECT_NAME=${SIDECAR_PROJECT_NAME} \
@@ -138,6 +145,7 @@ sidecar:
 ant:
 	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/ant/stop.sh
 	docker run --rm \
+	--platform linux/amd64 \
 	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
 	--env PROJECT_NAME=${PROJECT_NAME} \
 	--env SIDECAR_PROJECT_NAME=${SIDECAR_GITLAB_PROJECT_NAME} \
@@ -148,6 +156,7 @@ ant:
 
 pkg-ant:
 	docker run --rm \
+	--platform linux/amd64 \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-v $(shell pwd):/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \

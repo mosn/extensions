@@ -30,6 +30,7 @@ echo "host address: ${PUB_BOLT_LOCAL_IP}"
 
 docker run -u admin \
   --privileged \
+  --platform linux/amd64 \
   -e PLUGIN_PROJECT_NAME="${PROJECT_NAME}" \
   -e DYNAMIC_CONF_PATH=/go/src/${PROJECT_NAME}/build/codecs \
   -e SIDECAR_PROJECT_NAME=${SIDECAR_GITLAB_PROJECT_NAME} \
