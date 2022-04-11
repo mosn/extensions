@@ -1,6 +1,26 @@
 #!/bin/bash
 
-# package transcoder plugins
+# build codec plugins
+if [[ -n "${PLUGIN_CODEC}" ]]; then
+  coders=(${PLUGIN_CODEC//,/ })
+  for name in "${coders[@]}"; do
+    if [[ -n ${PLUGIN_OS} && -n ${PLUGIN_ARCH} ]]; then
+      export PLUGIN_TARGET=${name}
+      export PLUGIN_CODEC_OUTPUT=${PLUGIN_CODEC_PREFIX}-${PLUGIN_TARGET}.so
+      bash /go/src/"${PLUGIN_PROJECT_NAME}"/etc/script/compile-codec.sh
+    elif [[ "${PLUGIN_BUILD_PLATFORM}" == "Darwin" && "${PLUGIN_BUILD_PLATFORM_ARCH}" == "arm64" ]]; then
+      # apple m1 chip compile plugin(amd64)
+      export PLUGIN_TARGET=${name}
+      export PLUGIN_CODEC_OUTPUT=${PLUGIN_CODEC_PREFIX}-${PLUGIN_TARGET}.so
+
+      export PLUGIN_OS="linux"
+      export PLUGIN_ARCH="amd64"
+      bash /go/src/"${PLUGIN_PROJECT_NAME}"/etc/script/compile-codec.sh
+    fi
+  done
+fi
+
+# package codec plugins
 if [[ -n "${PLUGIN_CODEC}" ]]; then
   coders=(${PLUGIN_CODEC//,/ })
   for name in "${coders[@]}"; do

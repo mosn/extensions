@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# build stream filter plugins
+if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
+  if [[ -n ${PLUGIN_OS} && -n ${PLUGIN_ARCH} ]]; then
+    bash /go/src/"${PLUGIN_PROJECT_NAME}"/etc/script/compile-filter.sh
+  elif [[ "${PLUGIN_BUILD_PLATFORM}" == "Darwin" && "${PLUGIN_BUILD_PLATFORM_ARCH}" == "arm64" ]]; then
+    # apple m1 chip compile plugin(amd64)
+    export PLUGIN_OS="linux"
+    export PLUGIN_ARCH="amd64"
+    bash /go/src/"${PLUGIN_PROJECT_NAME}"/etc/script/compile-filter.sh
+  fi
+fi
+
 # package stream filter plugins
 if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
   filters=(${PLUGIN_STREAM_FILTER//,/ })

@@ -4,13 +4,21 @@ go env -w GO111MODULE=on
 go env -w GOPROXY=https://goproxy.cn,direct
 go env -w GOPRIVATE=gitlab.alipay-inc.com,code.alipay.com
 
+build_opts=""
+if [[ -n ${PLUGIN_OS} && -n ${PLUGIN_ARCH} ]]; then
+  build_opts="GOOS=${PLUGIN_OS} GOARCH=${PLUGIN_ARCH}"
+  echo "compiling codec ${PLUGIN_TARGET} for ${PLUGIN_OS} ${PLUGIN_ARCH} ..."
+else
+  echo "compiling codec ${PLUGIN_TARGET} for linux $(dpkg --print-architecture) ..."
+fi
+
+export BUILD_OPTS=${build_opts}
 make compile-codec
 
 # build stream filter
 if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
   bash /go/src/"${PLUGIN_PROJECT_NAME}"/etc/script/compile-filter.sh
 fi
-
 
 # copy stream filter
 if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then

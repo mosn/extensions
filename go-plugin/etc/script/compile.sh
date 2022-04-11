@@ -19,9 +19,23 @@ GIT_VERSION=$(git log -1 --pretty=format:%h)
 rm -rf "/go/src/${PLUGIN_PROJECT}/build/sidecar/binary/"
 mkdir -p "/go/src/${PLUGIN_PROJECT}/build/sidecar/binary/"
 
-echo "go build -o mosn ${SIDECAR_PROJECT}/cmd/mosn/main"
+build_opts="CGO_ENABLED=1"
 
-CGO_ENABLED=1 go build -mod=readonly -gcflags "all=-N -l" \
+if [[ -n ${PLUGIN_OS} && -n ${PLUGIN_ARCH} ]]; then
+  export GOOS=${PLUGIN_OS}
+  export GOARCH=${PLUGIN_ARCH}
+
+  build_opts="${build_opts} GOOS=${GOOS} GOARCH=${GOARCH}"
+  echo "compiling mosn for ${PLUGIN_OS} ${PLUGIN_ARCH} ..."
+else
+  echo "compiling mosn for linux $(dpkg --print-architecture) ..."
+fi
+
+export CGO_ENABLED=1
+
+echo "${build_opts} go build -o mosn ${SIDECAR_PROJECT}/cmd/mosn/main"
+
+go build -mod=readonly -gcflags "all=-N -l" \
   -ldflags "-B 0x$(head -c20 /dev/urandom | od -An -tx1 | tr -d ' \n') -X main.Version=${MAJOR_VERSION} -X main.GitVersion=${GIT_VERSION}" \
   -v -o mosn "${SIDECAR_PROJECT}/cmd/mosn/main"
 

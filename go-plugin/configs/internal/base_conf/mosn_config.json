@@ -1,0 +1,164 @@
+{
+  "pid": "./mosn/conf/mosn.pid",
+  "servers": [
+    {
+      "mosn_server_name": "mosn",
+      "default_log_path": "./logs/mosn/default.log",
+      "default_log_level": "INFO",
+      "graceful_timeout": "30s",
+      "processor": 4,
+      "listeners": []
+    }
+  ],
+  "cluster_manager": {
+    "tls_context": {
+      "status": true,
+      "insecure_skip": true
+    },
+    "clusters_configs": "./mosn/conf/clusters/"
+  },
+  "extends": [
+    {
+      "type": "kafka_static_host_config"
+    }
+  ],
+  "tracing": {
+    "enable": true,
+    "driver": "LazySwitch",
+    "config": {
+      "defaults": {
+        "TRACING_SWITCH": "SOFATracer",
+        "SKY_WALKING_ADDRESS": "127.0.0.1",
+        "SKY_WALKING_PORT": "11800",
+        "ZIPKIN_ADDRESS": "127.0.0.1",
+        "ZIPKIN_PORT": "9411",
+        "RequestedIP": "127.0.0.1",
+        "MOSN_NAME": "MOSN",
+        "KAFKA_ADDRESS": "127.0.0.1",
+        "KAFKA_PORT": "9092",
+        "KAFKA_TOPIC": ""
+      },
+      "env": "${TRACING_SWITCH}",
+      "switch": {
+        "None": {
+          "enable": false
+        },
+        "SOFATracer": {
+          "enable": true,
+          "driver": "SOFATracer"
+        },
+        "SkyWalking": {
+          "enable": true,
+          "driver": "SkyWalking",
+          "config": {
+            "reporter": "gRPC",
+            "backend_service": "${SKY_WALKING_ADDRESS}:${SKY_WALKING_PORT}",
+            "service_name": "${APPNAME}-${MOSN_NAME}::${METADATA_DC}"
+          }
+        },
+        "Zipkin": {
+          "enable": true,
+          "driver": "Zipkin",
+          "config": {
+            "reporter": "http",
+            "backend_url": "http://${ZIPKIN_ADDRESS}:${ZIPKIN_PORT}/api/v2/spans",
+            "service_name": "${APPNAME}-${MOSN_NAME}",
+            "instance_ip": "${RequestedIP}",
+            "batch_size": 0,
+            "kafka": {
+              "enable": true,
+              "broker_service": "${KAFKA_ADDRESS}:${KAFKA_PORT}",
+              "topic": "${KAFKA_TOPIC}"
+            }
+          }
+        }
+      }
+    }
+  },
+  "admin": {
+    "address": {
+      "socket_address": {
+        "address": "0.0.0.0",
+        "port_value": 11001 
+      }
+    }
+  },
+  "pprof": {
+    "debug": true,
+    "port_value": 11002
+  },
+  "metrics": {
+    "shm_zone": "",
+    "shm_size": "0",
+    "stats_matcher": {
+      "exclusion_labels": [
+        "host"
+      ],
+      "exclusion_keys": [
+        "request_duration_time",
+        "request_time",
+        "process_time"
+      ]
+    },
+    "sinks": [
+      {
+        "type": "prometheus",
+        "config": {
+          "port": 11003
+        }
+      }
+    ]
+  },
+  "dynamic_resources": {
+    "ads_config": {
+      "api_type": "GRPC",
+      "grpc_services": [
+        {
+          "envoy_grpc": {
+            "cluster_name": "xds-grpc"
+          }
+        }
+      ]
+    }
+  },
+  "static_resources": {
+    "clusters": [
+      {
+        "name": "xds-grpc",
+        "type": "STRICT_DNS",
+        "connect_timeout": "10s",
+        "lb_policy": "ROUND_ROBIN",
+        "hosts": [
+          {
+            "socket_address": {
+              "address": "pilot.cloudmesh",
+              "port_value": 15050
+            }
+          }
+        ],
+        "circuit_breakers": {
+          "thresholds": [
+            {
+              "priority": "DEFAULT",
+              "max_connections": 100000,
+              "max_pending_requests": 100000,
+              "max_requests": 100000
+            },
+            {
+              "priority": "HIGH",
+              "max_connections": 100000,
+              "max_pending_requests": 100000,
+              "max_requests": 100000
+            }
+          ]
+        },
+        "upstream_connection_options": {
+          "tcp_keepalive": {
+            "keepalive_time": 300
+          }
+        },
+        "http2_protocol_options": {}
+      }
+    ]
+  }
+}
