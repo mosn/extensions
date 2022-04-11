@@ -1,6 +1,6 @@
 #! /bin/bash
 
-BASE_IMAGE=zonghaishang/delve:1.6.1
+BASE_IMAGE=zonghaishang/delve:v1.6.1
 PROJECT_NAME=mosn.io/extensions/go-plugin
 SIDECAR_GITLAB_PROJECT_NAME=gitlab.alipay-inc.com/ant-mesh/mosn
 
@@ -30,7 +30,6 @@ echo "host address: ${PUB_BOLT_LOCAL_IP}"
 
 docker run -u admin \
   --privileged \
-  --platform linux/amd64 \
   -e PLUGIN_PROJECT_NAME="${PROJECT_NAME}" \
   -e DYNAMIC_CONF_PATH=/go/src/${PROJECT_NAME}/build/codecs \
   -e SIDECAR_PROJECT_NAME=${SIDECAR_GITLAB_PROJECT_NAME} \

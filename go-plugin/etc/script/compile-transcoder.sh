@@ -11,6 +11,14 @@ if [[ -n "${PLUGIN_TRANSCODER}" ]]; then
   for name in "${coders[@]}"; do
     export PLUGIN_TARGET=${name}
     export PLUGIN_TRANSCODER_OUTPUT=${PLUGIN_TRANSCODER_PREFIX}-${PLUGIN_TARGET}.so
+    # check BUILD_OPTS
+    if [[ -n ${PLUGIN_OS} && -n ${PLUGIN_ARCH} ]]; then
+      build_opts="GOOS=${PLUGIN_OS} GOARCH=${PLUGIN_ARCH}"
+      export BUILD_OPTS=${build_opts}
+      echo "compiling transcoder ${name} for ${PLUGIN_OS} ${PLUGIN_ARCH} ..."
+    else
+      echo "compiling transcoder ${name} for linux $(dpkg --print-architecture) ..."
+    fi
     make compile-transcoder
   done
 fi

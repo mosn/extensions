@@ -11,6 +11,14 @@ if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
   for name in "${filters[@]}"; do
     export PLUGIN_TARGET=${name}
     export PLUGIN_STEAM_FILTER_OUTPUT=${PLUGIN_STEAM_FILTER_PREFIX}-${PLUGIN_TARGET}.so
+    # check BUILD_OPTS
+    if [[ -n ${PLUGIN_OS} && -n ${PLUGIN_ARCH} ]]; then
+      build_opts="GOOS=${PLUGIN_OS} GOARCH=${PLUGIN_ARCH}"
+      export BUILD_OPTS=${build_opts}
+      echo "compiling filter ${name} for ${PLUGIN_OS} ${PLUGIN_ARCH} ..."
+    else
+      echo "compiling filter ${name} for linux $(dpkg --print-architecture) ..."
+    fi
     make compile-stream-filter
   done
 fi
