@@ -28,6 +28,8 @@ SIDECAR_BUILD_IMAGE     = mosn-builder
 BUILD_IMAGE				= golang:1.14.13
 BASE_IMAGE				= zonghaishang/delve:v1.6.1
 
+os_arch:=$(shell uname)_$(shell arch)
+
 codec:
 	make codec.arch
 
@@ -77,7 +79,11 @@ ant.arm64:
 	GOOS=linux GOARCH=arm64 DOCKER_BUILD_OPTS="--platform=linux/arm64" make ant.arch
 
 pkg-codec:
-	make pkg-codec.arch
+    ifeq ("$(os_arch)","Darwin_arm64")
+		DOCKER_BUILD_OPTS="--platform=linux/amd64" make pkg-codec.arch
+    else
+		make pkg-codec.arch
+    endif
 
 pkg-codec.amd64:
 	GOOS=linux GOARCH=amd64 DOCKER_BUILD_OPTS="--platform=linux/amd64" make pkg-codec.arch
@@ -86,7 +92,11 @@ pkg-codec.arm64:
 	GOOS=linux GOARCH=arm64 DOCKER_BUILD_OPTS="--platform=linux/arm64" make pkg-codec.arch
 
 pkg-filter:
-	make pkg-filter.arch
+    ifeq ("$(os_arch)","Darwin_arm64")
+		DOCKER_BUILD_OPTS="--platform=linux/amd64" make pkg-filter.arch
+    else
+		make pkg-filter.arch
+    endif
 
 pkg-filter.amd64:
 	GOOS=linux GOARCH=amd64 DOCKER_BUILD_OPTS="--platform=linux/amd64" make pkg-filter.arch
@@ -95,7 +105,11 @@ pkg-filter.arm64:
 	GOOS=linux GOARCH=arm64 DOCKER_BUILD_OPTS="--platform=linux/arm64" make pkg-filter.arch
 
 pkg-trans:
-	make pkg-trans.arch
+    ifeq ("$(os_arch)","Darwin_arm64")
+		DOCKER_BUILD_OPTS="--platform=linux/amd64" make pkg-trans.arch
+    else
+		make pkg-trans.arch
+    endif
 
 pkg-trans.amd64:
 	GOOS=linux GOARCH=amd64 DOCKER_BUILD_OPTS="--platform=linux/amd64" make pkg-trans.arch
@@ -186,7 +200,6 @@ compile-stream-filter:
 	mv ${PLUGIN_STEAM_FILTER_OUTPUT} build/stream_filters/${PLUGIN_TARGET}
 	@cd build/stream_filters/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_STEAM_FILTER_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_STEAM_FILTER_PREFIX}-${PLUGIN_TARGET}.md5
 	cp configs/stream_filters/${PLUGIN_TARGET}/*.json build/stream_filters/${PLUGIN_TARGET}
-
 
 compile-transcoder:
 	@rm -rf build/transcoders/${PLUGIN_TARGET}
