@@ -24,3 +24,4 @@ MOSN_PUB_LOCAL_IP_ENV=PUB_BOLT_LOCAL_IP
 PUB_BOLT_LOCAL_IP
 PLUGINS_ACTIVE=[{"kind":"transcoder","plugins":[{"name":"bolt2springcloud","version":"default"},{"name":"dubbo2springcloud","version":"default"},{"name":"springcloud2dubbo","version":"default"},{"name":"xr2springcloud","version":"default"}]}]
 DEV_MATCHER_ENABLE=true
+DEBUG_TRANCODER_ENABEL=true

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/config"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
 )
@@ -62,6 +63,10 @@ CHECK:
 			break CHECK
 		}
 	}
+
+	conf, ok := config.GlobalExtendConfigByContext(ctx, "config")
+	log.DefaultContextLogger.Infof(ctx, "get dynamic conf:%s ok:%s", conf, ok)
+
 	if !passed {
 		log.DefaultContextLogger.Warnf(ctx, "[streamfilter][auth]request does not matched the pass condition")
 		f.handler.SendHijackReply(403, headers)
