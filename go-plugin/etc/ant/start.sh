@@ -1,6 +1,6 @@
 #! /bin/bash
 
-BASE_IMAGE=zonghaishang/delve:1.6.1
+BASE_IMAGE=zonghaishang/delve:v1.6.1
 PROJECT_NAME=mosn.io/extensions/go-plugin
 SIDECAR_GITLAB_PROJECT_NAME=gitlab.alipay-inc.com/ant-mesh/mosn
 
