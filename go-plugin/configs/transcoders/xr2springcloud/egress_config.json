@@ -9,6 +9,7 @@
         "matcher_type": "mulit_matcher",
         "config": {
             "name": "xr2springcloud",
+            "enable": true,
             "variables": [
                 {
                     "name": "x-mosn-data-id",
