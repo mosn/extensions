@@ -29,7 +29,7 @@ type Request struct {
 	RequestId     string       // request id (biz id)
 	SteamId       interface{}  // sidecar request id (replaced by sidecar, uint64 or nil)
 	Timeout       uint32       // request timeout
-	Payload       api.IoBuffer // it refers to the service parameters of a packet
+	Content       api.IoBuffer // it refers to the service parameters of a packet
 	Data          api.IoBuffer // full package bytes
 	Changed       bool         // indicates whether the packet payload is modified
 }
@@ -47,11 +47,11 @@ func (r *Request) GetHeader() api.HeaderMap {
 }
 
 func (r *Request) GetData() api.IoBuffer {
-	return r.Payload
+	return r.Content
 }
 
 func (r *Request) SetData(data api.IoBuffer) {
-	r.Payload = data
+	r.Content = data
 }
 
 func (r *Request) GetStreamType() api.StreamType {
@@ -81,7 +81,7 @@ type Response struct {
 	SteamId       interface{}  // sidecar request id (replaced by sidecar id)
 	Status        uint32       // response status
 	Data          api.IoBuffer // full package bytes
-	Payload       api.IoBuffer // it refers to the service parameters of a packet
+	Content       api.IoBuffer // it refers to the service parameters of a packet
 	Changed       bool         // indicates whether the packet payload is modified
 }
 
@@ -98,11 +98,11 @@ func (r *Response) GetHeader() api.HeaderMap {
 }
 
 func (r *Response) GetData() api.IoBuffer {
-	return r.Payload
+	return r.Content
 }
 
 func (r *Response) SetData(data api.IoBuffer) {
-	r.Payload = data
+	r.Content = data
 }
 
 func (r *Response) GetStreamType() api.StreamType {

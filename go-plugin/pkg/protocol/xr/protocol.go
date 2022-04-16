@@ -170,7 +170,7 @@ func (proto *XrProtocol) GenerateRequestID(streamID *uint64) uint64 {
 // hijackResponse build hijack response
 func (proto *XrProtocol) hijackResponse(request api.XFrame, statusCode uint32) *Response {
 	req := request.(*Request)
-	body := req.Payload.String()
+	body := req.Content.String()
 
 	var bodyBuf bytes.Buffer
 	headerIndex := strings.Index(body, startHeader)
@@ -190,15 +190,7 @@ func (proto *XrProtocol) hijackResponse(request api.XFrame, statusCode uint32) *
 	// replace request type -> response
 	body = strings.ReplaceAll(body, "<RequestType>0</RequestType>", "<RequestType>1</RequestType>")
 
-	// 8 byte length + string body
-	buf := buffer.GetIoBuffer(8 + len(body))
-	proto.prefixOfZero(buf, len(body))
-	buf.WriteString(body)
+	content := buffer.NewIoBufferBytes([]byte(body))
 
-	// response header
-	rpcHeader := common.Header{}
-	injectHeaders(buf.Bytes()[8:8+len(body)], &rpcHeader)
-
-	resp := NewRpcResponse(&rpcHeader, buf)
-	return resp
+	return &Response{Content: content}
 }
