@@ -32,21 +32,21 @@ import (
 
 func (proto *XrProtocol) encodeRequest(ctx context.Context, request *Request) (api.IoBuffer, error) {
 
-	packetLen := 8 /** fixed 8 byte length */ + request.Payload.Len()
+	packetLen := 8 /** fixed 8 byte length */ + request.Content.Len()
 	buf := buffer.GetIoBuffer(packetLen)
 
 	// 1. write 8 byte length + body
-	proto.prefixOfZero(buf, request.Payload.Len())
+	proto.prefixOfZero(buf, request.Content.Len())
 
-	if request.Payload.Len() > 0 {
+	if request.Content.Len() > 0 {
 		if request.RequestId == "" {
 			// try query business id from payload.
-			payload := request.Payload.Bytes()
+			payload := request.Content.Bytes()
 			request.RequestId = fetchId(payload)
 		}
 
 		// 2. write payload bytes
-		buf.Write(request.Payload.Bytes())
+		buf.Write(request.Content.Bytes())
 	}
 
 	// If sidecar replaces the ID, we associate the ID with the business ID
@@ -64,19 +64,19 @@ func (proto *XrProtocol) encodeRequest(ctx context.Context, request *Request) (a
 
 func (proto *XrProtocol) encodeResponse(ctx context.Context, response *Response) (api.IoBuffer, error) {
 
-	packetLen := 8 /** fixed 8 byte length */ + response.Payload.Len()
+	packetLen := 8 /** fixed 8 byte length */ + response.Content.Len()
 	buf := buffer.GetIoBuffer(packetLen)
 
 	// 1. write 8 byte length + body
-	proto.prefixOfZero(buf, response.Payload.Len())
-	if response.Payload.Len() > 0 {
+	proto.prefixOfZero(buf, response.Content.Len())
+	if response.Content.Len() > 0 {
 		if response.RequestId == "" {
-			payload := response.Payload.Bytes()
+			payload := response.Content.Bytes()
 			response.RequestId = fetchId(payload)
 		}
 
 		// 2. write payload bytes
-		buf.Write(response.Payload.Bytes())
+		buf.Write(response.Content.Bytes())
 	}
 
 	// remove associate the ID with the business ID if exists.
