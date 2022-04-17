@@ -16,17 +16,7 @@
                     "values": [
                         "com.alipay.sofa.ms.service.SofaEchoService:1.0"
                     ],
-                    "config": {
-                        "details": [
-                            {
-                                "unique_id": "echo",
-                                "path": "/bolt2springcloud/hello",
-                                "method": "GET",
-                                "target_app": "http.server",
-                                "class": "com.alipay.sofa.rpc.core.response.SofaResponse"
-                            }
-                        ]
-                    }
+                    "config":"{\"details\":[{\"unique_id\":\"echo\",\"path\":\"/bolt2springcloud/hello\",\"method\":\"GET\",\"target_app\":\"http.server\",\"class\":\"com.alipay.sofa.rpc.core.response.SofaResponse\"}]}"
                 }
             ]
         }
