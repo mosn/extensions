@@ -18,13 +18,14 @@ BODY='<Service><Header><ServiceCode>CIMT000070</ServiceCode><ChannelId>C48</Chan
 
 BODY=$(printf "%08d" ${#BODY})${BODY}
 
-echo $BODY
 echo
-echo "--------START telnet---------"
+echo "--------START invoke---------"
 echo
 
-#telnet $IP $PORT|(sleep 1;echo "$BODY";echo;echo "fff";sleep 30;) >> telnet_result.txt
-(sleep 1;echo "$BODY";echo;echo;sleep 300;)|telnet $IP $PORT
+echo "$BODY"
+
+# (sleep 1;echo "$BODY";echo;echo;sleep 300;)|telnet $IP $PORT
+(echo "$BODY"; sleep 15;) | nc -4 $IP $PORT
 echo
 echo "--------END-------------"
 
