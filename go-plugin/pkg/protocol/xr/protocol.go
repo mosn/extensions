@@ -113,11 +113,10 @@ func (proto *XrProtocol) Decode(ctx context.Context, buf api.IoBuffer) (interfac
 	}
 
 	// expected full message length
-	if bLen < packetLen {
+	totalLen := 8 /** fixed 8 byte len */ + packetLen
+	if bLen < totalLen {
 		return nil, nil
 	}
-
-	totalLen := 8 /** fixed 8 byte len */ + packetLen
 
 	rpcHeader := common.Header{}
 	injectHeaders(data[8:totalLen], &rpcHeader)
