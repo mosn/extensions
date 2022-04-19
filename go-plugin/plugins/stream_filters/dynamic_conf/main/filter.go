@@ -54,7 +54,7 @@ func NewAuthFilter(ctx context.Context, config map[string]string) *AuthFilter {
 
 func (f *AuthFilter) OnReceive(ctx context.Context, headers api.HeaderMap, buf buffer.IoBuffer, trailers api.HeaderMap) api.StreamFilterStatus {
 	conf, ok := config.GlobalExtendConfigByContext(ctx, "config")
-	log.DefaultContextLogger.Infof(ctx, "get dynamic conf:%s ok:%s", conf, ok)
+	log.DefaultContextLogger.Infof(ctx, "get dynamic conf:%s ok:%v", conf, ok)
 	headers.Set("dynamic", conf)
 	return api.StreamFilterContinue
 }
