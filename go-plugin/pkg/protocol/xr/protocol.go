@@ -113,11 +113,10 @@ func (proto *XrProtocol) Decode(ctx context.Context, buf api.IoBuffer) (interfac
 	}
 
 	// expected full message length
-	if bLen < packetLen {
+	totalLen := 8 /** fixed 8 byte len */ + packetLen
+	if bLen < totalLen {
 		return nil, nil
 	}
-
-	totalLen := 8 /** fixed 8 byte len */ + packetLen
 
 	rpcHeader := common.Header{}
 	injectHeaders(data[8:totalLen], &rpcHeader)
@@ -170,7 +169,7 @@ func (proto *XrProtocol) GenerateRequestID(streamID *uint64) uint64 {
 // hijackResponse build hijack response
 func (proto *XrProtocol) hijackResponse(request api.XFrame, statusCode uint32) *Response {
 	req := request.(*Request)
-	body := req.Payload.String()
+	body := req.Content.String()
 
 	var bodyBuf bytes.Buffer
 	headerIndex := strings.Index(body, startHeader)
@@ -190,15 +189,7 @@ func (proto *XrProtocol) hijackResponse(request api.XFrame, statusCode uint32) *
 	// replace request type -> response
 	body = strings.ReplaceAll(body, "<RequestType>0</RequestType>", "<RequestType>1</RequestType>")
 
-	// 8 byte length + string body
-	buf := buffer.GetIoBuffer(8 + len(body))
-	proto.prefixOfZero(buf, len(body))
-	buf.WriteString(body)
+	content := buffer.NewIoBufferBytes([]byte(body))
 
-	// response header
-	rpcHeader := common.Header{}
-	injectHeaders(buf.Bytes()[8:8+len(body)], &rpcHeader)
-
-	resp := NewRpcResponse(&rpcHeader, buf)
-	return resp
+	return &Response{Content: content}
 }

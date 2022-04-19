@@ -46,11 +46,11 @@ func (proto *XrProtocol) decodeRequest(ctx context.Context, buf api.IoBuffer, he
 
 	// The buf does not contain the complete packet length,
 	// So we wait for the next decoder notification.
+	totalLen := 8 /** fixed 8 byte len */ + packetLen
 	if bufLen < packetLen {
 		return nil, nil
 	}
 
-	totalLen := 8 /** fixed 8 byte len */ + packetLen
 	// Read the complete packet data from the connection
 	buf.Drain(totalLen)
 
@@ -70,7 +70,7 @@ func (proto *XrProtocol) decodeRequest(ctx context.Context, buf api.IoBuffer, he
 	request.Data.Write(data[:totalLen])
 
 	payload := request.Data.Bytes()[8:totalLen]
-	request.Payload = buffer.NewIoBufferBytes(payload)
+	request.Content = buffer.NewIoBufferBytes(payload)
 
 	return request, nil
 }
@@ -92,11 +92,11 @@ func (proto *XrProtocol) decodeResponse(ctx context.Context, buf api.IoBuffer, h
 
 	// The buf does not contain the complete packet length,
 	// So we wait for the next decoder notification.
-	if bufLen < packetLen {
+	totalLen := 8 /** fixed 8 byte len */ + packetLen
+	if bufLen < totalLen {
 		return nil, nil
 	}
 
-	totalLen := 8 /** fixed 8 byte len */ + packetLen
 	// Read the complete packet data from the connection
 	buf.Drain(totalLen)
 
@@ -120,7 +120,7 @@ func (proto *XrProtocol) decodeResponse(ctx context.Context, buf api.IoBuffer, h
 	response.Data.Write(data[:totalLen])
 
 	payload := response.Data.Bytes()[8:totalLen]
-	response.Payload = buffer.NewIoBufferBytes(payload)
+	response.Content = buffer.NewIoBufferBytes(payload)
 
 	return response, nil
 }

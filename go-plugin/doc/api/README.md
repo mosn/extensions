@@ -19,3 +19,23 @@
 #### [1.1.5 连接池相关](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/1.%20xprotocol-api.md#115-%E8%BF%9E%E6%8E%A5%E6%B1%A0%E7%9B%B8%E5%85%B3)
 
 #### [1.1.6 协议Codec](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/1.%20xprotocol-api.md#116-%E5%8D%8F%E8%AE%AEcodec)
+
+## [2. filter api介绍](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/2.%20filter-api.md)
+
+### [2.1 拦截器工厂](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/2.%20filter-api.md#21-%E6%8B%A6%E6%88%AA%E5%99%A8%E5%B7%A5%E5%8E%82)
+
+### [2.2 拦截器接口](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/2.%20filter-api.md#22-%E6%8B%A6%E6%88%AA%E5%99%A8%E6%8E%A5%E5%8F%A3)
+
+### [2.3 插件加载函数](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/2.%20filter-api.md#23-%E6%8F%92%E4%BB%B6%E5%8A%A0%E8%BD%BD%E5%87%BD%E6%95%B0)
+
+## [3. config api介绍](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md)
+
+### [3.1 全局配置 api](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#31-%E5%85%A8%E5%B1%80%E9%85%8D%E7%BD%AE-api)
+
+#### [3.3.1 api 函数介绍](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#331-api-%E5%87%BD%E6%95%B0%E4%BB%8B%E7%BB%8D)
+
+#### [3.3.2 服务控制台介绍](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#332-%E6%9C%8D%E5%8A%A1%E6%8E%A7%E5%88%B6%E5%8F%B0%E4%BB%8B%E7%BB%8D)
+
+#### [3.3.3 配置使用](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#333-%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8)
+
+#### [3.3.4 实践](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#334-%E5%AE%9E%E8%B7%B5)
