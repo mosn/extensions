@@ -48,17 +48,11 @@ func (t *xr2springcloud) Accept(ctx context.Context, headers api.HeaderMap, buf 
 }
 
 func (t *xr2springcloud) TranscodingRequest(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
-	sourceHeader, ok := headers.(*xr.Request)
+	_, ok := headers.(*xr.Request)
 	if !ok {
 		return nil, nil, nil, fmt.Errorf("[xprotocol][xr] decode xr header type error")
 	}
 	reqHeaderImpl := &fasthttp.RequestHeader{}
-	sourceHeader.Header.Range(func(key, value string) bool {
-		if key != fasthttp.HeaderContentLength {
-			reqHeaderImpl.Set(key, value)
-		}
-		return true
-	})
 	reqHeaderImpl.Set("x-mosn-method", t.config.Method)
 	reqHeaderImpl.Set("x-mosn-path", t.config.Path)
 	reqHeaderImpl.Set("X-TARGET-APP", t.config.TragetApp)
@@ -67,20 +61,12 @@ func (t *xr2springcloud) TranscodingRequest(ctx context.Context, headers api.Hea
 }
 
 func (t *xr2springcloud) TranscodingResponse(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
-	sourceHeader, ok := headers.(http.ResponseHeader)
+	_, ok := headers.(http.ResponseHeader)
 	if !ok {
 		return nil, nil, nil, fmt.Errorf("[xprotocol][xr] decode http header type error")
 	}
 	//header
 	xrResponse := xr.Response{}
-	sourceHeader.Range(func(key, value string) bool {
-		//skip for Content-Length,the Content-Length may effect the value decode when transcode more one time
-		if key != "Content-Length" && key != "Accept:" {
-			xrResponse.Set(key, value)
-		}
-		return true
-	})
-
 	payloads := buffer.NewIoBufferBytes(buf.Bytes())
 	respHeader := xr.NewRpcResponse(&xrResponse.Header, payloads)
 	if respHeader == nil {

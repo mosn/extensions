@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/config"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
 )
@@ -52,24 +53,9 @@ func NewAuthFilter(ctx context.Context, config map[string]string) *AuthFilter {
 }
 
 func (f *AuthFilter) OnReceive(ctx context.Context, headers api.HeaderMap, buf buffer.IoBuffer, trailers api.HeaderMap) api.StreamFilterStatus {
-	log.DefaultContextLogger.Infof(ctx, "receive a request into auth filter")
-	passed := true
-CHECK:
-	for k, v := range f.config {
-		value, ok := headers.Get(k)
-		if !ok || value != v {
-			passed = false
-			break CHECK
-		}
-	}
-
-	if !passed {
-		log.DefaultContextLogger.Warnf(ctx, "[streamfilter][auth]request does not matched the pass condition")
-		f.handler.SendHijackReply(403, headers)
-		return api.StreamFilterStop
-	}
-
-	log.DefaultContextLogger.Infof(ctx, "[streamfilter][auth]request matched the pass condition")
+	conf, ok := config.GlobalExtendConfigByContext(ctx, "config")
+	log.DefaultContextLogger.Infof(ctx, "get dynamic conf:%s ok:%v", conf, ok)
+	headers.Set("dynamic", conf)
 	return api.StreamFilterContinue
 }
 

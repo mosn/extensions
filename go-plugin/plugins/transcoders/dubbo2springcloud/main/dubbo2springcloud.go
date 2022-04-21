@@ -80,12 +80,6 @@ func (t *dubbo2springcloud) TranscodingRequest(ctx context.Context, headers api.
 		return nil, nil, nil, err
 	}
 	reqHeaderImpl := &fasthttp.RequestHeader{}
-	sourceHeader.Header.CommonHeader.Range(func(key, value string) bool {
-		if key != fasthttp.HeaderContentLength {
-			reqHeaderImpl.Set(key, value)
-		}
-		return true
-	})
 	querys := map[string]string{}
 	var byteData []byte
 	reqHeaderImpl.Set("x-mosn-method", t.config.Method)
@@ -180,13 +174,6 @@ func (t *dubbo2springcloud) TranscodingResponse(ctx context.Context, headers api
 func DecodeHttp2Dubbo(sourceHeader http.ResponseHeader, buf api.IoBuffer, id uint64) (*dubbo.Frame, error) {
 	//header
 	allHeaders := map[string]string{}
-	sourceHeader.Range(func(key, value string) bool {
-		//skip for Content-Length,the Content-Length may effect the value decode when transcode more one time
-		if key != "Content-Length" && key != "Accept:" {
-			allHeaders[key] = value
-		}
-		return true
-	})
 	frame := &dubbo.Frame{
 		Header: dubbo.Header{
 			CommonHeader: allHeaders,

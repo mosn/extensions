@@ -16,41 +16,7 @@
                     "values": [
                         "reservation-client"
                     ],
-                    "config": {
-                        "details": [
-                            {
-                                "unique_id": "/reservations/echo.GET",
-                                "target_app": "com.alipay.sofa.ms.service.EchoService",
-                                "req_mapping": {
-                                    "method": "echo",
-                                    "double": "2.0.2",
-                                    "query": [
-                                        {
-                                            "type": "java.lang.String",
-                                            "key": "message"
-                                        }
-                                    ]
-                                },
-                                "resp_mapping": {
-                                    
-                                }
-                            },
-                            {
-                                "unique_id": "/reservations/echo.POST",
-                                "target_app": "com.alipay.sofa.ms.service.EchoService",
-                                "req_mapping": {
-                                    "method": "echo",
-                                    "double": "2.0.2",
-                                    "body": {
-                                        "type": "java/lang/String"
-                                    }
-                                },
-                                "resp_mapping": {
-                                    
-                                }
-                            }
-                        ]
-                    }
+                    "config": "{\"details\":[{\"unique_id\":\"/reservations/echo.GET\",\"target_app\":\"com.alipay.sofa.ms.service.EchoService\",\"req_mapping\":{\"method\":\"echo\",\"double\":\"2.0.2\",\"query\":[{\"type\":\"java.lang.String\",\"key\":\"message\"}]},\"resp_mapping\":{}},{\"unique_id\":\"/reservations/echo.POST\",\"target_app\":\"com.alipay.sofa.ms.service.EchoService\",\"req_mapping\":{\"method\":\"echo\",\"double\":\"2.0.2\",\"body\":{\"type\":\"java/lang/String\"}},\"resp_mapping\":{}}]}"
                 }
             ]
         }

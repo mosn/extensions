@@ -1,0 +1,8 @@
+{
+  "type": "dynamic_conf",
+  "go_plugin_config": {
+    "so_path": "./stream_filter-dynamic_conf.so"
+  },
+  "config": {
+  }
+}

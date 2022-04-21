@@ -64,7 +64,7 @@ func (t *bolt2springcloud) TranscodingRequest(ctx context.Context, headers api.H
 	t.boltRequest = sourceRequest
 	// update headers
 	targetRequest := t.httpReq2BoltReq(sourceRequest)
-	return http.RequestHeader{RequestHeader: &targetRequest.Header}, buf, trailers, nil
+	return http.RequestHeader{RequestHeader: targetRequest}, buf, trailers, nil
 }
 
 func (t *bolt2springcloud) TranscodingResponse(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) (api.HeaderMap, api.IoBuffer, api.HeaderMap, error) {
@@ -81,17 +81,11 @@ func (t *bolt2springcloud) TranscodingResponse(ctx context.Context, headers api.
 	return targetResponse, buf, trailers, nil
 }
 
-func (t *bolt2springcloud) httpReq2BoltReq(headers *bolt.Request) fasthttp.Request {
-	targetRequest := fasthttp.Request{}
-	// header copy
-	headers.Range(func(Key, Value string) bool {
-		targetRequest.Header.Set(Key, Value)
-		return true
-	})
-	// head copy
-	targetRequest.Header.Set(MosnMethod, t.config.Method)
-	targetRequest.Header.Set(MosnPath, t.config.Path)
-	targetRequest.Header.Set(HttpServiceName, t.config.TragetApp)
+func (t *bolt2springcloud) httpReq2BoltReq(headers *bolt.Request) *fasthttp.RequestHeader {
+	targetRequest := &fasthttp.RequestHeader{}
+	targetRequest.Set(MosnMethod, t.config.Method)
+	targetRequest.Set(MosnPath, t.config.Path)
+	targetRequest.Set(HttpServiceName, t.config.TragetApp)
 	return targetRequest
 }
 
