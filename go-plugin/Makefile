@@ -25,8 +25,8 @@ PROJECT_NAME			= mosn.io/extensions/go-plugin
 SIDECAR_GITLAB_PROJECT_NAME = gitlab.alipay-inc.com/ant-mesh/mosn
 
 SIDECAR_BUILD_IMAGE     = mosn-builder
-BUILD_IMAGE				= golang:1.14.13
-BASE_IMAGE				= zonghaishang/delve:v1.6.1
+BUILD_IMAGE				= golang:1.17.9
+BASE_IMAGE				= zonghaishang/delve:v1.7.3
 
 os_arch:=$(shell uname)_$(shell arch)
 

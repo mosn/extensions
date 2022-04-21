@@ -1,6 +1,6 @@
 #! /bin/bash
 
-BASE_IMAGE=zonghaishang/delve:v1.6.1
+BASE_IMAGE=zonghaishang/delve:v1.7.3
 PROJECT_NAME=mosn.io/extensions/go-plugin
 
 sidecar=$(docker ps -a -q -f name=mosn-container)

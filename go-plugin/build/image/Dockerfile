@@ -1,13 +1,13 @@
-FROM golang:1.14.13
+FROM golang:1.17.9
 MAINTAINER yiji@apache.org
 
 ENV GO111MODULE=on
 ENV GOPROXY=https://goproxy.cn,direct
 
-RUN go get github.com/go-delve/delve/cmd/dlv@v1.6.1
+RUN go install github.com/go-delve/delve/cmd/dlv@v1.7.3
 
 # install tools.
-RUN apt update && apt -y install net-tools sudo openbsd-inetd telnet tcpdump zip
+RUN apt update && apt -y install net-tools sudo openbsd-inetd telnet tcpdump zip iptables vim
 
 # change container root pwd
 RUN  useradd -ms /bin/bash admin && \
