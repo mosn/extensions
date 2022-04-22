@@ -95,7 +95,7 @@
 
 #### [2.6.2 标准bolt和spring cloud协议互转实践](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.6.2bolt2springcloud.md) 
 
-2.6.3 [2.6.3 传统xml和spring cloud协议互转实践](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.6.3xml2springcloud.md) 
+#### [2.6.3 传统xml和spring cloud协议互转实践](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.6.3xml2springcloud.md) 
 
 2.7 mesh治理能力
 
