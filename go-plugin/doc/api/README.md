@@ -32,10 +32,22 @@
 
 ### [3.1 全局配置 api](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#31-%E5%85%A8%E5%B1%80%E9%85%8D%E7%BD%AE-api)
 
-#### [3.3.1 api 函数介绍](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#331-api-%E5%87%BD%E6%95%B0%E4%BB%8B%E7%BB%8D)
+#### [3.1.1 api 函数介绍](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#331-api-%E5%87%BD%E6%95%B0%E4%BB%8B%E7%BB%8D)
 
-#### [3.3.2 服务控制台介绍](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#332-%E6%9C%8D%E5%8A%A1%E6%8E%A7%E5%88%B6%E5%8F%B0%E4%BB%8B%E7%BB%8D)
+#### [3.1.2 服务控制台介绍](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#332-%E6%9C%8D%E5%8A%A1%E6%8E%A7%E5%88%B6%E5%8F%B0%E4%BB%8B%E7%BB%8D)
 
-#### [3.3.3 配置使用](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#333-%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8)
+#### [3.1.3 配置使用](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#333-%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8)
 
-#### [3.3.4 实践](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#334-%E5%AE%9E%E8%B7%B5)
+#### [3.1.4 实践](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#333-%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8)
+
+#### [3.1.5 FQA](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#333-%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8)
+
+#### [4.1 协议转换插件](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/4.transfer.md)
+
+#### [4.1.1 插件配置](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/4.transfer.md#411-%E6%8F%92%E4%BB%B6%E9%85%8D%E7%BD%AE)
+
+#### [4.1.2 Api 介绍](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/4.transfer.md#412-api-%E4%BB%8B%E7%BB%8D)
+
+#### [4.1.3 插件编译](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/4.transfer.md#413-%E7%BC%96%E8%AF%91%E6%8F%92%E4%BB%B6)
+
+#### [4.1.4 FAQ](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/4.transfer.md#414-faq)

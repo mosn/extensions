@@ -4,6 +4,5 @@
     "so_path": "./stream_filter-dynamic_conf.so"
   },
   "config": {
-    "after": "govern_config"
   }
 }
