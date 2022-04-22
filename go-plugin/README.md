@@ -41,8 +41,6 @@
 
 #### [2.1.6 启动bolt应用服务](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.1bolt.md#216-%E5%90%AF%E5%8A%A8bolt%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1) 
 
-
-
 ### [2.2 动手实现标准dubbo协议扩展](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.2dubbo.md)
 
 #### [2.2.1 编解码实现](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.2dubbo.md#221-%E7%BC%96%E8%A7%A3%E7%A0%81%E5%AE%9E%E7%8E%B0)
@@ -97,7 +95,7 @@
 
 #### [2.6.2 标准bolt和spring cloud协议互转实践](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.6.2bolt2springcloud.md) 
 
-2.6.3 传统xml和spring cloud协议互转实践 @檀少
+#### [2.6.3 传统xml和spring cloud协议互转实践](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.6.3xml2springcloud.md) 
 
 2.7 mesh治理能力
 
