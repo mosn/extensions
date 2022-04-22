@@ -42,7 +42,7 @@
 
 #### [3.1.5 FQA](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/3.config-api.md#333-%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8)
 
-#### [4.1 协议转换插件](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/4.transfer.md)
+## [4 协议转换插件](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/4.transfer.md)
 
 #### [4.1.1 插件配置](https://github.com/mosn/extensions/blob/master/go-plugin/doc/api/4.transfer.md#411-%E6%8F%92%E4%BB%B6%E9%85%8D%E7%BD%AE)
 
