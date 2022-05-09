@@ -1,0 +1,76 @@
+{
+  "name": "virtual_outbound",
+  "type": "egress",
+  "address": "0.0.0.0:15001",
+  "bind_port": true,
+  "use_original_dst": true,
+  "log_path": "./logs/mosn/virtual_outbound.log",
+  "log_level": "INFO",
+  "inspector": true,
+  "access_logs": [
+    {
+      "log_path": "./logs/mosn/access_virtual_outbound.log"
+    }
+  ],
+  "filter_chains": [
+    {
+      "tls_context": {
+      },
+      "filters": [
+        {
+          "type": "proxy",
+          "config": {
+            "name": "proxy_config",
+            "downstream_protocol": "Auto",
+            "upstream_protocol": "Auto",
+            "router_config_name": "egress_tp_http1_router",
+            "fallback_for_unknown_protocol": true
+          }
+        },
+        {
+          "type": "tp_tcp_proxy"
+        },
+        {
+          "type": "connection_manager",
+          "config": {
+            "router_config_name": "egress_tp_http1_router",
+            "router_configs": "./mosn/conf/routers/egress_tp_http1_router/"
+          }
+        }
+      ]
+    }
+  ],
+  "stream_filters": [
+    {
+      "type": "govern_config"
+    },
+    {
+      "type": "transcoder"
+    },
+    {
+      "type": "cloud_metrics"
+    },
+    {
+      "type": "fault_inject",
+      "config": {
+        "direction": "outbound"
+      }
+    },
+    {
+      "type": "downgrade"
+    },
+    {
+      "type": "alipayLimitFilter",
+      "config": {
+        "enable": true,
+        "direction": "outbound"
+      }
+    },
+    {
+      "type": "fault_tolerance_send"
+    },
+    {
+      "type": "fault_tolerance_choose"
+    }
+  ]
+}
