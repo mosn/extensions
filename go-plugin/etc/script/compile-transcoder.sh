@@ -10,7 +10,7 @@ if [[ -n "${PLUGIN_TRANSCODER}" ]]; then
   rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/transcoders
   for name in "${coders[@]}"; do
     export PLUGIN_TARGET=${name}
-    export PLUGIN_TRANSCODER_OUTPUT=${PLUGIN_TRANSCODER_PREFIX}-${PLUGIN_TARGET}.so
+    export PLUGIN_TRANSCODER_OUTPUT=${PLUGIN_TRANSCODER_PREFIX}-${PLUGIN_TARGET}-${GIT_VERSION}.so
     # check BUILD_OPTS
     if [[ -n ${PLUGIN_OS} && -n ${PLUGIN_ARCH} ]]; then
       build_opts="GOOS=${PLUGIN_OS} GOARCH=${PLUGIN_ARCH}"
