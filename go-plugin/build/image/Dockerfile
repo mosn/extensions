@@ -7,7 +7,7 @@ ENV GOPROXY=https://goproxy.cn,direct
 RUN go install github.com/go-delve/delve/cmd/dlv@v1.7.3
 
 # install tools.
-RUN apt update && apt -y install net-tools sudo openbsd-inetd telnet tcpdump zip iptables vim
+RUN apt update && apt -y install net-tools sudo openbsd-inetd telnet tcpdump zip iptables neovim
 
 # change container root pwd
 RUN  useradd -ms /bin/bash admin && \
