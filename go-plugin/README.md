@@ -97,33 +97,45 @@
 
 #### [2.6.3 传统xml和spring cloud协议互转实践](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.6.3xml2springcloud.md) 
 
-2.7 mesh治理能力
+### 2.7 mesh治理能力
 
-2.7.1 服务限流能力
+#### [2.7.1 服务限流能力](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.7.1ratelimit.md)
 
 2.7.1.1 标准dubbo接入服务限流能力
 
 2.7.1.2 传统xml协议接入服务限流能力
 
-2.7.1.3 标准springcloud接入服务限流能力
+##### [2.7.1.3 标准springcloud接入服务限流能力](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.7.1ratelimit.md)
 
-2.7.2 服务熔断能力
+#### [2.7.2 服务熔断能力](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.7.2fusing.md)
 
 2.7.2.1 标准dubbo接入服务熔断能力
 
 2.7.2.2 传统xml协议接入服务熔断能力
 
-2.7.3 服务降级能力
+##### [2.7.2.3 标准springcloud接入服务熔断能力](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.7.2fusing.md)
+
+#### [2.7.3 服务降级能力](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.7.3downgrade.md)
 
 2.7.3.1 标准dubbo接入服务降级能力
 
 2.7.3.2 传统xml协议接入服务降级能力
 
-2.7.4 服务故障注入能力
+##### [2.7.3.3 标准springcloud接入服务降级能力](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.7.3downgrade.md)
 
-2.7.4.1 标准dubbo接入服务降级能力
+#### [2.7.4 服务故障注入能力](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.7.4fault-inject.md)
 
-2.7.4.2 传统xml协议接入服务降级能力
+2.7.4.1 标准dubbo接入服务故障注入能力
+
+2.7.4.2 传统xml协议接入服务故障注入能力
+
+##### [2.7.4.3 标准springcloud接入服务故障注入能力](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.7.4fault-inject.md)
+
+#### [2.7.5 服务路由能力](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.7.5route.md)
+
+#### [2.7.6 服务故障隔离能力](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.7.6fault-isolation.md)
+
+#### [2.7.7 服务治理资源key](https://github.com/mosn/extensions/blob/master/go-plugin/doc/2.7.7governance-key.md)
 
 ## [3.mesh扩展使用篇](https://github.com/mosn/extensions/blob/master/go-plugin/doc/3.1pub-pod.md) 
 
