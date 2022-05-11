@@ -18,8 +18,8 @@ TRANSCODER_OUTPUT = ${TRANSCODER_PREFIX}-${OUTPUT}
 
 STEAM_FILTER_PREFIX = filter
 
-SIDECAR_PROJECT_NAME 	= mosn.io/mosn
-PROJECT_NAME			= mosn.io/extensions/go-plugin
+PROJECT_NAME			= $(shell head -1 go.mod | cut  -d' ' -f2)
+FULL_PROJECT_NAME		= $(shell pwd)
 
 # only for local test
 SIDECAR_GITLAB_PROJECT_NAME = gitlab.alipay-inc.com/ant-mesh/mosn
@@ -127,13 +127,25 @@ pkg-ant.arm64:
 	GOOS=linux GOARCH=arm64 DOCKER_BUILD_OPTS="--platform=linux/arm64" make pkg-ant.arch
 
 start:
-	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/ant/start.sh
+    ifeq ("$(os_arch)","Darwin_arm64")
+		make start.arm64
+    else
+		make start.amd64
+    endif
+
+start.amd64:
+	FULL_PROJECT_NAME=${FULL_PROJECT_NAME} PROJECT_NAME=${PROJECT_NAME} \
+	SIDECAR_GITLAB_PROJECT_NAME=${SIDECAR_GITLAB_PROJECT_NAME} bash ${FULL_PROJECT_NAME}/etc/ant/start.sh
+
+start.arm64:
+	FULL_PROJECT_NAME=${FULL_PROJECT_NAME} PROJECT_NAME=${PROJECT_NAME} DOCKER_BUILD_OPTS="--platform=linux/arm64" \
+    SIDECAR_GITLAB_PROJECT_NAME=${SIDECAR_GITLAB_PROJECT_NAME} bash ${FULL_PROJECT_NAME}/etc/ant/start.sh
 
 debug:
-	DLV_DEBUG=true bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/ant/start.sh
+	DLV_DEBUG=true make start
 
 stop:
-	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/ant/stop.sh
+	bash ${FULL_PROJECT_NAME}/etc/ant/stop.sh
 
 clean:
 	@rm -rf build/codecs build/stream_filters build/transcoders build/target
@@ -150,7 +162,7 @@ codec.arch:
 	-e PLUGIN_TRANSCODER=${TRANSCODER} \
 	-e PLUGIN_OS=${PLUGIN_GOOS} \
 	-e PLUGIN_ARCH=${PLUGIN_GOARCH} \
-	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
 	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
 	-w /go/src/${PROJECT_NAME} -it ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile-codec.sh
@@ -163,7 +175,7 @@ stream-filter.arch:
 	-e PLUGIN_OS=${PLUGIN_GOOS} \
     -e PLUGIN_ARCH=${PLUGIN_GOARCH} \
     -v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
-	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile-filter.sh
 
@@ -175,7 +187,7 @@ transcoder.arch:
 	-e PLUGIN_OS=${PLUGIN_GOOS} \
     -e PLUGIN_ARCH=${PLUGIN_GOARCH} \
     -v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
-	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile-transcoder.sh
 
@@ -213,14 +225,14 @@ compile-transcoder:
 	cp configs/transcoders/${PLUGIN_TARGET}/*.json build/transcoders/${PLUGIN_TARGET}
 
 ant.arch:
-	bash $(shell go env GOPATH)/src/${PROJECT_NAME}/etc/ant/stop.sh
+	bash ${FULL_PROJECT_NAME}/etc/ant/stop.sh
 	docker run --rm ${DOCKER_BUILD_OPTS} \
 	-e PLUGIN_OS=${PLUGIN_GOOS} \
 	-e PLUGIN_ARCH=${PLUGIN_GOARCH} \
 	-e PROJECT_NAME=${PROJECT_NAME} \
 	-e SIDECAR_PROJECT_NAME=${SIDECAR_GITLAB_PROJECT_NAME} \
 	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
-	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
 	-v $(shell go env GOPATH)/src/${SIDECAR_GITLAB_PROJECT_NAME}:/go/src/${SIDECAR_GITLAB_PROJECT_NAME} \
 	-w /go/src/${SIDECAR_GITLAB_PROJECT_NAME} -it ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile.sh
@@ -234,7 +246,7 @@ pkg-codec.arch:
 	-e PLUGIN_ARCH=${PLUGIN_GOARCH} \
 	-e PLUGIN_BUILD_PLATFORM=$(shell uname) \
 	-e PLUGIN_BUILD_PLATFORM_ARCH=$(shell arch) \
-	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/package-codec.sh
 
@@ -247,7 +259,7 @@ pkg-filter.arch:
 	-e PLUGIN_ARCH=${PLUGIN_GOARCH} \
 	-e PLUGIN_BUILD_PLATFORM=$(shell uname) \
 	-e PLUGIN_BUILD_PLATFORM_ARCH=$(shell arch) \
-	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/package-filter.sh
 
@@ -260,7 +272,7 @@ pkg-trans.arch:
 	-e PLUGIN_ARCH=${PLUGIN_GOARCH} \
 	-e PLUGIN_BUILD_PLATFORM=$(shell uname) \
 	-e PLUGIN_BUILD_PLATFORM_ARCH=$(shell arch) \
-	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/package-transcoder.sh
 
@@ -269,7 +281,7 @@ pkg-ant.arch:
 	-e PLUGIN_OS=${PLUGIN_GOOS} \
 	-e PLUGIN_ARCH=${PLUGIN_GOARCH} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
-	-v $(shell pwd):/go/src/${PROJECT_NAME} \
+	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/package-ant.sh
 
