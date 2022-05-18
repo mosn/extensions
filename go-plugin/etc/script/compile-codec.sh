@@ -13,7 +13,7 @@ else
 fi
 
 export BUILD_OPTS=${build_opts}
-export PLUGIN_CODEC_OUTPUT=${PLUGIN_CODEC_PREFIX}-${PLUGIN_TARGET}-${GIT_VERSION}.so
+export PLUGIN_CODEC_OUTPUT=${PLUGIN_CODEC_PREFIX}-${PLUGIN_TARGET}-${COMMIT}.so
 make compile-codec
 
 # build stream filter

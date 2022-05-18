@@ -150,7 +150,7 @@ clean:
 
 codec.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
-	-e GIT_VERSION=$(shell git log -1 --pretty=format:%H | head -c 8) \
+	-e COMMIT=$(shell git log -1 --pretty=format:%H | head -c 8) \
 	-e PLUGIN_TARGET=${TARGET} \
 	-e PLUGIN_CODEC_PREFIX=${CODEC_PREFIX} \
     -e PLUGIN_STEAM_FILTER_PREFIX=${STEAM_FILTER_PREFIX} \
@@ -167,7 +167,7 @@ codec.arch:
 
 stream-filter.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
-	-e GIT_VERSION=$(shell git log -1 --pretty=format:%H | head -c 8) \
+	-e COMMIT=$(shell git log -1 --pretty=format:%H | head -c 8) \
 	-e PLUGIN_STREAM_FILTER=${TARGET} \
 	-e PLUGIN_STEAM_FILTER_PREFIX=${STEAM_FILTER_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
@@ -180,7 +180,7 @@ stream-filter.arch:
 
 transcoder.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
-	-e GIT_VERSION=$(shell git log -1 --pretty=format:%H | head -c 8) \
+	-e COMMIT=$(shell git log -1 --pretty=format:%H | head -c 8) \
 	-e PLUGIN_TRANSCODER=${TARGET} \
 	-e PLUGIN_TRANSCODER_PREFIX=${TRANSCODER_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
