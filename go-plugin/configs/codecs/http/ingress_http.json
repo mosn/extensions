@@ -18,8 +18,8 @@
           "type": "proxy",
           "config": {
             "name": "proxy_config",
-            "downstream_protocol": "Auto",
-            "upstream_protocol": "Auto",
+            "downstream_protocol": "Http1",
+            "upstream_protocol": "Http1",
             "router_config_name": "ingress_tp_http1_router",
             "fallback_for_unknown_protocol": true
           }

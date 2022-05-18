@@ -10,7 +10,7 @@ if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
   rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/stream_filters
   for name in "${filters[@]}"; do
     export PLUGIN_TARGET=${name}
-    export PLUGIN_STEAM_FILTER_OUTPUT=${PLUGIN_STEAM_FILTER_PREFIX}-${PLUGIN_TARGET}.so
+    export PLUGIN_STEAM_FILTER_OUTPUT=${PLUGIN_STEAM_FILTER_PREFIX}-${PLUGIN_TARGET}-${COMMIT}.so
     # check BUILD_OPTS
     if [[ -n ${PLUGIN_OS} && -n ${PLUGIN_ARCH} ]]; then
       build_opts="GOOS=${PLUGIN_OS} GOARCH=${PLUGIN_ARCH}"

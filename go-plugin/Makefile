@@ -6,7 +6,6 @@ STREAM_FILTER = ${filter}
 TRANSCODER = ${trans}
 
 CODEC_PREFIX	= codec
-CODEC_OUTPUT	= ${CODEC_PREFIX}-${OUTPUT}
 CODEC_ZIP_OUTPUT = ${TARGET}.zip
 TRANSCODER_ZIP_OUTPUT = ${TARGET}.zip
 
@@ -14,7 +13,6 @@ PLUGIN_GOOS = ${GOOS}
 PLUGIN_GOARCH = ${GOARCH}
 
 TRANSCODER_PREFIX = transcoder
-TRANSCODER_OUTPUT = ${TRANSCODER_PREFIX}-${OUTPUT}
 
 STEAM_FILTER_PREFIX = filter
 
@@ -152,8 +150,8 @@ clean:
 
 codec.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
+	-e COMMIT=$(shell git log -1 --pretty=format:%H | head -c 8) \
 	-e PLUGIN_TARGET=${TARGET} \
-	-e PLUGIN_CODEC_OUTPUT=${CODEC_OUTPUT} \
 	-e PLUGIN_CODEC_PREFIX=${CODEC_PREFIX} \
     -e PLUGIN_STEAM_FILTER_PREFIX=${STEAM_FILTER_PREFIX} \
     -e PLUGIN_TRANSCODER_PREFIX=${TRANSCODER_PREFIX} \
@@ -169,6 +167,7 @@ codec.arch:
 
 stream-filter.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
+	-e COMMIT=$(shell git log -1 --pretty=format:%H | head -c 8) \
 	-e PLUGIN_STREAM_FILTER=${TARGET} \
 	-e PLUGIN_STEAM_FILTER_PREFIX=${STEAM_FILTER_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
@@ -181,6 +180,7 @@ stream-filter.arch:
 
 transcoder.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
+	-e COMMIT=$(shell git log -1 --pretty=format:%H | head -c 8) \
 	-e PLUGIN_TRANSCODER=${TARGET} \
 	-e PLUGIN_TRANSCODER_PREFIX=${TRANSCODER_PREFIX} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \

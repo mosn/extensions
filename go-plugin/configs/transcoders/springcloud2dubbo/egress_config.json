@@ -6,7 +6,7 @@
         "dst_protocol": "dubbo"
     },
     "matcher_config": {
-        "matcher_type": "mulit_matcher",
+        "matcher_type": "multiple_matcher",
         "config": {
             "name": "springcloud2dubbo",
             "enable": true,
