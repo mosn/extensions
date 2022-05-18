@@ -3,6 +3,7 @@
   "type": "ingress",
   "address": "0.0.0.0:10080",
   "bind_port": true,
+  "use_original_dst": true,
   "log_path": "./logs/mosn/ingress.log",
   "log_level": "INFO",
   "access_logs": [

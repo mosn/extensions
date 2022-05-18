@@ -1,6 +1,7 @@
 {
   "name": "egress_springcloud",
   "type": "egress",
+  "use_original_dst": true,
   "address": "0.0.0.0:10088",
   "bind_port": true,
   "access_logs": [
