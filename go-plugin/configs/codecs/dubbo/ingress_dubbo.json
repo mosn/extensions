@@ -2,6 +2,7 @@
   "name": "ingress_dubbo",
   "type": "ingress",
   "address": "0.0.0.0:30800",
+  "use_original_dst": true,
   "bind_port": true,
   "log_path": "./logs/mosn/ingress.log",
   "log_level": "INFO",

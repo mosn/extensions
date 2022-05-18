@@ -2,6 +2,7 @@
   "name": "ingress_sofa_bolt",
   "type": "ingress",
   "address": "0.0.0.0:12200",
+  "use_original_dst": true,
   "bind_port": true,
   "inspector": true,
   "filter_chains": [
