@@ -2,6 +2,7 @@
   "name": "egress_sofa_bolt",
   "type": "egress",
   "address": "0.0.0.0:12220",
+  "use_original_dst": true,
   "bind_port": true,
   "filter_chains": [
     {

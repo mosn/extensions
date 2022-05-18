@@ -1,0 +1,77 @@
+{
+  "name": "virtual_inbound",
+  "type": "ingress",
+  "address": "0.0.0.0:15006",
+  "bind_port": true,
+  "use_original_dst": true,
+  "log_path": "./logs/mosn/virtual_inbound.log",
+  "log_level": "INFO",
+  "access_logs": [
+    {
+      "log_path": "./logs/mosn/access_virtual_inbound.log"
+    }
+  ],
+  "filter_chains": [
+    {
+      "filters": [
+        {
+          "type": "proxy",
+          "config": {
+            "name": "proxy_config",
+            "downstream_protocol": "Http1",
+            "upstream_protocol": "Http1",
+            "router_config_name": "ingress_tp_http1_router",
+            "fallback_for_unknown_protocol": true
+          }
+        },
+        {
+          "type": "tp_tcp_proxy"
+        },
+        {
+          "type": "connection_manager",
+          "config": {
+            "router_config_name": "ingress_tp_http1_router",
+            "router_configs": "./mosn/conf/routers/ingress_tp_http1_router/"
+          }
+        }
+      ]
+    }
+  ],
+  "stream_filters": [
+    {
+      "type": "govern_config"
+    },
+    {
+      "type": "transcoder"
+    },
+    {
+      "type": "cloud_metrics"
+    },
+    {
+      "type": "rbac",
+      "config": {
+        "rbac_log_path": "./logs/mosn/rbac.log",
+        "dynamic_resource_type": "drm"
+      }
+    },
+    {
+      "type": "fault_inject",
+      "config": {
+        "direction": "inbound"
+      }
+    },
+    {
+      "type": "alipayLimitFilter",
+      "config": {
+        "enable": true,
+        "direction": "inbound"
+      }
+    },
+    {
+      "type": "fault_tolerance_send"
+    },
+    {
+      "type": "fault_tolerance_choose"
+    }
+  ]
+}

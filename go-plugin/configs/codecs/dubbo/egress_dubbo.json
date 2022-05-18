@@ -2,6 +2,7 @@
   "name": "egress_dubbo",
   "type": "egress",
   "address": "0.0.0.0:30880",
+  "use_original_dst": true,
   "bind_port": true,
   "access_logs": [
     {
