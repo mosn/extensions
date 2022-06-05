@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/apache/dubbo-go-hessian2 v1.9.2 // dubbo
+	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/stretchr/testify v1.7.0
 	github.com/valyala/fasthttp v1.31.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
