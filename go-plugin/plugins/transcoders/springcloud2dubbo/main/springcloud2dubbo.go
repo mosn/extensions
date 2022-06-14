@@ -281,12 +281,15 @@ func EncodeWorkLoad(headers api.HeaderMap, reqBody DubboHttpRequestParams) ([]by
 	var attachmentsByte []byte
 	if paramesTypeStr != "" {
 		paramesTypeByte, _ = json.Marshal(paramesTypeStr)
-		attachmentsByte, _ = json.Marshal(reqBody.Attachments)
+	} else {
+		paramesTypeByte, _ = json.Marshal("")
 	}
 
-	payLoadByteFin := bytes.Join([][]byte{dubboVersionByte, serviceNameByte, verionByte, methodNameByte, paramesTypeByte, paramesByte, attachmentsByte}, []byte{10})
-
-	return payLoadByteFin, nil
+	attachmentsByte, _ = json.Marshal(reqBody.Attachments)
+	if len(paramesByte) == 0 {
+		return bytes.Join([][]byte{dubboVersionByte, serviceNameByte, verionByte, methodNameByte, paramesTypeByte, attachmentsByte}, []byte{10}), nil
+	}
+	return bytes.Join([][]byte{dubboVersionByte, serviceNameByte, verionByte, methodNameByte, paramesTypeByte, paramesByte, attachmentsByte}, []byte{10}), nil
 }
 
 func LoadTranscoderFactory(cfg map[string]interface{}) transcoder.Transcoder {
