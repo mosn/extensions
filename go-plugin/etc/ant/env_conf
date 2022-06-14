@@ -26,3 +26,4 @@ PLUGINS_ACTIVE=[{"kind":"transcoder","plugins":[{"name":"bolt2springcloud","vers
 DEV_MATCHER_ENABLE=true
 DEBUG_TRANSCODER_ENABLE=true
 DEBUG_MODE=true
+LOCAL_AUTH_SWITCH=false
