@@ -82,7 +82,9 @@ func (t *springcloud2dubbo) TranscodingResponse(ctx context.Context, headers api
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	return http.ResponseHeader{ResponseHeader: &response.Header}, buffer.NewIoBufferBytes(response.Body()), trailers, nil
+	sheader := http.ResponseHeader{ResponseHeader: &response.Header}
+	sheader.Set("Content-Type", "application/json")
+	return sheader, buffer.NewIoBufferBytes(response.Body()), trailers, nil
 }
 
 // decode dubbo response to http response
