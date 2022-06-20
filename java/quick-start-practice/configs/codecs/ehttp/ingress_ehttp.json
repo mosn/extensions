@@ -1,0 +1,69 @@
+{
+  "name": "ingress_ehttp",
+  "type": "ingress",
+  "address": "0.0.0.0:3046",
+  "bind_port": true,
+  "log_path": "./logs/mosn/ingress.log",
+  "log_level": "INFO",
+  "access_logs": [
+    {
+      "log_path": "./logs/mosn/access_ingress.log"
+    }
+  ],
+  "filter_chains": [
+    {
+      "filters": [
+        {
+          "type": "proxy",
+          "config": {
+            "downstream_protocol": "ehttp",
+            "name": "proxy_config",
+            "router_config_name": "ingress_ehttp_router",
+            "upstream_protocol": "ehttp"
+          }
+        },
+        {
+          "type": "connection_manager",
+          "config": {
+            "router_config_name": "ingress_ehttp_router",
+            "router_configs": "./mosn/conf/routers/ingress_ehttp_router/"
+          }
+        }
+      ]
+    }
+  ],
+  "stream_filters": [
+    {
+      "type": "govern_config"
+    },
+    {
+      "type": "transcoder"
+    },
+    {
+      "type": "tamperproofing"
+    },
+    {
+      "type": "cloud_metrics"
+    },
+    {
+      "type": "fault_inject",
+      "config": {
+        "direction": "inbound"
+      }
+    },
+    {
+      "type": "alipayLimitFilter",
+      "config": {
+        "enable": true,
+        "direction": "inbound"
+      }
+    },
+    {
+      "type": "fault_tolerance_send"
+    },
+    {
+      "type": "fault_tolerance_choose"
+    }
+  ],
+  "inspector": true
+}
