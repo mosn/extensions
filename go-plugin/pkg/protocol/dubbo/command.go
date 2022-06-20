@@ -19,6 +19,7 @@ package dubbo
 
 import (
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/common"
 	"mosn.io/pkg/buffer"
 )
 
@@ -33,7 +34,7 @@ type Header struct {
 	IsTwoWay        bool // true: send request and expect response, false: just request without response
 	Direction       int  // 1 mean req
 	SerializationId int  // 2 mean hessian
-	CommonHeader
+	common.Header
 }
 
 type Frame struct {
