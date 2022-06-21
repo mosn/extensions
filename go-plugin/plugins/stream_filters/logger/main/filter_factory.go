@@ -31,6 +31,5 @@ type LoggerFilterFactory struct {
 
 func (f *LoggerFilterFactory) CreateFilterChain(ctx context.Context, callbacks api.StreamFilterChainFactoryCallbacks) {
 	filter := NewLoggerFilter(ctx, f.config)
-	callbacks.AddStreamReceiverFilter(filter, api.BeforeRoute)
-	callbacks.AddStreamSenderFilter(filter, api.BeforeSend)
+	callbacks.AddStreamAccessLog(filter)
 }
