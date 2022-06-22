@@ -13,6 +13,7 @@
     <module>brpc-client</module>
     <module>xrpc-server</module>
     <module>ehttp-server</module>
+    <module>ehttp-client</module>
   </modules>
 
   <version>1.0-SNAPSHOT</version>
