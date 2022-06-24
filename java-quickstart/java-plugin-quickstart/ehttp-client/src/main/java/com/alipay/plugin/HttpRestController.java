@@ -35,13 +35,17 @@ public class HttpRestController {
      */
     // example : https://www.tutorialspoint.com/spring_boot/spring_boot_rest_template.htm
     @GetMapping("/hello")
-    public String hello(@RequestParam(required = false) String port) {
+    public String hello(@RequestParam(required = false) String port, @RequestParam(required = false) String user) {
 
         HttpHeaders headers = new HttpHeaders();
 
         // inject data id
         headers.set("X-SERVICE", "ehttp-provider");
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+
+        if (user != null && user.length() > 0) {
+            headers.set("user", user);
+        }
 
         String url = port != null && port.length() > 0
                 ? "http://localhost:" + port + "/hello"
@@ -55,12 +59,16 @@ public class HttpRestController {
     }
 
     @GetMapping("/userInfo")
-    public String userInfo(@RequestParam(required = false) String port) {
+    public String userInfo(@RequestParam(required = false) String port, @RequestParam(required = false) String user) {
         HttpHeaders headers = new HttpHeaders();
 
         // not inject header
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
+
+        if (user != null && user.length() > 0) {
+            headers.set("user", user);
+        }
 
         String url = port != null && port.length() > 0
                 ? "http://localhost:" + port + "/userInfo"
