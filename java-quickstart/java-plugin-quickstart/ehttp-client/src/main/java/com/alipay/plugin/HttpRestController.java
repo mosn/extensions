@@ -54,4 +54,26 @@ public class HttpRestController {
                 .getBody();
     }
 
+    @GetMapping("/userInfo")
+    public String userInfo(@RequestParam(required = false) String port) {
+        HttpHeaders headers = new HttpHeaders();
+
+        // not inject header
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        String url = port != null && port.length() > 0
+                ? "http://localhost:" + port + "/userInfo"
+                : "http://localhost:3045/userInfo";
+
+
+        String httpBody = "{\"target\": \"ehttp-provider\"}";
+        HttpEntity<String> entity = new HttpEntity<String>(httpBody, headers);
+
+        return restTemplate.exchange(url
+                        , HttpMethod.POST
+                        , entity
+                        , String.class)
+                .getBody();
+    }
 }
