@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Map;
 
 /**
  * @author yiji@apache.org
@@ -78,27 +76,4 @@ public class HttpRestController {
                         , String.class)
                 .getBody();
     }
-
-    public class UserModel implements Serializable {
-        private String userId;
-
-        private Map<String, String> parameters;
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-
-        public Map<String, String> getParameters() {
-            return parameters;
-        }
-
-        public void setParameters(Map<String, String> parameters) {
-            this.parameters = parameters;
-        }
-    }
-
 }
