@@ -19,9 +19,10 @@ package bolt
 
 import (
 	"context"
+	"testing"
+
 	"mosn.io/api"
 	"mosn.io/pkg/header"
-	"testing"
 )
 
 func TestSofaMapping(t *testing.T) {

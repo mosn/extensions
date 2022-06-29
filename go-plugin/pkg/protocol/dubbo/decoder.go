@@ -28,6 +28,7 @@ import (
 
 	hessian "github.com/apache/dubbo-go-hessian2"
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/common"
 	"mosn.io/pkg/buffer"
 )
 
@@ -51,7 +52,7 @@ func decodeFrame(ctx context.Context, data api.IoBuffer) (cmd interface{}, err e
 	dataBytes := data.Bytes()
 	frame := &Frame{
 		Header: Header{
-			CommonHeader: CommonHeader{},
+			Header: common.Header{},
 		},
 	}
 	// decode magic

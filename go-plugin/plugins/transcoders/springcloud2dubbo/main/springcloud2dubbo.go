@@ -12,6 +12,7 @@ import (
 	"github.com/valyala/fasthttp"
 	"mosn.io/api"
 	"mosn.io/api/extensions/transcoder"
+	"mosn.io/extensions/go-plugin/pkg/common"
 	"mosn.io/extensions/go-plugin/pkg/protocol/dubbo"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
@@ -179,7 +180,7 @@ func setTargetBody(sourceResponse *dubbo.Frame, targetResponse *fasthttp.Respons
 //encode http require to dubbo require
 func EncodeHttp2Dubbo(ctx context.Context, headers api.HeaderMap, param *Config, reqBody DubboHttpRequestParams) (*dubbo.Frame, error) {
 	//header
-	allHeaders := make(dubbo.CommonHeader)
+	allHeaders := common.Header{}
 	headers.Range(func(key, value string) bool {
 		if key != "Content-Length" && key != "Accept:" {
 			allHeaders.Set(key, value)
@@ -195,7 +196,7 @@ func EncodeHttp2Dubbo(ctx context.Context, headers api.HeaderMap, param *Config,
 	// convert data to dubbo frame
 	frame := &dubbo.Frame{
 		Header: dubbo.Header{
-			CommonHeader: allHeaders,
+			Header: allHeaders,
 		},
 	}
 	//magic
@@ -214,7 +215,7 @@ func EncodeHttp2Dubbo(ctx context.Context, headers api.HeaderMap, param *Config,
 	// serializationId
 	frame.SerializationId = int(frame.Flag & 0x1f)
 	//workload
-	payLoadByteFin, err := EncodeWorkLoad(allHeaders, reqBody)
+	payLoadByteFin, err := EncodeWorkLoad(&frame.Header, reqBody)
 	if err != nil {
 		log.DefaultContextLogger.Errorf(ctx, "[springcloud2dubbo transcoder] error EncodeWorkLoad error %v", err)
 		return nil, err
