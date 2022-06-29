@@ -20,3 +20,7 @@ WORKDIR /go
 # docker buildx create --use --name=builder --driver docker-container
 # docker buildx build --platform linux/arm64,linux/amd64,linux/386 -t zonghaishang/delve:v1.6.1 . --push
 # docker buildx rm builder
+
+
+# how to use this Dockefile build local image for development ?
+# docker build -t zonghaishang/delve:v1.6.1 .
