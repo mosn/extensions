@@ -17,50 +17,62 @@ func CreateFilterFactory(conf map[string]interface{}) (api.StreamFilterChainFact
 	if err := json.Unmarshal(b, &m); err != nil {
 		return nil, err
 	}
-	return &AuthFilterFactory{
+	return &DynamicFilterFactory{
 		config: m,
 	}, nil
 }
 
 // An implementation of api.StreamFilterChainFactory
-type AuthFilterFactory struct {
+type DynamicFilterFactory struct {
 	config map[string]string
 }
 
-func (f *AuthFilterFactory) CreateFilterChain(ctx context.Context, callbacks api.StreamFilterChainFactoryCallbacks) {
-	filter := NewAuthFilter(ctx, f.config)
+func (f *DynamicFilterFactory) CreateFilterChain(ctx context.Context, callbacks api.StreamFilterChainFactoryCallbacks) {
+	filter := NewDynamicFilter(ctx, f.config)
 	// ReceiverFilter, run the filter when receive a request from downstream
 	// The FilterPhase can be BeforeRoute or AfterRoute, we use BeforeRoute in this demo
 	callbacks.AddStreamReceiverFilter(filter, api.BeforeRoute)
 	// SenderFilter, run the filter when receive a response from upstream
 	// In the demo, we are not implement this filter type
-	// callbacks.AddStreamSenderFilter(filter, api.BeforeSend)
+	callbacks.AddStreamSenderFilter(filter, api.BeforeSend)
 }
 
-// What AuthFilter do:
+// What DynamicFilter do:
 // the request will be passed only if the request headers contains key&value matched in the config
-type AuthFilter struct {
-	config  map[string]string
-	handler api.StreamReceiverFilterHandler
+type DynamicFilter struct {
+	config   map[string]string
+	rhandler api.StreamReceiverFilterHandler
+	shandler api.StreamSenderFilterHandler
 }
 
-// NewAuthFilter returns a AuthFilter, the AuthFilter is an implementation of api.StreamReceiverFilter
+// NewDynamicFilter returns a DynamicFilter, the DynamicFilter is an implementation of api.StreamReceiverFilter
 // A Filter can implement both api.StreamReceiverFilter and api.StreamSenderFilter.
-func NewAuthFilter(ctx context.Context, config map[string]string) *AuthFilter {
-	return &AuthFilter{
+func NewDynamicFilter(ctx context.Context, config map[string]string) *DynamicFilter {
+	return &DynamicFilter{
 		config: config,
 	}
 }
 
-func (f *AuthFilter) OnReceive(ctx context.Context, headers api.HeaderMap, buf buffer.IoBuffer, trailers api.HeaderMap) api.StreamFilterStatus {
+func (f *DynamicFilter) OnReceive(ctx context.Context, headers api.HeaderMap, buf buffer.IoBuffer, trailers api.HeaderMap) api.StreamFilterStatus {
 	conf, ok := config.GlobalExtendConfigByContext(ctx, "config")
 	log.DefaultContextLogger.Infof(ctx, "get dynamic conf:%s ok:%v", conf, ok)
-	headers.Set("dynamic", conf)
+	headers.Set("x-request-proxy", conf)
 	return api.StreamFilterContinue
 }
 
-func (f *AuthFilter) SetReceiveFilterHandler(handler api.StreamReceiverFilterHandler) {
-	f.handler = handler
+func (f *DynamicFilter) Append(ctx context.Context, headers api.HeaderMap, buf api.IoBuffer, trailers api.HeaderMap) api.StreamFilterStatus {
+	conf, ok := config.GlobalExtendConfigByContext(ctx, "config")
+	log.DefaultContextLogger.Infof(ctx, "get dynamic conf:%s ok:%v", conf, ok)
+	headers.Set("x-response-proxy", conf)
+	return api.StreamFilterContinue
 }
 
-func (f *AuthFilter) OnDestroy() {}
+func (f *DynamicFilter) SetReceiveFilterHandler(handler api.StreamReceiverFilterHandler) {
+	f.rhandler = handler
+}
+
+func (f *DynamicFilter) SetSenderFilterHandler(handler api.StreamSenderFilterHandler) {
+	f.shandler = handler
+}
+
+func (f *DynamicFilter) OnDestroy() {}

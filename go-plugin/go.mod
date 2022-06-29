@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/apache/dubbo-go-hessian2 v1.9.2 // dubbo
 	github.com/dubbogo/gost v1.11.25 // indirect
+	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/stretchr/testify v1.7.0
 	github.com/valyala/fasthttp v1.31.0
 	go.uber.org/atomic v1.9.0 // indirect
@@ -15,5 +16,6 @@ require (
 
 replace (
 	github.com/klauspost/compress => github.com/klauspost/compress v1.13.5
+
 	github.com/rcrowley/go-metrics => github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 )

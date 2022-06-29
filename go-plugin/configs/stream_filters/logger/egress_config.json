@@ -1,0 +1,13 @@
+{
+  "type": "logger",
+  "go_plugin_config": {
+    "so_path": "./logger.so"
+  },
+  "config": {
+    "max_size": "1",
+    "max_age": "3",
+    "app_name": "$APPNAME",
+    "egress_path": "/home/admin/logs/mosn/mosn_client.log",
+    "ingress_path": "/home/admin/logs/mosn/mosn_server.log"
+  }
+}
