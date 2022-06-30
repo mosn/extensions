@@ -23,6 +23,7 @@ import (
 
 	hessian "github.com/apache/dubbo-go-hessian2"
 	"github.com/stretchr/testify/assert"
+	"mosn.io/extensions/go-plugin/pkg/common"
 	"mosn.io/pkg/buffer"
 )
 
@@ -30,11 +31,10 @@ import (
 func TestEncode(t *testing.T) {
 	var (
 		ctx            = context.TODO()
-		originalHeader = CommonHeader{
-			"k1": "v1",
-			"k2": "v2",
-		}
+		originalHeader = &common.Header{}
 	)
+	originalHeader.Set("k1", "v1")
+	originalHeader.Set("k2", "v2")
 
 	//////////// request part start
 	req := NewRpcRequest(originalHeader,

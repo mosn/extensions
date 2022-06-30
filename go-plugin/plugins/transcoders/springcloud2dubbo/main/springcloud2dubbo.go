@@ -12,6 +12,7 @@ import (
 	"github.com/valyala/fasthttp"
 	"mosn.io/api"
 	"mosn.io/api/extensions/transcoder"
+	"mosn.io/extensions/go-plugin/pkg/common"
 	"mosn.io/extensions/go-plugin/pkg/protocol/dubbo"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
@@ -82,7 +83,9 @@ func (t *springcloud2dubbo) TranscodingResponse(ctx context.Context, headers api
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	return http.ResponseHeader{ResponseHeader: &response.Header}, buffer.NewIoBufferBytes(response.Body()), trailers, nil
+	sheader := http.ResponseHeader{ResponseHeader: &response.Header}
+	sheader.Set("Content-Type", "application/json")
+	return sheader, buffer.NewIoBufferBytes(response.Body()), trailers, nil
 }
 
 // decode dubbo response to http response
@@ -177,7 +180,7 @@ func setTargetBody(sourceResponse *dubbo.Frame, targetResponse *fasthttp.Respons
 //encode http require to dubbo require
 func EncodeHttp2Dubbo(ctx context.Context, headers api.HeaderMap, param *Config, reqBody DubboHttpRequestParams) (*dubbo.Frame, error) {
 	//header
-	allHeaders := make(dubbo.CommonHeader)
+	allHeaders := common.Header{}
 	headers.Range(func(key, value string) bool {
 		if key != "Content-Length" && key != "Accept:" {
 			allHeaders.Set(key, value)
@@ -193,7 +196,7 @@ func EncodeHttp2Dubbo(ctx context.Context, headers api.HeaderMap, param *Config,
 	// convert data to dubbo frame
 	frame := &dubbo.Frame{
 		Header: dubbo.Header{
-			CommonHeader: allHeaders,
+			Header: allHeaders,
 		},
 	}
 	//magic
@@ -212,7 +215,7 @@ func EncodeHttp2Dubbo(ctx context.Context, headers api.HeaderMap, param *Config,
 	// serializationId
 	frame.SerializationId = int(frame.Flag & 0x1f)
 	//workload
-	payLoadByteFin, err := EncodeWorkLoad(allHeaders, reqBody)
+	payLoadByteFin, err := EncodeWorkLoad(&frame.Header, reqBody)
 	if err != nil {
 		log.DefaultContextLogger.Errorf(ctx, "[springcloud2dubbo transcoder] error EncodeWorkLoad error %v", err)
 		return nil, err
@@ -281,12 +284,15 @@ func EncodeWorkLoad(headers api.HeaderMap, reqBody DubboHttpRequestParams) ([]by
 	var attachmentsByte []byte
 	if paramesTypeStr != "" {
 		paramesTypeByte, _ = json.Marshal(paramesTypeStr)
-		attachmentsByte, _ = json.Marshal(reqBody.Attachments)
+	} else {
+		paramesTypeByte, _ = json.Marshal("")
 	}
 
-	payLoadByteFin := bytes.Join([][]byte{dubboVersionByte, serviceNameByte, verionByte, methodNameByte, paramesTypeByte, paramesByte, attachmentsByte}, []byte{10})
-
-	return payLoadByteFin, nil
+	attachmentsByte, _ = json.Marshal(reqBody.Attachments)
+	if len(paramesByte) == 0 {
+		return bytes.Join([][]byte{dubboVersionByte, serviceNameByte, verionByte, methodNameByte, paramesTypeByte, attachmentsByte}, []byte{10}), nil
+	}
+	return bytes.Join([][]byte{dubboVersionByte, serviceNameByte, verionByte, methodNameByte, paramesTypeByte, paramesByte, attachmentsByte}, []byte{10}), nil
 }
 
 func LoadTranscoderFactory(cfg map[string]interface{}) transcoder.Transcoder {
