@@ -28,6 +28,7 @@ import (
 	"github.com/valyala/fasthttp"
 	"mosn.io/api"
 	"mosn.io/api/extensions/transcoder"
+	"mosn.io/extensions/go-plugin/pkg/common"
 	"mosn.io/extensions/go-plugin/pkg/protocol/dubbo"
 	"mosn.io/pkg/buffer"
 	"mosn.io/pkg/log"
@@ -173,10 +174,10 @@ func (t *dubbo2springcloud) TranscodingResponse(ctx context.Context, headers api
 // decode http response to dubbo response
 func DecodeHttp2Dubbo(sourceHeader http.ResponseHeader, buf api.IoBuffer, id uint64) (*dubbo.Frame, error) {
 	//header
-	allHeaders := map[string]string{}
+	allHeaders := common.Header{}
 	frame := &dubbo.Frame{
 		Header: dubbo.Header{
-			CommonHeader: allHeaders,
+			Header: allHeaders,
 		},
 	}
 	// convert data to dubbo frame
