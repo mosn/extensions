@@ -1,5 +1,5 @@
 {
-	"name": "HTTP1",
+	"name": "Http1",
 	"kind": "protocol",
 	"framework": "HTTP1",
 	"internal": false,
