@@ -1,7 +1,7 @@
 {
 	"name": "Http1",
 	"kind": "protocol",
-	"framework": "Http1",
+	"framework": "HTTP1",
 	"internal": false,
 	"variables": [{
 			"field": "x-mosn-data-id",
