@@ -7,21 +7,6 @@
 			"field": "x-mosn-data-id",
 			"pattern": ["${X-TARGET-APP}@springcloud"],
 			"required": true
-		},
-		{
-			"field": "x-mosn-method",
-			"pattern": ["${x-mosn-method}"],
-			"required": false
-		},
-		{
-			"field": "x-mosn-caller-app",
-			"pattern": ["${X-CALLER-APP}"],
-			"required": false
-		},
-		{
-			"field": "x-mosn-target-app",
-			"pattern": ["${X-TARGET-APP}"],
-			"required": false
 		}
 	],
 	"dependencies": [{
