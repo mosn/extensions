@@ -2,7 +2,6 @@
   "name": "ingress_sofa_bolt",
   "type": "ingress",
   "address": "0.0.0.0:12200",
-  "use_original_dst": true,
   "bind_port": true,
   "inspector": true,
   "filter_chains": [
@@ -18,11 +17,8 @@
           "type": "proxy",
           "config": {
             "name": "proxy_config",
-            "downstream_protocol": "X",
-            "upstream_protocol": "X",
-            "extend_config": {
-              "sub_protocol": "bolt"
-            },
+            "downstream_protocol": "bolt",
+            "upstream_protocol": "bolt",
             "router_config_name": "sofa_ingress_bolt_router"
           }
         },
@@ -82,26 +78,10 @@
       "type": "fault_tolerance_choose"
     },
     {
-      "type": "verify-identity",
+      "type": "rbac",
       "config": {
-        "mist_port": 12311,
-        "key_sync_interval": 10
-      }
-    },
-    {
-      "type": "req_decision"
-    },
-    {
-      "type": "awatch",
-      "config": {
-        "log_dir_path": "/home/admin/logs/awatch-go/",
-        "disk_inject_path": "/home/admin/logs/.chaos/"
-      }
-    },
-    {
-      "type": "alipayResourceAopFilter",
-      "config": {
-        "direction": "inbound"
+        "rbac_log_path": "./logs/mosn/rbac.log",
+        "dynamic_resource_type": "drm"
       }
     },
     {
