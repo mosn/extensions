@@ -1,0 +1,9 @@
+{
+    "reporter": "gRPC",
+    "backend_service": "${SKY_WALKING_ADDRESS}",
+    "service_name": "${APPNAME}",
+    "max_send_queue_size":"${MAX_SEND_QUEUE_SIZE}",
+    "mosn_generator_span_enabled" :"${MOSN_GENERATOR_SAPN_ENABLED}",
+    "vmmode":"${VMMODE}",
+    "pod_name":"${POD_NAME}"
+}
