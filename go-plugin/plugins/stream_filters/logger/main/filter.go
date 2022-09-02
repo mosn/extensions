@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"mosn.io/api"
 	"mosn.io/extensions/go-plugin/pkg/config"
@@ -31,6 +32,9 @@ func NewLoggerFilter(ctx context.Context, cfg map[string]string) *LoggerFilter {
 }
 
 func (f *LoggerFilter) Log(ctx context.Context, reqHeaders api.HeaderMap, respHeaders api.HeaderMap, requestInfo api.RequestInfo) {
+	if closed, ok := config.GlobalExtendConfigByContext(ctx, "closed_logger"); ok && strings.EqualFold(closed, "true") {
+		return
+	}
 	f.tags[SPAN_TYPE] = f.kind
 	f.tags[APP_NAME] = appName
 	span, ok := config.GetSpan(ctx)
