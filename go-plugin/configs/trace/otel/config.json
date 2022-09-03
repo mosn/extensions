@@ -1,0 +1,6 @@
+{
+	"address": "${OTEL_ADDRESS}",
+	"service_name": "${APPNAME}",
+	"service_type": "${OTEL_SERVICE_TYPE}",
+    "mosn_generator_span_enabled" :"${MOSN_GENERATOR_SAPN_ENABLED}"
+}

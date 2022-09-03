@@ -4,10 +4,10 @@ OUTPUT			= ${TARGET}.so
 
 STREAM_FILTER = ${filter}
 TRANSCODER = ${trans}
+TRACE = ${trace}
 
 CODEC_PREFIX	= codec
 CODEC_ZIP_OUTPUT = ${TARGET}.zip
-TRANSCODER_ZIP_OUTPUT = ${TARGET}.zip
 
 PLUGIN_GOOS = ${GOOS}
 PLUGIN_GOARCH = ${GOARCH}
@@ -15,6 +15,9 @@ PLUGIN_GOARCH = ${GOARCH}
 TRANSCODER_PREFIX = transcoder
 
 STEAM_FILTER_PREFIX = filter
+
+OBSERVABILITY_PREFIX = observability
+TRACE_PREFIX = trace
 
 PROJECT_NAME			= $(shell head -1 go.mod | cut  -d' ' -f2)
 FULL_PROJECT_NAME		= $(shell pwd)
@@ -36,6 +39,15 @@ codec.amd64:
 
 codec.arm64:
 	GOOS=linux GOARCH=arm64 DOCKER_BUILD_OPTS="--platform=linux/arm64" make codec.arch
+
+observability:
+	make observability.arch
+
+observability.amd64:
+	GOOS=linux GOARCH=amd64 DOCKER_BUILD_OPTS="--platform=linux/amd64" make observability.arch
+
+observability.arm64:
+	GOOS=linux GOARCH=arm64 DOCKER_BUILD_OPTS="--platform=linux/arm64" make observability.arch
 
 filter: # alias for stream-filter (more short)
 	make stream-filter.arch
@@ -66,6 +78,15 @@ transcoder.amd64:
 
 transcoder.arm64:
 	GOOS=linux GOARCH=arm64 DOCKER_BUILD_OPTS="--platform=linux/arm64" make transcoder.arch
+
+trace: # alias for transcoder (more short)
+	make trace.arch
+
+trace.amd64:
+	GOOS=linux GOARCH=amd64 DOCKER_BUILD_OPTS="--platform=linux/amd64" make trace.arch
+
+trace.arm64:
+	GOOS=linux GOARCH=arm64 DOCKER_BUILD_OPTS="--platform=linux/arm64" make trace.arch
 
 ant:
 	make ant.arch
@@ -124,6 +145,15 @@ pkg-ant.amd64:
 pkg-ant.arm64:
 	GOOS=linux GOARCH=arm64 DOCKER_BUILD_OPTS="--platform=linux/arm64" make pkg-ant.arch
 
+pkg-trace:
+	make pkg-trace.arch
+
+pkg-trace.amd64:
+	GOOS=linux GOARCH=amd64 DOCKER_BUILD_OPTS="--platform=linux/amd64" make pkg-trace.arch
+
+pkg-trace.arm64:
+	GOOS=linux GOARCH=arm64 DOCKER_BUILD_OPTS="--platform=linux/arm64" make pkg-trace.arch
+
 start:
     ifeq ("$(os_arch)","Darwin_arm64")
 		make start.arm64
@@ -146,7 +176,7 @@ stop:
 	bash ${FULL_PROJECT_NAME}/etc/ant/stop.sh
 
 clean:
-	@rm -rf build/codecs build/stream_filters build/transcoders build/target
+	@rm -rf build/codecs build/stream_filters build/transcoders build/target build/trace build/observability
 
 codec.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
@@ -164,6 +194,23 @@ codec.arch:
 	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
 	-w /go/src/${PROJECT_NAME} -it ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile-codec.sh
+
+
+observability.arch:
+	docker run --rm ${DOCKER_BUILD_OPTS} \
+	-e COMMIT=$(shell git log -1 --pretty=format:%H | head -c 8) \
+	-e PLUGIN_TARGET=${TARGET} \
+	-e PLUGIN_OBSERVABILITY_PREFIX=${OBSERVABILITY_PREFIX} \
+    -e PLUGIN_TRACE_PREFIX=${TRACE_PREFIX} \
+	-e PLUGIN_TRACE=${TRACE} \
+	-e PLUGIN_OS=${PLUGIN_GOOS} \
+	-e PLUGIN_ARCH=${PLUGIN_GOARCH} \
+	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
+	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
+	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
+	-w /go/src/${PROJECT_NAME} -it ${BUILD_IMAGE} \
+	bash /go/src/${PROJECT_NAME}/etc/script/compile-observability.sh
+
 
 stream-filter.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
@@ -190,6 +237,20 @@ transcoder.arch:
 	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/compile-transcoder.sh
+
+
+trace.arch:
+	docker run --rm ${DOCKER_BUILD_OPTS} \
+	-e COMMIT=$(shell git log -1 --pretty=format:%H | head -c 8) \
+	-e PLUGIN_TRACE=${TARGET} \
+	-e PLUGIN_TRACE_PREFIX=${TRACE_PREFIX} \
+	-e PLUGIN_OS=${PLUGIN_GOOS} \
+    -e PLUGIN_ARCH=${PLUGIN_GOARCH} \
+	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
+    -v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
+	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
+	-w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} \
+	bash /go/src/${PROJECT_NAME}/etc/script/compile-trace.sh
 
 compile-codec:
 	@rm -rf build/codecs/${PLUGIN_TARGET}
@@ -224,6 +285,17 @@ compile-transcoder:
 	@cd build/transcoders/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_TRANSCODER_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_TRANSCODER_PREFIX}-${PLUGIN_TARGET}.md5
 	cp configs/transcoders/${PLUGIN_TARGET}/*.json build/transcoders/${PLUGIN_TARGET}
 
+compile-trace:
+	@rm -rf build/trace/${PLUGIN_TARGET}
+	GO111MODULE=on ${BUILD_OPTS} go build \
+		--buildmode=plugin -mod=mod \
+		-gcflags "all=-N -l" \
+		-o ${PLUGIN_TRACE_OUTPUT} ${PLUGIN_PROJECT_NAME}/plugins/trace/${PLUGIN_TARGET}/main
+	mkdir -p build/trace/${PLUGIN_TARGET}
+	mv ${PLUGIN_TRACE_OUTPUT} build/trace/${PLUGIN_TARGET}
+	@cd build/trace/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_TRACE_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_TRACE_PREFIX}-${PLUGIN_TARGET}.md5
+	cp configs/trace/${PLUGIN_TARGET}/*.json build/trace/${PLUGIN_TARGET}
+
 ant.arch:
 	bash ${FULL_PROJECT_NAME}/etc/ant/stop.sh
 	docker run --rm ${DOCKER_BUILD_OPTS} \
@@ -239,7 +311,6 @@ ant.arch:
 
 pkg-codec.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
-	-e PLUGIN_CODEC_PREFIX=${CODEC_PREFIX} \
 	-e PLUGIN_CODEC=${TARGET} \
 	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
 	-e PLUGIN_OS=${PLUGIN_GOOS} \
@@ -249,6 +320,19 @@ pkg-codec.arch:
 	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
 	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
 	bash /go/src/${PROJECT_NAME}/etc/script/package-codec.sh
+
+pkg-trace.arch:
+	docker run --rm ${DOCKER_BUILD_OPTS} \
+	-e PLUGIN_TRACE_PREFIX=${OBSERVABILITY_PREFIX} \
+	-e PLUGIN_TRACE=${TARGET} \
+	-e PLUGIN_PROJECT_NAME=${PROJECT_NAME} \
+	-e PLUGIN_OS=${PLUGIN_GOOS} \
+	-e PLUGIN_ARCH=${PLUGIN_GOARCH} \
+	-e PLUGIN_BUILD_PLATFORM=$(shell uname) \
+	-e PLUGIN_BUILD_PLATFORM_ARCH=$(shell arch) \
+	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
+	-w /go/src/${PROJECT_NAME} ${BASE_IMAGE} \
+	bash /go/src/${PROJECT_NAME}/etc/script/package-trace.sh
 
 pkg-filter.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
