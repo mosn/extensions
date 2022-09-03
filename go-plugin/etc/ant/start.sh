@@ -26,11 +26,25 @@ DEBUG_MODE=${DLV_DEBUG}
 export PUB_BOLT_LOCAL_IP=$(ipconfig getifaddr en0)
 echo "host address: ${PUB_BOLT_LOCAL_IP} ->  ${PROJECT_NAME}"
 
+DYNAMIC_OBSERVABILITY_PATH=/go/src/${PROJECT_NAME}/build/observability 
+OBSERVABILITY_PATH=./build/observability 
+if [ ! -d "$OBSERVABILITY_PATH" ];then
+    DYNAMIC_OBSERVABILITY_PATH=""
+    echo skip observability load
+fi
+
+DYNAMIC_CONF_PATH=/go/src/${PROJECT_NAME}/build/codecs
+CONF_PATH=./build/codecs
+if [ ! -d "$CONF_PATH" ];then
+    DYNAMIC_CONF_PATH=""
+    echo skip codec load
+fi
+
 docker run --rm ${DOCKER_BUILD_OPTS} \
   -u admin --privileged \
   -e PLUGIN_PROJECT_NAME="${PROJECT_NAME}" \
-  -e DYNAMIC_CONF_PATH=/go/src/${PROJECT_NAME}/build/codecs \
-  -e DYNAMIC_OBSERVABILITY_PATH=/go/src/${PROJECT_NAME}/build/observability \
+  -e DYNAMIC_CONF_PATH=$DYNAMIC_CONF_PATH\
+  -e DYNAMIC_OBSERVABILITY_PATH=$DYNAMIC_OBSERVABILITY_PATH\
   -e SIDECAR_PROJECT_NAME=${SIDECAR_GITLAB_PROJECT_NAME} \
   -e SIDECAR_DLV_DEBUG="${DEBUG_MODE}" \
   -v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
