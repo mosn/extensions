@@ -13,6 +13,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
 	otrace "go.opentelemetry.io/otel/trace"
 	"mosn.io/api"
+	"mosn.io/extensions/go-plugin/pkg/config"
 	"mosn.io/extensions/go-plugin/pkg/trace"
 	"mosn.io/pkg/log"
 	"mosn.io/pkg/protocol/http"
@@ -21,9 +22,6 @@ import (
 const (
 	instrumentationName = "gitlab.alipay-inc.com/ant-mesh/mosn"
 )
-
-var MosnProcessFailedFlags = api.NoHealthyUpstream | api.NoRouteFound | api.UpstreamLocalReset |
-	api.FaultInjected | api.RateLimited | api.DownStreamTerminate | api.ReqEntityTooLarge
 
 type OtelSpan struct {
 	trace.NoopSpan
@@ -94,7 +92,7 @@ func (h *OtelSpan) SetRequestInfo(reqInfo api.RequestInfo) {
 	h.kvs = append(h.kvs, attribute.Key("mosn.process.request.duration").Int64(reqInfo.RequestFinishedDuration().Nanoseconds()))
 	h.kvs = append(h.kvs, attribute.Key("mosn.process.respone.duration").Int64(reqInfo.ResponseReceivedDuration().Nanoseconds()))
 	if reqInfo.ResponseCode() != api.SuccessCode {
-		ok := reqInfo.GetResponseFlag(MosnProcessFailedFlags)
+		ok := reqInfo.GetResponseFlag(trace.MosnProcessFailedFlags)
 		h.kvs = append(h.kvs, attribute.Key("mosn.process.fail").Bool(ok))
 		h.entrySpan.SetStatus(codes.Error, "reqeust failed")
 		if ok {
@@ -141,44 +139,21 @@ func (h *OtelSpan) CreateLocalSpan(ctx context.Context) {
 }
 
 func (h *OtelSpan) SpanKind() otrace.SpanKind {
-	/*
-		lType, _ := mosnctx.Get(h.ctx, types.ContextKeyListenerType).(v2.ListenerType)
-		if lType == v2.EGRESS {
-			return otrace.SpanKindClient
-		}
-	*/
-	return otrace.SpanKindServer
+	if ltype, ok := config.GetListenerType(h.ctx); ok && ltype == "INGRESS" {
+		return otrace.SpanKindServer
+	}
+	return otrace.SpanKindClient
 }
 
 func (h *OtelSpan) ParseVariable(ctx context.Context) {
-	/*
-		if methodName, _ := variable.GetString(ctx, govern.VarGovernMethod); len(methodName) != 0 {
-			h.kvs = append(h.kvs, semconv.RPCMethodKey.String(methodName))
-		}
-		if appName, _ := variable.GetString(ctx, govern.VarGovernTargetApp); len(appName) != 0 {
-			h.kvs = append(h.kvs, attribute.Key("target.app").String(appName))
-		}
-		if service, _ := variable.GetString(ctx, govern.VarGovernSourceApp); len(service) != 0 {
-			h.kvs = append(h.kvs, attribute.Key("caller.app").String(service))
-		}
-		if direction, _ := variable.GetString(ctx, govern.VarGovernDirection); len(direction) != 0 {
-			h.kvs = append(h.kvs, attribute.Key("hijack").String(direction))
-		}
-		dataId, _ := variable.GetString(ctx, govern.VarGovernService)
-		h.kvs = append(h.kvs, semconv.RPCServiceKey.String(dataId))
-		if len(h.operationName) == 0 {
-			h.operationName = dataId
-		}
-
-		dp, _ := mosnctx.Get(ctx, types.ContextKeyDownStreamProtocol).(api.ProtocolName)
-		if len(dp) != 0 {
-			h.kvs = append(h.kvs, attribute.Key("downstream.protocol").String(string(dp)))
-		}
-		up, _ := mosnctx.Get(ctx, types.ContextKeyUpStreamProtocol).(api.ProtocolName)
-		if len(up) != 0 {
-			h.kvs = append(h.kvs, attribute.Key("upstream.protocol").String(string(up)))
-		} else {
-			h.kvs = append(h.kvs, attribute.Key("upstream.protocol").String(string(dp)))
-		}
-	*/
+	dp, _ := config.GetDownstreamProtocol(h.ctx)
+	if len(dp) != 0 {
+		h.kvs = append(h.kvs, attribute.Key("downstream.protocol").String(string(dp)))
+	}
+	up, _ := config.GetUpstreamProtocol(h.ctx)
+	if len(up) != 0 {
+		h.kvs = append(h.kvs, attribute.Key("upstream.protocol").String(string(up)))
+	} else {
+		h.kvs = append(h.kvs, attribute.Key("upstream.protocol").String(string(dp)))
+	}
 }

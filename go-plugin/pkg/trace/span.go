@@ -12,6 +12,9 @@ const (
 	parentSpanID = "-1"
 )
 
+var MosnProcessFailedFlags = api.NoHealthyUpstream | api.NoRouteFound | api.UpstreamLocalReset |
+	api.FaultInjected | api.RateLimited | api.DownStreamTerminate | api.ReqEntityTooLarge
+
 var _ api.Span = NoopSpan{}
 
 type NoopSpan struct {
