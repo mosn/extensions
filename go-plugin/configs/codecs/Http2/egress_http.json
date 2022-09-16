@@ -1,0 +1,74 @@
+{
+  "name": "egress_http2",
+  "type": "egress",
+  "address": "0.0.0.0:12077",
+  "bind_port": true,
+  "log_path": "./logs/mosn/http2.log",
+  "log_level": "INFO",
+  "access_logs": [
+    {
+      "log_path": "./logs/mosn/access_http2.log"
+    }
+  ],
+  "filter_chains": [
+    {
+      "filters": [
+        {
+          "type": "proxy",
+          "config": {
+            "name": "proxy_config",
+            "downstream_protocol": "Http2",
+            "upstream_protocol": "Http2",
+            "router_config_name": "egress_http2_router"
+          }
+        },
+        {
+          "type": "connection_manager",
+          "config": {
+            "router_config_name": "egress_http2_router",
+            "router_configs": "./mosn/conf/routers/egress_http2_router/"
+          }
+        }
+      ]
+    }
+  ],
+  "stream_filters": [
+    {
+      "type": "govern_config"
+    },
+    {
+        "type":"tls_trace"
+    },
+    {
+      "type": "transcoder"
+    },
+    {
+      "type": "tamperproofing"
+    },
+    {
+      "type": "cloud_metrics"
+    },
+    {
+      "type": "fault_inject",
+      "config": {
+        "direction": "outbound"
+      }
+    },
+    {
+      "type": "downgrade"
+    },
+    {
+      "type": "alipayLimitFilter",
+      "config": {
+        "enable": true,
+        "direction": "outbound"
+      }
+    },
+    {
+      "type": "fault_tolerance_send"
+    },
+    {
+      "type": "fault_tolerance_choose"
+    }
+  ]
+}
