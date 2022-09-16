@@ -5,5 +5,5 @@
 /build/sidecar/binary/
 /build/target/
 /build/observability/
-/logs/
+*logs/
 .idea

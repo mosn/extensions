@@ -7,9 +7,9 @@ go env -w GOPRIVATE=gitlab.alipay-inc.com,code.alipay.com
 build_opts=""
 if [[ -n ${PLUGIN_OS} && -n ${PLUGIN_ARCH} ]]; then
   build_opts="GOOS=${PLUGIN_OS} GOARCH=${PLUGIN_ARCH}"
-  echo "compiling codec ${PLUGIN_TARGET} for ${PLUGIN_OS} ${PLUGIN_ARCH} ..."
+  echo "compiling observability ${PLUGIN_TARGET} for ${PLUGIN_OS} ${PLUGIN_ARCH} ..."
 else
-  echo "compiling codec ${PLUGIN_TARGET} for linux $(dpkg --print-architecture) ..."
+  echo "compiling observability ${PLUGIN_TARGET} for linux $(dpkg --print-architecture) ..."
 fi
 
 export BUILD_OPTS=${build_opts}
@@ -22,7 +22,7 @@ fi
 
 if [[ -n "${PLUGIN_TRACE}" ]]; then
   trace=(${PLUGIN_TRACE//,/ })
-  rm -rf /go/src/${PLUGIN_OBSERVABILITY_NAME}/build/observability/trace 
+  rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/observability/trace 
   meta=
   for name in "${trace[@]}"; do
     mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/observability/trace

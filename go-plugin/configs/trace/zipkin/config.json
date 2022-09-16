@@ -1,0 +1,13 @@
+{
+ "reporter": "http",
+ "service_name": "${APPNAME}",
+ "mosn_generator_span_enabled" :"${MOSN_GENERATOR_SAPN_ENABLED}",
+ "http":{
+     "batch_size": 0,
+     "address": "${ZIPKIN_ADDRESS}"
+ },
+ "kafka": {
+   "topic": "${KAFKA_TOPIC}",
+     "address": "${ZIPKIN_ADDRESS}"
+ }
+}

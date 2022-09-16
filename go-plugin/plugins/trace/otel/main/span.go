@@ -139,7 +139,7 @@ func (h *OtelSpan) CreateLocalSpan(ctx context.Context) {
 }
 
 func (h *OtelSpan) SpanKind() otrace.SpanKind {
-	if ltype, ok := config.GetListenerType(h.ctx); ok && ltype == "INGRESS" {
+	if ltype, ok := config.GetListenerType(h.ctx); ok && ltype == "ingress" {
 		return otrace.SpanKindServer
 	}
 	return otrace.SpanKindClient
