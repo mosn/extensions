@@ -14,12 +14,12 @@ type MultiTracer struct {
 	rtracer api.Tracer
 }
 
-func NewMultiTracer(config map[string]interface{}) (api.Tracer, error) {
-	htracer, err := NewHTTPTracer(config)
+func TracerBuilder(cfg map[string]interface{}) (api.Tracer, error) {
+	htracer, err := NewHTTPTracer(cfg)
 	if err != nil {
 		return nil, err
 	}
-	rtracer, err := NewRpcTracer(config)
+	rtracer, err := NewRpcTracer(cfg)
 	if err != nil {
 		return nil, err
 	}

@@ -43,6 +43,7 @@ type SofaRPCSpan struct {
 	operationName string
 	appName       string
 	pod           bool
+	cluster       string
 }
 
 func (s *SofaRPCSpan) TraceId() string {
@@ -165,7 +166,7 @@ func (s *SofaRPCSpan) parseVariable(ctx context.Context) {
 	} else {
 		s.SetTag(generator.UPSTREAM_PROTOCOL, string(dp))
 	}
-	if ltype, ok := config.GetListenerType(ctx); ok && ltype == "INGRESS" {
+	if ltype, ok := config.GetListenerType(ctx); ok && ltype == "ingress" {
 		s.SetTag(generator.SPAN_TYPE, "ingress")
 	} else {
 		s.SetTag(generator.SPAN_TYPE, "egress")
@@ -197,12 +198,12 @@ func (s *SofaRPCSpan) baggage() {
 	penMap := s.Tag(generator.BAGGAGE_DATA)
 	appService := s.Tag(generator.SERVICE_NAME)
 	appServiceVersion := s.Tag(generator.APP_SERVICE_VERSION)
-	penMap = joinAppServiceForCloud(penMap, appService, appServiceVersion)
+	penMap = s.joinAppServiceForCloud(penMap, appService, appServiceVersion)
 	s.SetTag(generator.BAGGAGE_DATA, penMap)
 }
 
-func joinAppServiceForCloud(origin, appService, appServiceVersion string) string {
-	return origin + "mosn_data_id=" + appService + "&mosn_data_ver=" + appServiceVersion + "&"
+func (s *SofaRPCSpan) joinAppServiceForCloud(origin, appService, appServiceVersion string) string {
+	return origin + "mosn_cluster=" + s.cluster + "&mosn_data_id=" + appService + "&mosn_data_ver=" + appServiceVersion + "&"
 }
 
 func NewSpan(ctx context.Context, startTime time.Time) *SofaRPCSpan {

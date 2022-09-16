@@ -45,7 +45,7 @@ func Boltv1Delegate(ctx context.Context, frame api.XFrame, span api.Span) {
 	} else {
 		span.SetTag(generator.TRACE_ID, traceId)
 		spanId, _ := header.Get(generator.RPC_ID_KEY)
-		if lType == "INGRESS" {
+		if lType == "ingress" {
 			generator.AddSpanIdGenerator(generator.NewSpanIdGenerator(traceId, spanId))
 		} else {
 			span.SetTag(generator.PARENT_SPAN_ID, spanId)

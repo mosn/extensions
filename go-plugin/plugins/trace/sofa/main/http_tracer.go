@@ -36,6 +36,7 @@ type HTTPTracer struct {
 func NewHTTPTracer(config map[string]interface{}) (api.Tracer, error) {
 	config["server_name"] = "springcloud-server-digest.log"
 	config["client_name"] = "springcloud-client-digest.log"
+	config["tracer_type"] = "springcloud"
 	tracer, err := NewTracer(config)
 	if err != nil {
 		return nil, err
@@ -69,9 +70,9 @@ func (t *HTTPTracer) HTTPDelegate(ctx context.Context, header http.RequestHeader
 	} else {
 		span.SetTag(generator.TRACE_ID, traceId)
 		spanId, _ := header.Get(generator.HTTP_RPC_ID_KEY)
-		if lType == "INGRESS" {
+		if lType == "ingress" {
 			generator.AddSpanIdGenerator(generator.NewSpanIdGenerator(traceId, spanId))
-		} else if lType == "EGRESS" {
+		} else if lType == "egress" {
 			span.SetTag(generator.PARENT_SPAN_ID, spanId)
 			spanKey := &generator.SpanKey{TraceId: traceId, SpanId: spanId}
 			if spanIdGenerator := generator.GetSpanIdGenerator(spanKey); spanIdGenerator != nil {
@@ -81,11 +82,12 @@ func (t *HTTPTracer) HTTPDelegate(ctx context.Context, header http.RequestHeader
 		span.SetTag(generator.SPAN_ID, spanId)
 	}
 	span.SetTag(generator.REQUEST_URL, string(header.RequestURI()))
-	if lType == "EGRESS" {
+	if lType == "egress" {
 		span.SetTag(generator.CALLER_APP_NAME, string(header.Peek(generator.APP_NAME_KEY)))
 	}
 	span.SetTag(generator.METHOD_NAME, string(header.Peek(generator.TARGET_METHOD_KEY)))
 	span.SetTag(generator.SERVICE_NAME, string(header.Peek(generator.SERVICE_KEY)))
 	span.SetTag(generator.BAGGAGE_DATA, string(header.Peek(generator.SOFA_TRACE_BAGGAGE_DATA)))
 	span.SetTag(generator.PROTOCOL_FRAME, "HTTP")
+	span.SetTag(generator.PROTOCOL, "springcloud")
 }

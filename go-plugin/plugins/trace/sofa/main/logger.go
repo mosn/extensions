@@ -15,7 +15,7 @@ rpc-client-digest.log
 */
 
 func (s *SofaRPCSpan) isPod() string {
-	if s.pod {
+	if !s.pod {
 		return "T"
 	}
 	return "F"

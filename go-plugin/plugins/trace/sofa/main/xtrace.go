@@ -35,6 +35,7 @@ type XTracer struct {
 func NewRpcTracer(config map[string]interface{}) (api.Tracer, error) {
 	config["server_name"] = "rpc-server-digest.log"
 	config["client_name"] = "rpc-client-digest.log"
+	config["tracer_type"] = "rpc"
 	tracer, err := NewTracer(config)
 	if err != nil {
 		return nil, err

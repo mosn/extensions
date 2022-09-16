@@ -29,17 +29,26 @@ import (
 	"mosn.io/pkg/log"
 )
 
-var PrintLog = true
+var (
+	PrintLog   = true
+	tracerFile = make(map[string]api.Tracer)
+)
 
 // Tracer is default trace action
 type Tracer struct {
 	ingressLogger *log.Logger
 	egressLogger  *log.Logger
 	init          sync.Once
+	config        map[string]interface{}
 }
 
 func NewTracer(config map[string]interface{}) (api.Tracer, error) {
-	tracer := &Tracer{}
+	if tracer, ok := tracerFile[config["tracer_type"].(string)]; ok {
+		return tracer, nil
+	}
+	tracer := &Tracer{
+		config: config,
+	}
 	if PrintLog {
 		logPath := ""
 		if value, ok := config["log_path"]; ok {
@@ -52,6 +61,7 @@ func NewTracer(config map[string]interface{}) (api.Tracer, error) {
 		}
 
 	}
+	tracerFile[config["tracer_type"].(string)] = tracer
 	return tracer, nil
 }
 
@@ -91,10 +101,14 @@ func (tracer *Tracer) Start(ctx context.Context, frame interface{}, startTime ti
 }
 
 func (tracer *Tracer) NewSpan(ctx context.Context, startTime time.Time) *SofaRPCSpan {
-	return &SofaRPCSpan{
+	span := &SofaRPCSpan{
 		ctx:           ctx,
 		startTime:     startTime,
 		ingressLogger: tracer.ingressLogger,
 		egressLogger:  tracer.egressLogger,
+		appName:       tracer.config["app_name"].(string),
+		pod:           tracer.config["vmmode"].(string) == "",
+		cluster:       tracer.config["cluster"].(string),
 	}
+	return span
 }

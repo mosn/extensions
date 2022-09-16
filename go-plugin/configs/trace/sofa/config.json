@@ -1,3 +1,5 @@
 {
-    "mosn_generator_span_enabled" :"${MOSN_GENERATOR_SAPN_ENABLED}"
+    "app_name":"$APPNAME",
+    "vmmode":"$VMMODE",
+    "cluster":"$SOFA_CAFE_CLUSTER_NAME"
 }
