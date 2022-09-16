@@ -1,0 +1,3 @@
+{
+    "mosn_generator_span_enabled" :"${MOSN_GENERATOR_SAPN_ENABLED}"
+}
