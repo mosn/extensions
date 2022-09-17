@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/openzipkin/zipkin-go/reporter"
@@ -37,8 +38,8 @@ func HttpReporterBuilder(cfg ZipkinTraceConfig) (reporter.Reporter, error) {
 	if cfg.HttpConfig.BatchInterval > 0 {
 		opts = append(opts, http.BatchInterval(time.Second*time.Duration(cfg.HttpConfig.BatchInterval)))
 	}
-	if cfg.HttpConfig.BatchSize > 0 {
-		opts = append(opts, http.BatchSize(cfg.HttpConfig.BatchSize))
+	if size, _ := strconv.Atoi(cfg.HttpConfig.BatchSize); size > 0 {
+		opts = append(opts, http.BatchSize(size))
 	}
 	return http.NewReporter(cfg.HttpConfig.Address, opts...), nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"sync"
 
 	"github.com/SkyAPM/go2sky"
@@ -41,8 +42,8 @@ func GetTracer(config map[string]interface{}) (*go2sky.Tracer, error) {
 		var opts []reporter.GRPCReporterOption
 		opts = append(opts, reporter.WithLogger(NewDefaultLogger()))
 		// max send queue size
-		if cfg.MaxSendQueueSize > 0 {
-			opts = append(opts, reporter.WithMaxSendQueueSize(cfg.MaxSendQueueSize))
+		if size, _ := strconv.Atoi(cfg.MaxSendQueueSize); size > 0 {
+			opts = append(opts, reporter.WithMaxSendQueueSize(size))
 		}
 		// auth
 		if cfg.Authentication != "" {

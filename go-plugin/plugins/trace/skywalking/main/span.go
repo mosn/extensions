@@ -109,8 +109,9 @@ func (h *SkySpan) SetRequestInfo(reqInfo api.RequestInfo) {
 			} else {
 				exit.Error(time.Now(), "biz error")
 			}
+		} else {
+			exit.Tag(go2sky.TagStatusCode, responseCode)
 		}
-		exit.Tag(go2sky.TagStatusCode, responseCode)
 		kvs := h.ParseVariable(h.ctx)
 		h.addTag(exit, kvs)
 		exit.SetOperationName(h.operationName)
@@ -120,7 +121,6 @@ func (h *SkySpan) SetRequestInfo(reqInfo api.RequestInfo) {
 
 	// entry span (downstream)
 	entry := h.entrySpan
-	entry.Tag(go2sky.TagStatusCode, responseCode)
 	if reqInfo.ResponseCode() != api.SuccessCode {
 		ok := reqInfo.GetResponseFlag(trace.MosnProcessFailedFlags)
 		entry.Tag(go2sky.TagStatusCode, strconv.Itoa(reqInfo.ResponseCode()))
@@ -129,6 +129,8 @@ func (h *SkySpan) SetRequestInfo(reqInfo api.RequestInfo) {
 		} else {
 			h.entrySpan.Error(time.Now(), "biz error")
 		}
+	} else {
+		entry.Tag(go2sky.TagStatusCode, responseCode)
 	}
 }
 
@@ -193,8 +195,8 @@ func (h *SkySpan) CreateLocalHttpSpan(ctx context.Context, header http.RequestHe
 	h.tid = go2sky.TraceID(ctx)
 	requestURI := string(header.RequestURI())
 	url := strings.Join([]string{"http://", string(header.Host()), string(header.RequestURI())}, "")
-	h.kvs = append(h.kvs, kv{string(go2sky.TagURL), url})
-	h.kvs = append(h.kvs, kv{string(go2sky.TagHTTPMethod), string(header.Method())})
+	h.kvs = append(h.kvs, kv{"caller.url", url})
+	h.kvs = append(h.kvs, kv{"caller.method", string(header.Method())})
 	h.operationName = requestURI
 }
 

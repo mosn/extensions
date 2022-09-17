@@ -21,7 +21,7 @@ type ZipkinTraceConfig struct {
 
 type HttpReportConfig struct {
 	Timeout       int    `json:"timeout"`
-	BatchSize     int    `json:"batch_size"`
+	BatchSize     string `json:"batch_size"`
 	BatchInterval int    `json:"batch_interval"`
 	Address       string `json:"address"`
 }

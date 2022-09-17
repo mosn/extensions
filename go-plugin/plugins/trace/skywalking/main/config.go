@@ -10,7 +10,7 @@ type SkyWalkingTraceConfig struct {
 	Reporter         string                   `json:"reporter"`
 	BackendService   string                   `json:"backend_service"`
 	ServiceName      string                   `json:"service_name"`
-	MaxSendQueueSize int                      `json:"max_send_queue_size"`
+	MaxSendQueueSize string                   `json:"max_send_queue_size"`
 	VmMode           string                   `json:"vmmode"`
 	PodName          string                   `json:"pod_name"`
 	Authentication   string                   `json:"authentication"`

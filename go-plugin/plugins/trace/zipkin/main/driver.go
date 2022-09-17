@@ -14,12 +14,12 @@ import (
 
 // 单线程安全
 func GetTracer(config map[string]interface{}) (*zipkintracer.Tracer, error) {
+	if tracerProvider != nil {
+		return tracerProvider, nil
+	}
 	cfg, err := parseZipkinConfig(config)
 	if err != nil {
 		return nil, err
-	}
-	if tracerProvider != nil {
-		return tracerProvider, nil
 	}
 	reporterBuilder, ok := GetReportBuilder(cfg.Reporter)
 	if !ok {
@@ -27,7 +27,6 @@ func GetTracer(config map[string]interface{}) (*zipkintracer.Tracer, error) {
 	}
 	reporter, err := reporterBuilder(cfg)
 	if err != nil {
-		log.DefaultLogger.Debugf("[Zipkin] [tracer] [http1] build reporter error: %v", err)
 		return nil, err
 	}
 
