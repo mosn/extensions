@@ -23,8 +23,8 @@ import (
 
 	"mosn.io/api"
 	"mosn.io/extensions/go-plugin/pkg/config"
-	"mosn.io/extensions/go-plugin/pkg/trace"
 	"mosn.io/extensions/go-plugin/plugins/trace/sofa/main/generator"
+	"mosn.io/pkg/log"
 )
 
 type XTracer struct {
@@ -63,5 +63,8 @@ func (t *XTracer) Start(ctx context.Context, frame interface{}, startTime time.T
 	if len(span.Tag(generator.TRACE_ID)) != 0 {
 		return span
 	}
-	return trace.NewNooSpan()
+	span.SetTag(generator.TRACE_ID, generator.IdGen().GenerateTraceId())
+	span.SetTag(generator.SPAN_ID, "0")
+	log.DefaultLogger.Warnf("[cloud_sofa] [tracer] the %s of span not found ", proto)
+	return span
 }

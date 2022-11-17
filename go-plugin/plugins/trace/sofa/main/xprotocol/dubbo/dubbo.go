@@ -49,7 +49,8 @@ func DubboDelegate(ctx context.Context, frame api.XFrame, span api.Span) {
 		spanId, _ = request.Get(generator.RPC_ID_KEY)
 	}
 	if len(traceId) == 0 {
-
+		span.SetTag(generator.SPAN_ID, "0")
+		span.SetTag(generator.TRACE_ID, generator.IdGen().GenerateTraceId())
 	} else {
 		span.SetTag(generator.TRACE_ID, traceId)
 		if lType == "ingress" {
