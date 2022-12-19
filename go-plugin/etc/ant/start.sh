@@ -29,7 +29,7 @@ echo "host address: ${PUB_BOLT_LOCAL_IP} ->  ${PROJECT_NAME}"
 docker run --rm ${DOCKER_BUILD_OPTS} \
   -u admin --privileged \
   -e PLUGIN_PROJECT_NAME="${PROJECT_NAME}" \
-  -e DYNAMIC_CONF_PATH=/go/src/${PROJECT_NAME}/build/codecs \
+  -e DYNAMIC_CONF_PATH=/go/src/${PROJECT_NAME}/build/plugins/codecs \
   -e SIDECAR_PROJECT_NAME=${SIDECAR_GITLAB_PROJECT_NAME} \
   -e SIDECAR_DLV_DEBUG="${DEBUG_MODE}" \
   -v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \

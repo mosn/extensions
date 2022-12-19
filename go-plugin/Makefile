@@ -146,7 +146,7 @@ stop:
 	bash ${FULL_PROJECT_NAME}/etc/ant/stop.sh
 
 clean:
-	@rm -rf build/codecs build/stream_filters build/transcoders build/target
+	@rm -rf build/plugins/codecs build/stream_filters build/transcoders build/target
 
 codec.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
@@ -192,15 +192,15 @@ transcoder.arch:
 	bash /go/src/${PROJECT_NAME}/etc/script/compile-transcoder.sh
 
 compile-codec:
-	@rm -rf build/codecs/${PLUGIN_TARGET}
+	@rm -rf build/plugins/codecs/${PLUGIN_TARGET}
 	GO111MODULE=on ${BUILD_OPTS} go build \
 		--buildmode=plugin -mod=mod \
 		-gcflags "all=-N -l" \
 		-o ${PLUGIN_CODEC_OUTPUT} ${PLUGIN_PROJECT_NAME}/plugins/codecs/${PLUGIN_TARGET}/main
-	mkdir -p build/codecs/${PLUGIN_TARGET}
-	mv ${PLUGIN_CODEC_OUTPUT} build/codecs/${PLUGIN_TARGET}
-	@cd build/codecs/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_CODEC_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_CODEC_PREFIX}-${PLUGIN_TARGET}.md5
-	cp configs/codecs/${PLUGIN_TARGET}/*.json build/codecs/${PLUGIN_TARGET}
+	mkdir -p build/plugins/codecs/${PLUGIN_TARGET}
+	mv ${PLUGIN_CODEC_OUTPUT} build/plugins/codecs/${PLUGIN_TARGET}
+	@cd build/plugins/codecs/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_CODEC_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_CODEC_PREFIX}-${PLUGIN_TARGET}.md5
+	cp configs/codecs/${PLUGIN_TARGET}/*.json build/plugins/codecs/${PLUGIN_TARGET}
 
 compile-stream-filter:
 	@rm -rf build/stream_filters/${PLUGIN_TARGET}

@@ -24,13 +24,13 @@ fi
 # copy stream filter
 if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
   filters=(${PLUGIN_STREAM_FILTER//,/ })
-  rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/stream_filters
+  rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/stream_filters
   meta=
   for name in "${filters[@]}"; do
-    mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/stream_filters/${name}
-    echo "cp  /go/src/${PLUGIN_PROJECT_NAME}/build/stream_filters/${name} /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/stream_filters/"
+    mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/stream_filters/${name}
+    echo "cp  /go/src/${PLUGIN_PROJECT_NAME}/build/stream_filters/${name} /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/stream_filters/"
     cp -r /go/src/${PLUGIN_PROJECT_NAME}/build/stream_filters/${name} \
-      /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/stream_filters/
+      /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/stream_filters/
     # append ,
     if [[ -n ${meta} ]]; then
       meta+=","
@@ -39,7 +39,7 @@ if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
   done
 
   # write metadata
-  echo "{\"plugins\":[${meta}]}" >/go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/stream_filters/plugin-meta.json
+  echo "{\"plugins\":[${meta}]}" >/go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/stream_filters/plugin-meta.json
 fi
 
 # build transcoder
@@ -50,11 +50,11 @@ fi
 # copy transcoder
 if [[ ${PLUGIN_TRANSCODER} != "" ]]; then
   coders=(${PLUGIN_TRANSCODER//,/ })
-  rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/transcoders
+  rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/transcoders
   for name in "${coders[@]}"; do
-    mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/transcoders/${name}/
-    echo "cp  /go/src/${PLUGIN_PROJECT_NAME}/build/transcoders/${name} /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/transcoders/"
+    mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/transcoders/${name}/
+    echo "cp  /go/src/${PLUGIN_PROJECT_NAME}/build/transcoders/${name} /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/transcoders/"
     cp -r /go/src/${PLUGIN_PROJECT_NAME}/build/transcoders/${name} \
-      /go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${PLUGIN_TARGET}/transcoders/
+      /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/transcoders/
   done
 fi
