@@ -20,8 +20,8 @@ if [[ -n "${PLUGIN_TRANSCODER}" ]]; then
     PLUGIN_TRANSCODER_ZIP_OUTPUT=${name}.zip
     rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/target/transcoders/${PLUGIN_TRANSCODER_ZIP_OUTPUT}
     mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/target/transcoders/
-    if [ -d "/go/src/${PLUGIN_PROJECT_NAME}/build/transcoders/${name}/" ]; then
-      cd /go/src/${PLUGIN_PROJECT_NAME}/build/transcoders/
+    if [ -d "/go/src/${PLUGIN_PROJECT_NAME}/build/output/transcoders/${name}/" ]; then
+      cd /go/src/${PLUGIN_PROJECT_NAME}/build/output/transcoders/
       echo "packaging transcoder ${name}..."
       zip -r /go/src/${PLUGIN_PROJECT_NAME}/build/target/transcoders/${PLUGIN_TRANSCODER_ZIP_OUTPUT} ${name} \
         -x "stream_filters/*" -x "transcoders/*" -x "mosn_config.json"

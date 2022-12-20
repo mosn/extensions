@@ -28,8 +28,8 @@ if [[ -n "${PLUGIN_STREAM_FILTER}" ]]; then
   meta=
   for name in "${filters[@]}"; do
     mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/stream_filters/${name}
-    echo "cp  /go/src/${PLUGIN_PROJECT_NAME}/build/stream_filters/${name} /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/stream_filters/"
-    cp -r /go/src/${PLUGIN_PROJECT_NAME}/build/stream_filters/${name} \
+    echo "cp  /go/src/${PLUGIN_PROJECT_NAME}/build/output/stream_filters/${name} /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/stream_filters/"
+    cp -r /go/src/${PLUGIN_PROJECT_NAME}/build/output/stream_filters/${name} \
       /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/stream_filters/
     # append ,
     if [[ -n ${meta} ]]; then
@@ -53,8 +53,8 @@ if [[ ${PLUGIN_TRANSCODER} != "" ]]; then
   rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/transcoders
   for name in "${coders[@]}"; do
     mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/transcoders/${name}/
-    echo "cp  /go/src/${PLUGIN_PROJECT_NAME}/build/transcoders/${name} /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/transcoders/"
-    cp -r /go/src/${PLUGIN_PROJECT_NAME}/build/transcoders/${name} \
+    echo "cp  /go/src/${PLUGIN_PROJECT_NAME}/build/output/transcoders/${name} /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/transcoders/"
+    cp -r /go/src/${PLUGIN_PROJECT_NAME}/build/output/transcoders/${name} \
       /go/src/${PLUGIN_PROJECT_NAME}/build/plugins/codecs/${PLUGIN_TARGET}/transcoders/
   done
 fi

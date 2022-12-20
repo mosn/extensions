@@ -146,7 +146,7 @@ stop:
 	bash ${FULL_PROJECT_NAME}/etc/ant/stop.sh
 
 clean:
-	@rm -rf build/plugins/codecs build/stream_filters build/transcoders build/target
+	@rm -rf build/plugins/codecs build/output/stream_filters build/output/transcoders build/target
 
 codec.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
@@ -203,26 +203,26 @@ compile-codec:
 	cp configs/codecs/${PLUGIN_TARGET}/*.json build/plugins/codecs/${PLUGIN_TARGET}
 
 compile-stream-filter:
-	@rm -rf build/stream_filters/${PLUGIN_TARGET}
+	@rm -rf build/output/stream_filters/${PLUGIN_TARGET}
 	GO111MODULE=on ${BUILD_OPTS} go build \
 		--buildmode=plugin -mod=mod \
 		-gcflags "all=-N -l" \
 		-o ${PLUGIN_STEAM_FILTER_OUTPUT} ${PLUGIN_PROJECT_NAME}/plugins/stream_filters/${PLUGIN_TARGET}/main
-	mkdir -p build/stream_filters/${PLUGIN_TARGET}
-	mv ${PLUGIN_STEAM_FILTER_OUTPUT} build/stream_filters/${PLUGIN_TARGET}
-	@cd build/stream_filters/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_STEAM_FILTER_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_STEAM_FILTER_PREFIX}-${PLUGIN_TARGET}.md5
-	cp configs/stream_filters/${PLUGIN_TARGET}/*.json build/stream_filters/${PLUGIN_TARGET}
+	mkdir -p build/output/stream_filters/${PLUGIN_TARGET}
+	mv ${PLUGIN_STEAM_FILTER_OUTPUT} build/output/stream_filters/${PLUGIN_TARGET}
+	@cd build/output/stream_filters/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_STEAM_FILTER_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_STEAM_FILTER_PREFIX}-${PLUGIN_TARGET}.md5
+	cp configs/stream_filters/${PLUGIN_TARGET}/*.json build/output/stream_filters/${PLUGIN_TARGET}
 
 compile-transcoder:
-	@rm -rf build/transcoders/${PLUGIN_TARGET}
+	@rm -rf build/output/transcoders/${PLUGIN_TARGET}
 	GO111MODULE=on ${BUILD_OPTS} go build \
 		--buildmode=plugin -mod=mod \
 		-gcflags "all=-N -l" \
 		-o ${PLUGIN_TRANSCODER_OUTPUT} ${PLUGIN_PROJECT_NAME}/plugins/transcoders/${PLUGIN_TARGET}/main
-	mkdir -p build/transcoders/${PLUGIN_TARGET}
-	mv ${PLUGIN_TRANSCODER_OUTPUT} build/transcoders/${PLUGIN_TARGET}
-	@cd build/transcoders/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_TRANSCODER_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_TRANSCODER_PREFIX}-${PLUGIN_TARGET}.md5
-	cp configs/transcoders/${PLUGIN_TARGET}/*.json build/transcoders/${PLUGIN_TARGET}
+	mkdir -p build/output/transcoders/${PLUGIN_TARGET}
+	mv ${PLUGIN_TRANSCODER_OUTPUT} build/output/transcoders/${PLUGIN_TARGET}
+	@cd build/output/transcoders/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_TRANSCODER_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_TRANSCODER_PREFIX}-${PLUGIN_TARGET}.md5
+	cp configs/transcoders/${PLUGIN_TARGET}/*.json build/output/transcoders/${PLUGIN_TARGET}
 
 ant.arch:
 	bash ${FULL_PROJECT_NAME}/etc/ant/stop.sh
