@@ -146,7 +146,8 @@ stop:
 	bash ${FULL_PROJECT_NAME}/etc/ant/stop.sh
 
 clean:
-	@rm -rf build/plugins/codecs build/output/stream_filters build/output/transcoders build/target
+	@rm -rf build/codecs build/stream_filters build/transcoders
+	@rm -rf build/plugins build/output build/target
 
 codec.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
