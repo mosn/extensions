@@ -25,12 +25,12 @@ if [[ -n "${PLUGIN_TRACE}" ]]; then
   traces=(${PLUGIN_TRACE//,/ })
   for name in "${traces[@]}"; do
     PLUGIN_TRACE_ZIP_OUTPUT=${name}.zip
-    rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/target/trace/${PLUGIN_TRACE_ZIP_OUTPUT}
-    mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/target/trace/
-    if [ -d "/go/src/${PLUGIN_PROJECT_NAME}/build/trace/${name}/" ]; then
-      cd /go/src/${PLUGIN_PROJECT_NAME}/build/trace/
+    rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/target/traces/${PLUGIN_TRACE_ZIP_OUTPUT}
+    mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/target/traces/
+    if [ -d "/go/src/${PLUGIN_PROJECT_NAME}/build/traces/${name}/" ]; then
+      cd /go/src/${PLUGIN_PROJECT_NAME}/build/traces/
       echo "packaging trace ${name}..."
-      zip -r /go/src/${PLUGIN_PROJECT_NAME}/build/target/trace/${PLUGIN_TRACE_ZIP_OUTPUT} ${name} 
+      zip -r /go/src/${PLUGIN_PROJECT_NAME}/build/target/traces/${PLUGIN_TRACE_ZIP_OUTPUT} ${name} 
     fi
   done
 fi

@@ -176,7 +176,7 @@ stop:
 	bash ${FULL_PROJECT_NAME}/etc/ant/stop.sh
 
 clean:
-	@rm -rf build/codecs build/stream_filters build/transcoders build/target build/trace build/observability
+	@rm -rf build/codecs build/stream_filters build/transcoders build/target build/traces build/observability
 
 codec.arch:
 	docker run --rm ${DOCKER_BUILD_OPTS} \
@@ -290,11 +290,11 @@ compile-trace:
 	GO111MODULE=on ${BUILD_OPTS} go build \
 		--buildmode=plugin -mod=mod \
 		-gcflags "all=-N -l" \
-		-o ${PLUGIN_TRACE_OUTPUT} ${PLUGIN_PROJECT_NAME}/plugins/trace/${PLUGIN_TARGET}/main
-	mkdir -p build/trace/${PLUGIN_TARGET}
-	mv ${PLUGIN_TRACE_OUTPUT} build/trace/${PLUGIN_TARGET}
-	@cd build/trace/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_TRACE_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_TRACE_PREFIX}-${PLUGIN_TARGET}.md5
-	cp configs/trace/${PLUGIN_TARGET}/*.json build/trace/${PLUGIN_TARGET}
+		-o ${PLUGIN_TRACE_OUTPUT} ${PLUGIN_PROJECT_NAME}/plugins/traces/${PLUGIN_TARGET}/main
+	mkdir -p build/traces/${PLUGIN_TARGET}
+	mv ${PLUGIN_TRACE_OUTPUT} build/traces/${PLUGIN_TARGET}
+	@cd build/traces/${PLUGIN_TARGET} && $(shell which md5sum) -b ${PLUGIN_TRACE_OUTPUT} | cut -d' ' -f1  > ${PLUGIN_TRACE_PREFIX}-${PLUGIN_TARGET}.md5
+	cp configs/traces/${PLUGIN_TARGET}/*.json build/traces/${PLUGIN_TARGET}
 
 ant.arch:
 	bash ${FULL_PROJECT_NAME}/etc/ant/stop.sh
