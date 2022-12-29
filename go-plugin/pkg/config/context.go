@@ -40,7 +40,10 @@ const ContextKey = "context_key"
 
 func ContextByContext(ctx context.Context) ([]interface{}, bool) {
 	cfg, ok := ctx.Value(ContextKey).(*[]interface{})
-	return (*cfg), ok
+	if !ok {
+		return nil, false
+	}
+	return (*cfg), true
 }
 
 func GetSpan(ctx context.Context) (api.Span, bool) {
