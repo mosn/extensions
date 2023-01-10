@@ -12,12 +12,19 @@ if [[ -n "${PLUGIN_TRANSCODER}" ]]; then
   fi
 fi
 
+pkg_version=
+if [[ -f "/go/src/${PLUGIN_PROJECT_NAME}/VERSION.txt" ]]; then
+  pkg_version=$(cat /go/src/${PLUGIN_PROJECT_NAME}/VERSION.txt)
+fi
 
 # package transcoder plugins
 if [[ -n "${PLUGIN_TRANSCODER}" ]]; then
   codecs=(${PLUGIN_TRANSCODER//,/ })
   for name in "${codecs[@]}"; do
     PLUGIN_TRANSCODER_ZIP_OUTPUT=${name}.zip
+    if [[ -n "${pkg_version}" ]]; then
+      PLUGIN_TRANSCODER_ZIP_OUTPUT=${name}-${pkg_version}.zip
+    fi
     rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/target/transcoders/${PLUGIN_TRANSCODER_ZIP_OUTPUT}
     mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/target/transcoders/
     if [ -d "/go/src/${PLUGIN_PROJECT_NAME}/build/transcoders/${name}/" ]; then

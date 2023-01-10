@@ -7,4 +7,6 @@ if [[ -n "$sidecar" ]]; then
   docker stop mosn-container >/dev/null
   docker rm -f mosn-container >/dev/null
   echo "terminated ok"
+else
+  echo "no mosn-container is running"
 fi

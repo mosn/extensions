@@ -20,11 +20,19 @@ if [[ -n "${PLUGIN_CODEC}" ]]; then
   done
 fi
 
+pkg_version=
+if [[ -f "/go/src/${PLUGIN_PROJECT_NAME}/VERSION.txt" ]]; then
+  pkg_version=$(cat /go/src/${PLUGIN_PROJECT_NAME}/VERSION.txt)
+fi
+
 # package codec plugins
 if [[ -n "${PLUGIN_CODEC}" ]]; then
   coders=(${PLUGIN_CODEC//,/ })
   for name in "${coders[@]}"; do
     PLUGIN_CODEC_ZIP_OUTPUT=${name}.zip
+    if [[ -n "${pkg_version}" ]]; then
+      PLUGIN_CODEC_ZIP_OUTPUT=${name}-${pkg_version}.zip
+    fi
     rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/target/codecs/${PLUGIN_CODEC_ZIP_OUTPUT}
     mkdir -p /go/src/${PLUGIN_PROJECT_NAME}/build/target/codecs/
     if [ -d "/go/src/${PLUGIN_PROJECT_NAME}/build/codecs/${name}/" ]; then

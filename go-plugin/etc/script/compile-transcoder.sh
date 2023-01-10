@@ -1,5 +1,8 @@
 #!/bin/bash
 
+
+SHELL=/bin/bash
+
 go env -w GO111MODULE=on
 go env -w GOPROXY=https://goproxy.cn,direct
 go env -w GOPRIVATE=gitlab.alipay-inc.com,code.alipay.com
@@ -10,7 +13,10 @@ if [[ -n "${PLUGIN_TRANSCODER}" ]]; then
   rm -rf /go/src/${PLUGIN_PROJECT_NAME}/build/transcoders
   for name in "${coders[@]}"; do
     export PLUGIN_TARGET=${name}
-    export PLUGIN_TRANSCODER_OUTPUT=${PLUGIN_TRANSCODER_PREFIX}-${PLUGIN_TARGET}-${COMMIT}.so
+    export PLUGIN_TRANSCODER_OUTPUT=${PLUGIN_TRANSCODER_PREFIX}-${PLUGIN_TARGET}.so
+    if [[ -n "${PLUGIN_GIT_VERSION}" ]]; then
+      export PLUGIN_TRANSCODER_OUTPUT=${PLUGIN_TRANSCODER_PREFIX}-${PLUGIN_TARGET}-${PLUGIN_GIT_VERSION}.so
+    fi
     # check BUILD_OPTS
     if [[ -n ${PLUGIN_OS} && -n ${PLUGIN_ARCH} ]]; then
       build_opts="GOOS=${PLUGIN_OS} GOARCH=${PLUGIN_ARCH}"
