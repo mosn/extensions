@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 BASE_IMAGE=zonghaishang/delve:v1.7.3
 
@@ -7,26 +7,30 @@ LISTENER_PORTS="-p 12220:12220 -p 12200:12200 -p 30880:30880 -p 30800:30800 -p 1
 EXPORT_PORTS="-p 2045:2045 -p 2046:2046 -p 13330:13330 -p 16379:16379 -p 9529:9529 -p 9530:9530 -p 34901:34901"
 
 # biz port export
-BIZ_PORTS="-p 13088:13088 -p 13080:13080"
+BIZ_PORTS=" -p 13088:13088 -p 13080:13080"
 
 MAPPING_PORTS="${DEBUG_PORTS} ${LISTENER_PORTS} ${EXPORT_PORTS} ${BIZ_PORTS}"
 
 sidecar=$(docker ps -a -q -f name=mosn-container)
 if [[ -n "$sidecar" ]]; then
+  echo
   echo "found mosn-container is running already and terminating..."
   docker stop mosn-container >/dev/null
   docker rm -f mosn-container >/dev/null
-  rm -rf $(go env GOPATH)/src/${PROJECT_NAME}/logs
+  rm -rf "${FULL_PROJECT_NAME}/logs"
   echo "terminated ok"
+  echo
 fi
 
 DEBUG_MODE=${DLV_DEBUG}
+
+chmod +x etc/ant/run.sh
 
 # export local ip for mosn
 export PUB_BOLT_LOCAL_IP=$(ipconfig getifaddr en0)
 echo "host address: ${PUB_BOLT_LOCAL_IP} ->  ${PROJECT_NAME}"
 
-docker run --rm ${DOCKER_BUILD_OPTS} \
+docker run ${DOCKER_BUILD_OPTS} \
   -u admin --privileged \
   -e PLUGIN_PROJECT_NAME="${PROJECT_NAME}" \
   -e DYNAMIC_CONF_PATH=/go/src/${PROJECT_NAME}/build/codecs \
@@ -35,7 +39,7 @@ docker run --rm ${DOCKER_BUILD_OPTS} \
   -v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
   -v ${FULL_PROJECT_NAME}/logs:/home/admin/logs \
   -v $(go env GOPATH)/src/${SIDECAR_GITLAB_PROJECT_NAME}:/go/src/${SIDECAR_GITLAB_PROJECT_NAME} \
-  -itd --name mosn-container --env-file "${FULL_PROJECT_NAME}"/etc/ant/env_conf ${MAPPING_PORTS} \
+  -d --name mosn-container --env-file "${FULL_PROJECT_NAME}"/etc/ant/env_conf ${MAPPING_PORTS} \
   -w /go/src/${PROJECT_NAME} \
   ${BASE_IMAGE} /go/src/${PROJECT_NAME}/etc/ant/run.sh "$@"
 

@@ -3,5 +3,6 @@
 /build/transcoders
 /build/sidecar/binary/
 /build/target/
+/build/upgrade/
 /logs/
 .idea
