@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"mosn.io/api"
-	"mosn.io/extensions/go-plugin/plugins/trace/sofa/main/generator"
+	"mosn.io/extensions/go-plugin/plugins/traces/sofa/main/generator"
 	"mosn.io/pkg/buffer"
 )
 
