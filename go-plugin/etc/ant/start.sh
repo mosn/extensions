@@ -17,10 +17,14 @@ if [[ -n "$sidecar" ]]; then
   echo "found mosn-container is running already and terminating..."
   docker stop mosn-container >/dev/null
   docker rm -f mosn-container >/dev/null
-  rm -rf "${FULL_PROJECT_NAME}/logs"
   echo "terminated ok"
   echo
 fi
+
+if [[ -d ${FULL_PROJECT_NAME}/logs ]];then
+   rm -rf ${FULL_PROJECT_NAME}/logs
+fi
+mkdir -p ${FULL_PROJECT_NAME}/logs
 
 DEBUG_MODE=${DLV_DEBUG}
 
