@@ -15,7 +15,7 @@ require (
 )
 
 replace (
-	github.com/klauspost/compress => github.com/klauspost/compress v1.13.5
+	github.com/klauspost/compress => github.com/klauspost/compress v1.13.6
 
 	github.com/rcrowley/go-metrics => github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 )
