@@ -34,7 +34,6 @@ if [[ "$os_name" == "Linux" ]]; then
     # default for mac os
     export PUB_BOLT_LOCAL_IP=$(ipconfig getifaddr en0)
 fi
-export PUB_BOLT_LOCAL_IP=$(ipconfig getifaddr en0)
 echo "host address: ${PUB_BOLT_LOCAL_IP} ->  ${PROJECT_NAME}"
 
 # create mapping logs directory
