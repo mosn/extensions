@@ -266,6 +266,7 @@ pkg-codec.arch:
 	-e PLUGIN_ARCH=${PLUGIN_GOARCH} \
 	-e PLUGIN_BUILD_PLATFORM=$(shell uname) \
 	-e PLUGIN_BUILD_PLATFORM_ARCH=$(shell arch) \
+	-e PLUGIN_GIT_VERSION=${GIT_VERSION} \
 	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
 	-v /tmp/go-build-cache:/root/.cache/go-build \
 	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
@@ -283,6 +284,7 @@ pkg-filter.arch:
 	-e PLUGIN_ARCH=${PLUGIN_GOARCH} \
 	-e PLUGIN_BUILD_PLATFORM=$(shell uname) \
 	-e PLUGIN_BUILD_PLATFORM_ARCH=$(shell arch) \
+	-e PLUGIN_GIT_VERSION=${GIT_VERSION} \
 	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
 	-v /tmp/go-build-cache:/root/.cache/go-build \
 	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
@@ -300,6 +302,7 @@ pkg-trans.arch:
 	-e PLUGIN_ARCH=${PLUGIN_GOARCH} \
 	-e PLUGIN_BUILD_PLATFORM=$(shell uname) \
 	-e PLUGIN_BUILD_PLATFORM_ARCH=$(shell arch) \
+	-e PLUGIN_GIT_VERSION=${GIT_VERSION} \
 	-v ${FULL_PROJECT_NAME}:/go/src/${PROJECT_NAME} \
 	-v /tmp/go-build-cache:/root/.cache/go-build \
 	-v $(shell go env GOPATH)/pkg/mod/:/go/pkg/mod/ \
