@@ -51,11 +51,11 @@ func GetTracer(config map[string]interface{}) (*go2sky.Tracer, error) {
 		}
 		// tls
 		if cfg.TLS.CertFile != "" {
-			creds, err := credentials.NewClientTLSFromFile(cfg.TLS.CertFile, cfg.TLS.ServerNameOverride)
+			cReds, err := credentials.NewClientTLSFromFile(cfg.TLS.CertFile, cfg.TLS.ServerNameOverride)
 			if err != nil {
 				return nil, err
 			}
-			opts = append(opts, reporter.WithTransportCredentials(creds))
+			opts = append(opts, reporter.WithTransportCredentials(cReds))
 		}
 		r, err = reporter.NewGRPCReporter(cfg.BackendService, opts...)
 		if err != nil {

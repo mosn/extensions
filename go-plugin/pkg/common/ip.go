@@ -17,12 +17,12 @@ func IPV4() string {
 }
 
 func AllIPV4() (ipv4s []string) {
-	adders, err := net.InterfaceAddrs()
+	addresses, err := net.InterfaceAddrs()
 	if err != nil {
 		return
 	}
 
-	for _, addr := range adders {
+	for _, addr := range addresses {
 		if ipNet, ok := addr.(*net.IPNet); ok && !ipNet.IP.IsLoopback() {
 			if ipNet.IP.To4() != nil {
 				ipv4 := ipNet.IP.String()

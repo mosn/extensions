@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"mosn.io/extensions/go-plugin/pkg/common"
+	"mosn.io/extensions/go-plugin/pkg/keys"
+	"mosn.io/pkg/variable"
 	"strconv"
 	"strings"
 	"time"
@@ -12,7 +14,6 @@ import (
 	"github.com/SkyAPM/go2sky/propagation"
 	la "github.com/SkyAPM/go2sky/reporter/grpc/language-agent"
 	"mosn.io/api"
-	"mosn.io/extensions/go-plugin/pkg/config"
 	"mosn.io/extensions/go-plugin/pkg/trace"
 	"mosn.io/pkg/log"
 	"mosn.io/pkg/protocol/http"
@@ -25,17 +26,17 @@ type kv struct {
 
 type SkySpan struct {
 	trace.NoopSpan
-	tid       string
-	sid       string
-	psid      string
-	startTime time.Time
-	ctx       context.Context
+	traceId      string
+	spanId       string
+	parentSpanId string
+	startTime    time.Time
+	ctx          context.Context
 
 	operationName string
 	kvs           []kv
 	provider      *go2sky.Tracer
 	entrySpan     go2sky.Span
-	entryctx      context.Context
+	entryCtx      context.Context
 	exitSpan      go2sky.Span
 }
 
@@ -50,15 +51,15 @@ func NewSpan(ctx context.Context, startTime time.Time, provider *go2sky.Tracer) 
 }
 
 func (h *SkySpan) TraceId() string {
-	return h.tid
+	return h.traceId
 }
 
 func (h *SkySpan) SpanId() string {
-	return h.sid
+	return h.spanId
 }
 
 func (h *SkySpan) ParentSpanId() string {
-	return h.psid
+	return h.parentSpanId
 }
 
 func (h *SkySpan) InjectContext(headers api.HeaderMap, reqInfo api.RequestInfo) {
@@ -69,7 +70,7 @@ func (h *SkySpan) InjectContext(headers api.HeaderMap, reqInfo api.RequestInfo) 
 		h.kvs = append(h.kvs, kv{string(go2sky.TagURL), url})
 		h.kvs = append(h.kvs, kv{string(go2sky.TagHTTPMethod), string(header.Method())})
 		h.operationName = requestURI
-		exit, err := h.provider.CreateExitSpan(h.entryctx, requestURI, upstreamLocalAddress, func(Value string) error {
+		exit, err := h.provider.CreateExitSpan(h.entryCtx, requestURI, upstreamLocalAddress, func(Value string) error {
 			headers.Set(propagation.Header, Value)
 			return nil
 		})
@@ -81,12 +82,12 @@ func (h *SkySpan) InjectContext(headers api.HeaderMap, reqInfo api.RequestInfo) 
 		exit.SetSpanLayer(la.SpanLayer_Http)
 		h.exitSpan = exit
 	} else {
-		exit, err := h.provider.CreateExitSpan(h.entryctx, "mosn", upstreamLocalAddress, func(Value string) error {
+		exit, err := h.provider.CreateExitSpan(h.entryCtx, "mosn", upstreamLocalAddress, func(Value string) error {
 			headers.Set(propagation.Header, Value)
 			return nil
 		})
 		if err != nil {
-			log.DefaultLogger.Errorf("[SkyWalking] [tracer] [http1] create exit span error, err: %v", err)
+			log.DefaultLogger.Errorf("[SkyWalking] [tracer] [protocol] create exit span error, err: %v", err)
 			return
 		}
 		exit.SetComponent(MOSNComponentID)
@@ -143,7 +144,7 @@ func (h *SkySpan) setRequestInfo(reqInfo api.RequestInfo) {
 		h.kvs = append(h.kvs, kv{"downstream.address", addr.String()})
 	}
 	h.kvs = append(h.kvs, kv{"request.size", strconv.Itoa(int(reqInfo.BytesReceived()))})
-	h.kvs = append(h.kvs, kv{"respone.size", strconv.Itoa(int(reqInfo.BytesSent()))})
+	h.kvs = append(h.kvs, kv{"response.size", strconv.Itoa(int(reqInfo.BytesSent()))})
 	h.kvs = append(h.kvs, kv{"duration", strconv.Itoa(int(reqInfo.Duration().Nanoseconds()))})
 	process := reqInfo.ProcessTimeDuration().Nanoseconds()
 	if process == 0 {
@@ -151,7 +152,7 @@ func (h *SkySpan) setRequestInfo(reqInfo api.RequestInfo) {
 	}
 	h.kvs = append(h.kvs, kv{"mosn.process.duration", strconv.Itoa(int(process))})
 	h.kvs = append(h.kvs, kv{"mosn.process.request.duration", strconv.Itoa(int(reqInfo.RequestFinishedDuration().Nanoseconds()))})
-	h.kvs = append(h.kvs, kv{"mosn.process.respone.duration", strconv.Itoa(int(reqInfo.ResponseReceivedDuration().Nanoseconds()))})
+	h.kvs = append(h.kvs, kv{"mosn.process.response.duration", strconv.Itoa(int(reqInfo.ResponseReceivedDuration().Nanoseconds()))})
 	if reqInfo.ResponseCode() != api.SuccessCode {
 		ok := reqInfo.GetResponseFlag(trace.ProcessFailedFlags)
 		h.kvs = append(h.kvs, kv{"mosn.process.fail", strconv.FormatBool(ok)})
@@ -180,20 +181,20 @@ func (h *SkySpan) SetOperation(operation string) {
 	h.operationName = operation
 }
 
-func (h *SkySpan) log(kvs []kv, stype go2sky.SpanType) {
+func (h *SkySpan) log(_ []kv, _ go2sky.SpanType) {
 	if log.DefaultLogger.GetLogLevel() >= log.DEBUG {
 		kvs, _ := json.Marshal(h.kvs)
-		log.DefaultLogger.Debugf("trace:%s pid:%s parentid:%s operationName:%s,kvs:%s", h.tid, h.sid, h.psid, h.operationName, kvs)
+		log.DefaultLogger.Debugf("trace:%s pid:%s parent id:%s operationName:%s,kvs:%s", h.traceId, h.spanId, h.parentSpanId, h.operationName, kvs)
 	}
 }
 
 func (h *SkySpan) CreateLocalHttpSpan(ctx context.Context, header http.RequestHeader, entry go2sky.Span) {
-	h.entryctx = ctx
+	h.entryCtx = ctx
 	h.entrySpan = entry
 	// TODO parent span
-	// h.psid = span.SpanContext().SpanID().String()
-	// h.sid = strconv.Itoa(int(go2sky.SpanID(ctx)))
-	h.tid = go2sky.TraceID(ctx)
+	// h.parentSpanId = span.SpanContext().SpanID().String()
+	// h.spanId = strconv.Itoa(int(go2sky.SpanID(ctx)))
+	h.traceId = go2sky.TraceID(ctx)
 	requestURI := string(header.RequestURI())
 	url := strings.Join([]string{"http://", string(header.Host()), string(header.RequestURI())}, "")
 	h.kvs = append(h.kvs, kv{"caller.url", url})
@@ -202,41 +203,41 @@ func (h *SkySpan) CreateLocalHttpSpan(ctx context.Context, header http.RequestHe
 }
 
 func (h *SkySpan) CreateLocalRpcSpan(ctx context.Context, entry go2sky.Span) {
-	h.entryctx = ctx
+	h.entryCtx = ctx
 	h.entrySpan = entry
 	// TODO parent span
-	// h.psid = span.SpanContext().SpanID().String()
-	// h.sid = strconv.Itoa(int(go2sky.SpanID(ctx)))
-	h.tid = go2sky.TraceID(ctx)
+	// h.parentSpanId = span.SpanContext().SpanID().String()
+	// h.spanId = strconv.Itoa(int(go2sky.SpanID(ctx)))
+	h.traceId = go2sky.TraceID(ctx)
 }
 
 func (h *SkySpan) ParseVariable(ctx context.Context) []kv {
 	kvs := make([]kv, len(h.kvs))
 	copy(kvs, h.kvs)
-	/*
-			if methodName, _ := variable.GetString(ctx, govern.VarGovernMethod); len(methodName) != 0 {
-				kvs = append(kvs, kv{"rpc.method", methodName})
-			}
-			if direction, _ := variable.GetString(ctx, govern.VarGovernDirection); len(direction) != 0 {
-				kvs = append(kvs, kv{"hijack", direction})
-			}
 
-			if appName, _ := variable.GetString(ctx, govern.VarGovernTargetApp); len(appName) != 0 {
-				kvs = append(kvs, kv{"target.app", appName})
-			}
-			if service, _ := variable.GetString(ctx, govern.VarGovernSourceApp); len(service) != 0 {
-				kvs = append(kvs, kv{"caller.app", service})
-			}
-		dataId, _ := variable.GetString(ctx, govern.VarGovernService)
-		if len(h.operationName) == 0 {
-			h.operationName = dataId
-		}
-	*/
-	dp, _ := config.GetDownstreamProtocol(h.ctx)
+	if methodName, _ := variable.GetString(ctx, keys.VarMethod); len(methodName) != 0 {
+		kvs = append(kvs, kv{"rpc.method", methodName})
+	}
+	if direction, _ := variable.GetString(ctx, keys.VarDirection); len(direction) != 0 {
+		kvs = append(kvs, kv{"hijack", direction})
+	}
+
+	if appName, _ := variable.GetString(ctx, keys.VarGovernTargetApp); len(appName) != 0 {
+		kvs = append(kvs, kv{"target.app", appName})
+	}
+	if service, _ := variable.GetString(ctx, keys.VarGovernSourceApp); len(service) != 0 {
+		kvs = append(kvs, kv{"caller.app", service})
+	}
+	dataId, _ := variable.GetString(ctx, keys.VarGovernService)
+	if len(h.operationName) == 0 {
+		h.operationName = dataId
+	}
+
+	dp, _ := variable.GetString(ctx, keys.VarDownStreamProtocol)
 	if len(dp) != 0 {
 		kvs = append(kvs, kv{"downstream.protocol", string(dp)})
 	}
-	up, _ := config.GetUpstreamProtocol(h.ctx)
+	up, _ := variable.GetString(ctx, keys.VarUpStreamProtocol)
 	if len(up) != 0 {
 		kvs = append(kvs, kv{"upstream.protocol", string(up)})
 	} else {

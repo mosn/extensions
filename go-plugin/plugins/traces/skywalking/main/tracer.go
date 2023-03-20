@@ -50,13 +50,13 @@ func (tracer *skyTracer) Start(ctx context.Context, request interface{}, startTi
 }
 
 func (tracer *skyTracer) httpStart(ctx context.Context, header http.RequestHeader, startTime time.Time) api.Span {
-	omsg, ok := tracer.skySpan(ctx, header)
+	traceId, ok := tracer.skySpan(ctx, header)
 	if !ok {
 		return nil
 	}
 	requestURI := string(header.RequestURI())
-	entry, nctx, err := tracer.tracerProvider.CreateEntrySpan(ctx, requestURI, func() (string, error) {
-		return omsg, nil
+	entry, nCtx, err := tracer.tracerProvider.CreateEntrySpan(ctx, requestURI, func() (string, error) {
+		return traceId, nil
 	})
 	if err != nil {
 		log.DefaultLogger.Errorf("[SkyWalking] [tracer] [http1] create entry span error, err: %v", err)
@@ -65,13 +65,13 @@ func (tracer *skyTracer) httpStart(ctx context.Context, header http.RequestHeade
 	entry.SetSpanLayer(la.SpanLayer_Http)
 	entry.SetComponent(MOSNComponentID)
 	// new span
-	ospan := NewSpan(ctx, startTime, tracer.tracerProvider)
-	ospan.CreateLocalHttpSpan(nctx, header, entry)
-	return ospan
+	span := NewSpan(ctx, startTime, tracer.tracerProvider)
+	span.CreateLocalHttpSpan(nCtx, header, entry)
+	return span
 }
 
 func (tracer *skyTracer) frameStart(ctx context.Context, xframe api.XFrame, startTime time.Time) api.Span {
-	omsg, ok := tracer.skySpan(ctx, xframe.GetHeader())
+	traceId, ok := tracer.skySpan(ctx, xframe.GetHeader())
 	if !ok {
 		return nil
 	}
@@ -79,8 +79,8 @@ func (tracer *skyTracer) frameStart(ctx context.Context, xframe api.XFrame, star
 	if xframe.IsHeartbeatFrame() {
 		return nil
 	}
-	entry, nctx, err := tracer.tracerProvider.CreateEntrySpan(ctx, "mosn", func() (string, error) {
-		return omsg, nil
+	entry, nTtx, err := tracer.tracerProvider.CreateEntrySpan(ctx, "mosn", func() (string, error) {
+		return traceId, nil
 	})
 	if err != nil {
 		log.DefaultLogger.Errorf("[SkyWalking] [tracer] [http1] create entry span error, err: %v", err)
@@ -89,9 +89,9 @@ func (tracer *skyTracer) frameStart(ctx context.Context, xframe api.XFrame, star
 	entry.SetSpanLayer(la.SpanLayer_RPCFramework)
 	entry.SetComponent(MOSNComponentID)
 	// new span
-	ospan := NewSpan(ctx, startTime, tracer.tracerProvider)
-	ospan.CreateLocalRpcSpan(nctx, entry)
-	return ospan
+	span := NewSpan(ctx, startTime, tracer.tracerProvider)
+	span.CreateLocalRpcSpan(nTtx, entry)
+	return span
 }
 
 func (tracer *skyTracer) skySpan(ctx context.Context, header api.HeaderMap) (string, bool) {
