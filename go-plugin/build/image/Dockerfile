@@ -1,10 +1,10 @@
-FROM golang:1.17.9
+FROM golang:1.20.1
 MAINTAINER yiji@apache.org
 
 ENV GO111MODULE=on
 ENV GOPROXY=https://goproxy.cn,direct
 
-RUN go install github.com/go-delve/delve/cmd/dlv@v1.7.3
+RUN go install github.com/go-delve/delve/cmd/dlv@v1.20.1
 
 # install tools.
 RUN apt update && apt -y install net-tools sudo openbsd-inetd telnet tcpdump zip iptables neovim sysstat iproute2 iftop
@@ -18,8 +18,8 @@ WORKDIR /go
 
 # how to use this Dockefile ?
 # docker buildx create --use --name=builder --driver docker-container
-# docker buildx build --platform linux/arm64,linux/amd64,linux/386 -t zonghaishang/delve:v1.7.3 . --push
+# docker buildx build --platform linux/arm64,linux/amd64,linux/386 -t zonghaishang/delve:v1.20.1 . --push
 # docker buildx rm builder
 
 # how to use this Dockefile build local image for development ?
-# docker build -t zonghaishang/delve:v1.7.3 .
+# docker build -t zonghaishang/delve:v1.20.1 .
