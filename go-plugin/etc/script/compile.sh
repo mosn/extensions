@@ -10,10 +10,6 @@ go env -w GOPRIVATE=gitlab.alipay-inc.com,code.alipay.com
 export PLUGIN_PROJECT=${PROJECT_NAME}
 export SIDECAR_PROJECT=${SIDECAR_PROJECT_NAME}
 
-# update sidecar dependency.
-go mod tidy
-go mod download
-
 MAJOR_VERSION=$(cat VERSION)
 GIT_VERSION=$(git log -1 --pretty=format:%h)
 
@@ -44,6 +40,7 @@ if [ -f mosn ]; then
   md5sum -b mosn | cut -d' ' -f1 >mosn-${MAJOR_VERSION}-${GIT_VERSION}.md5
   mv mosn-${MAJOR_VERSION}-${GIT_VERSION}.md5 "/go/src/${PLUGIN_PROJECT}/build/sidecar/binary/mosn-${MAJOR_VERSION}-${GIT_VERSION}.md5"
   mv mosn "/go/src/${PLUGIN_PROJECT}/build/sidecar/binary/mosn"
+  cp "/go/src/${SIDECAR_PROJECT}/go.mod" "/go/src/${PLUGIN_PROJECT}/build/sidecar/binary/local.mod"
     echo "compile success"
 else 
     echo "compile failed"
