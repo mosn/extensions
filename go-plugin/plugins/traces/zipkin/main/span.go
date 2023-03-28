@@ -3,21 +3,19 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/openzipkin/zipkin-go"
+	"github.com/openzipkin/zipkin-go/model"
+	"github.com/openzipkin/zipkin-go/propagation/b3"
+	"mosn.io/api"
 	"mosn.io/extensions/go-plugin/pkg/keys"
+	"mosn.io/extensions/go-plugin/pkg/trace"
+	"mosn.io/pkg/log"
+	"mosn.io/pkg/protocol/http"
 	"mosn.io/pkg/variable"
 	"net"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/openzipkin/zipkin-go"
-	"github.com/openzipkin/zipkin-go/model"
-	"github.com/openzipkin/zipkin-go/propagation/b3"
-
-	"mosn.io/api"
-	"mosn.io/extensions/go-plugin/pkg/trace"
-	"mosn.io/pkg/log"
-	"mosn.io/pkg/protocol/http"
 )
 
 type kv struct {
@@ -27,11 +25,11 @@ type kv struct {
 
 type ZipkinSpan struct {
 	trace.NoopSpan
-	tid       string
-	sid       string
-	psid      string
-	startTime time.Time
-	ctx       context.Context
+	traceId      string
+	spanId       string
+	parentSpanId string
+	startTime    time.Time
+	ctx          context.Context
 
 	operationName string
 	kvs           []kv
@@ -50,15 +48,15 @@ func NewSpan(ctx context.Context, startTime time.Time, provider *zipkin.Tracer) 
 }
 
 func (h *ZipkinSpan) TraceId() string {
-	return h.tid
+	return h.traceId
 }
 
 func (h *ZipkinSpan) SpanId() string {
-	return h.sid
+	return h.spanId
 }
 
 func (h *ZipkinSpan) ParentSpanId() string {
-	return h.psid
+	return h.parentSpanId
 }
 
 func (h *ZipkinSpan) InjectContext(headers api.HeaderMap, reqInfo api.RequestInfo) {
@@ -128,17 +126,17 @@ func (h *ZipkinSpan) SetOperation(operation string) {
 func (h *ZipkinSpan) log(kvs []kv) {
 	if log.DefaultLogger.GetLogLevel() >= log.DEBUG {
 		kvs, _ := json.Marshal(h.kvs)
-		log.DefaultLogger.Debugf("trace:%s pid:%s parentid:%s operationName:%s,kvs:%s", h.tid, h.sid, h.psid, h.operationName, kvs)
+		log.DefaultLogger.Debugf("trace:%s pid:%s parentid:%s operationName:%s,kvs:%s", h.traceId, h.spanId, h.parentSpanId, h.operationName, kvs)
 	}
 }
 
 func (h *ZipkinSpan) CreateLocalSpan(span zipkin.Span) {
 	h.entrySpan = span
 	if pid := h.entrySpan.Context().ParentID; pid != nil {
-		h.psid = pid.String()
+		h.parentSpanId = pid.String()
 	}
-	h.tid = h.entrySpan.Context().TraceID.String()
-	h.sid = h.entrySpan.Context().ID.String()
+	h.traceId = h.entrySpan.Context().TraceID.String()
+	h.spanId = h.entrySpan.Context().ID.String()
 }
 
 func (h *ZipkinSpan) ParseVariable(ctx context.Context) []kv {

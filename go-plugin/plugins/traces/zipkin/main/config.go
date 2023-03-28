@@ -52,3 +52,8 @@ func (z *ZipkinTraceConfig) ValidateZipkinConfig() error {
 	}
 	return nil
 }
+
+func getOperationName(uri []byte) string {
+	arr := strings.Split(string(uri), "?")
+	return arr[0]
+}
