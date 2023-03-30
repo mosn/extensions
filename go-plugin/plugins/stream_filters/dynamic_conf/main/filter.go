@@ -28,6 +28,9 @@ type DynamicFilterFactory struct {
 }
 
 func (f *DynamicFilterFactory) CreateFilterChain(ctx context.Context, callbacks api.StreamFilterChainFactoryCallbacks) {
+	config.Register(ctx, "config", func(val string) {
+		log.DefaultLogger.Infof("recv config %s", config)
+	})
 	filter := NewDynamicFilter(ctx, f.config)
 	// ReceiverFilter, run the filter when receive a request from downstream
 	// The FilterPhase can be BeforeRoute or AfterRoute, we use BeforeRoute in this demo
