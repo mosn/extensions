@@ -11,7 +11,7 @@ func Register(ctx context.Context, key string, handler ConfigHandler) {
 
 func GlobalExtendMapByContext(ctx context.Context) (*sync.Map, bool) {
 	if cfg, ok := globalExtendConfig.SyncMapByConfig(ctx); ok {
-		return cfg, ok
+		return &cfg, ok
 	}
 	cfg, ok := ctx.Value(ExtendConfigKey).(*sync.Map)
 	return cfg, ok
